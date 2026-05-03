@@ -80,20 +80,29 @@ function generateMockNavHistory(fund: FundData, months: number): NavPoint[] {
     dates.unshift(d)
   }
 
-  const backwardsNavs: number[] = [fund.directNav]
+  const directBackwardsNavs: number[] = [fund.directNav]
+  const regularBackwardsNavs: number[] = [fund.regularNav]
+  
   for (let i = 1; i <= months; i++) {
     const randomShock = (rng() - 0.5) * 2
-    const monthlyChange = 1 + monthlyReturn + monthlyVol * randomShock
-    const prevNav = backwardsNavs[i - 1] / Math.max(0.5, monthlyChange)
-    backwardsNavs.unshift(prevNav)
+    const monthlyChangeDirect = 1 + monthlyReturn + monthlyVol * randomShock
+    
+    // Regular has slightly less return per month due to higher expense ratio
+    const expenseDiffMonthly = (fund.regularExpenseRatio - fund.directExpenseRatio) / 100 / 12
+    const monthlyChangeRegular = monthlyChangeDirect - expenseDiffMonthly
+
+    const prevDirectNav = directBackwardsNavs[0] / Math.max(0.5, monthlyChangeDirect)
+    const prevRegularNav = regularBackwardsNavs[0] / Math.max(0.5, monthlyChangeRegular)
+    
+    directBackwardsNavs.unshift(prevDirectNav)
+    regularBackwardsNavs.unshift(prevRegularNav)
   }
 
-  const expenseDiff = (fund.regularExpenseRatio - fund.directExpenseRatio) / 10000
   const navHistory: NavPoint[] = []
 
   for (let i = 0; i < months; i++) {
-    const directNav = Math.round(backwardsNavs[i] * 100) / 100
-    const regularNav = Math.round((directNav * (1 + expenseDiff * (months - i) / 12)) * 100) / 100
+    const directNav = Math.round(directBackwardsNavs[i + 1] * 100) / 100
+    const regularNav = Math.round(regularBackwardsNavs[i + 1] * 100) / 100
     navHistory.push({
       date: dates[i].toISOString().slice(0, 10),
       directNav,
@@ -356,19 +365,19 @@ export default function NAVHistory() {
                           <Tooltip content={<CustomTooltip />} />
                           <Area
                             type="monotone"
-                            dataKey="regularNav"
-                            stroke="#f97316"
-                            strokeWidth={2}
-                            fill="url(#regularGradient)"
-                            name="Regular NAV"
-                          />
-                          <Area
-                            type="monotone"
                             dataKey="directNav"
                             stroke="#10b981"
                             strokeWidth={2}
                             fill="url(#directGradient)"
                             name="Direct NAV"
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="regularNav"
+                            stroke="#f97316"
+                            strokeWidth={2}
+                            fill="url(#regularGradient)"
+                            name="Regular NAV"
                           />
                         </AreaChart>
                       </ResponsiveContainer>
