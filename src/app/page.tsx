@@ -131,8 +131,6 @@ export default function Home() {
                   <h1 className="text-xl font-black tracking-tighter text-foreground leading-none">FundVista</h1>
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-emerald-600/90 dark:text-emerald-400/90 leading-none">Co-Pilot</span>
-                    <div className="h-1 w-1 rounded-full bg-emerald-500/50" />
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none">v3.0</span>
                   </div>
                 </div>
               </div>
@@ -246,13 +244,12 @@ export default function Home() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-12 w-12 rounded-2xl bg-muted/30 hover:bg-muted/80 border border-border/40 transition-all hover:scale-105 active:scale-95 group"
+                className="relative flex items-center justify-center h-10 w-10 rounded-full border border-foreground/10 bg-background/40 backdrop-blur-xl shadow-sm hover:bg-muted/80 hover:shadow-md transition-all duration-500 hover:scale-105 active:scale-95 group overflow-hidden"
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
               >
-                <div className="relative h-5 w-5">
-                  <Sun className="absolute inset-0 h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-amber-500 group-hover:rotate-12" />
-                  <Moon className="absolute inset-0 h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-teal-400 group-hover:-rotate-12" />
-                </div>
+                <Sun className="absolute h-5 w-5 rotate-0 scale-100 transition-all duration-500 dark:-rotate-90 dark:scale-0 text-amber-600 dark:text-amber-500 group-hover:rotate-[15deg]" />
+                <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all duration-500 dark:rotate-0 dark:scale-100 text-teal-600 dark:text-teal-400 group-hover:-rotate-[15deg]" />
+                <span className="sr-only">Toggle theme</span>
               </Button>
             </div>
           </div>

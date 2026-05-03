@@ -351,10 +351,16 @@ export const useFundStore = create<FundStore>((set, get) => ({
       params.set('limit', '50')
       
       const res = await fetch(`/api/funds?${params}`)
-      const data = await res.json()
-      set({ funds: data.funds, fundsTotal: data.total, fundsLoading: false })
-    } catch {
-      set({ fundsLoading: false })
+      if (res.ok) {
+        const data = await res.json()
+        set({ funds: data.funds || [], fundsTotal: data.total || 0, fundsLoading: false })
+      } else {
+        console.error('API Error:', res.status)
+        set({ funds: [], fundsTotal: 0, fundsLoading: false })
+      }
+    } catch (err) {
+      console.error('Fetch Error:', err)
+      set({ funds: [], fundsTotal: 0, fundsLoading: false })
     }
   },
 
