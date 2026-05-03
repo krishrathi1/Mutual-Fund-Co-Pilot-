@@ -115,14 +115,34 @@ export default function TaxCalculator() {
 
     setLoading(true)
     try {
+      const payloadHoldings = taxHoldings.map(h => ({
+        ...h,
+        currentAmount: h.currentValue,
+      }))
+
       const res = await fetch('/api/tax/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ holdings: taxHoldings }),
+        body: JSON.stringify({ holdings: payloadHoldings }),
       })
       if (res.ok) {
         const data = await res.json()
-        setTaxResults(data.holdings || [])
+        const mappedResults: TaxResult[] = (data.holdings || []).map((r: any, i: number) => {
+          const original = taxHoldings[i] || taxHoldings[0]
+          return {
+            name: original.name,
+            category: original.category,
+            investedAmount: r.invested,
+            currentValue: r.current,
+            gain: r.gain,
+            holdingPeriodDays: 0,
+            gainType: r.holdingPeriod === 'Long Term' ? 'LTCG' : 'STCG',
+            taxRate: r.taxRate / 100,
+            taxAmount: r.taxAmount,
+            netGain: r.netGain
+          }
+        })
+        setTaxResults(mappedResults)
         setCalculated(true)
       } else {
         // Fallback: calculate client-side

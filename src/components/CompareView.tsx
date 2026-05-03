@@ -42,10 +42,11 @@ export default function CompareView() {
     comparisons.forEach(comp => {
       if (!aiInsights[comp.fundId] && !aiInsightsLoading[comp.fundId]) {
         fetchAiInsight(comp.fundId, {
-          schemeName: comp.schemeName,
+          fundName: comp.schemeName,
           directExpenseRatio: comp.direct.expenseRatio,
           regularExpenseRatio: comp.regular.expenseRatio,
-          expenseDiff: comp.expenseDiff,
+          directReturn1y: comp.direct.return1y || 0,
+          regularReturn1y: comp.regular.return1y || 0,
           category: comp.category,
           subCategory: comp.subCategory,
         })

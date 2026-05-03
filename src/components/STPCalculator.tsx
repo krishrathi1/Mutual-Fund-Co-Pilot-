@@ -2,7 +2,7 @@
 
 import { useFundStore } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
-import { ArrowDownToLine, ArrowRightLeft, Play, Info, Loader2, TrendingUp, TrendingDown, Wallet, Target } from 'lucide-react'
+import { ArrowDownToLine, ArrowRightLeft, Play, Info, Loader2, TrendingUp, TrendingDown, Wallet, Target, Check, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,8 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -47,6 +49,8 @@ export default function STPCalculator() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<STPResult | null>(null)
   const [error, setError] = useState('')
+  const [sourceOpen, setSourceOpen] = useState(false)
+  const [targetOpen, setTargetOpen] = useState(false)
 
   useEffect(() => {
     if (funds.length === 0) fetchFunds()
@@ -127,59 +131,107 @@ export default function STPCalculator() {
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             {/* Source Fund */}
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col justify-end">
               <Label className="flex items-center gap-1.5">
                 <TrendingDown className="h-3.5 w-3.5 text-amber-600" />
                 Source Fund (Debt/Liquid)
               </Label>
-              <Select value={sourceFundId} onValueChange={setSourceFundId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select source fund" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {debtFunds.length > 0 ? (
-                    debtFunds.map(f => (
-                      <SelectItem key={f.id} value={f.id}>
-                        <span className="text-xs">{f.schemeName}</span>
-                      </SelectItem>
-                    ))
-                  ) : (
-                    funds.slice(0, 20).map(f => (
-                      <SelectItem key={f.id} value={f.id}>
-                        <span className="text-xs">{f.schemeName}</span>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+              <Popover open={sourceOpen} onOpenChange={setSourceOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={sourceOpen}
+                    className="justify-between text-xs font-normal"
+                  >
+                    {sourceFundId
+                      ? (() => {
+                          const name = funds.find((f) => f.id === sourceFundId)?.schemeName || ''
+                          return name.length > 40 ? name.substring(0, 40) + '...' : name
+                        })()
+                      : "Search source fund..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] sm:w-[400px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search funds..." className="h-9 text-xs" />
+                    <CommandList>
+                      <CommandEmpty>No fund found.</CommandEmpty>
+                      <CommandGroup>
+                        {(debtFunds.length > 0 ? debtFunds : funds).map((f) => (
+                          <CommandItem
+                            key={f.id}
+                            value={f.schemeName}
+                            onSelect={() => {
+                              setSourceFundId(f.id)
+                              setSourceOpen(false)
+                            }}
+                            className="text-xs cursor-pointer"
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 text-emerald-600 ${sourceFundId === f.id ? "opacity-100" : "opacity-0"}`}
+                            />
+                            {f.schemeName}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
 
             {/* Target Fund */}
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col justify-end">
               <Label className="flex items-center gap-1.5">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
                 Target Fund (Equity)
               </Label>
-              <Select value={targetFundId} onValueChange={setTargetFundId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select target fund" />
-                </SelectTrigger>
-                <SelectContent className="max-h-60">
-                  {equityFunds.length > 0 ? (
-                    equityFunds.map(f => (
-                      <SelectItem key={f.id} value={f.id}>
-                        <span className="text-xs">{f.schemeName}</span>
-                      </SelectItem>
-                    ))
-                  ) : (
-                    funds.slice(0, 20).map(f => (
-                      <SelectItem key={f.id} value={f.id}>
-                        <span className="text-xs">{f.schemeName}</span>
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+              <Popover open={targetOpen} onOpenChange={setTargetOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={targetOpen}
+                    className="justify-between text-xs font-normal"
+                  >
+                    {targetFundId
+                      ? (() => {
+                          const name = funds.find((f) => f.id === targetFundId)?.schemeName || ''
+                          return name.length > 40 ? name.substring(0, 40) + '...' : name
+                        })()
+                      : "Search target fund..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] sm:w-[400px] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search funds..." className="h-9 text-xs" />
+                    <CommandList>
+                      <CommandEmpty>No fund found.</CommandEmpty>
+                      <CommandGroup>
+                        {(equityFunds.length > 0 ? equityFunds : funds).map((f) => (
+                          <CommandItem
+                            key={f.id}
+                            value={f.schemeName}
+                            onSelect={() => {
+                              setTargetFundId(f.id)
+                              setTargetOpen(false)
+                            }}
+                            className="text-xs cursor-pointer"
+                          >
+                            <Check
+                              className={`mr-2 h-4 w-4 text-emerald-600 ${targetFundId === f.id ? "opacity-100" : "opacity-0"}`}
+                            />
+                            {f.schemeName}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
 
