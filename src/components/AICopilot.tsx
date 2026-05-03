@@ -25,6 +25,29 @@ const SUGGESTED_QUESTIONS = [
   'How to build a diversified portfolio?',
 ]
 
+function generateFallbackResponse(query: string): string {
+  const q = query.toLowerCase()
+  if (q.includes('direct') || q.includes('switch')) {
+    return '**Direct vs Regular Plans**\n\nSwitching to Direct plans can save you 0.5–1.5% annually in expense ratio. Over 20 years on a ₹5L investment, that compounds to ₹2–5L in savings.\n\n- Direct plans have lower expense ratios since no distributor commission is paid\n- Both plans are managed identically by the same fund manager\n- Switching triggers a redemption + fresh purchase (tax implications apply)'
+  }
+  if (q.includes('save') || q.includes('saving')) {
+    return '**Savings with Direct Plans**\n\nThe savings from switching to Direct plans depend on the expense ratio difference:\n\n- Small-cap funds: typically 1–1.5% difference → significant savings\n- Large-cap funds: typically 0.5–0.8% difference → moderate savings\n- On ₹10L invested over 10 years, even 0.5% savings compounds to ~₹80,000'
+  }
+  if (q.includes('overlap') || q.includes('duplicate')) {
+    return '**Portfolio Overlap**\n\nMany Indian MF portfolios have hidden overlap:\n\n- Multiple large-cap funds often hold the same top 10 stocks\n- Overlap reduces diversification benefits\n- Use the Overlap Analysis tool to check your portfolio\n- Consider consolidating similar funds to reduce redundancy'
+  }
+  if (q.includes('tax')) {
+    return '**Tax-Saving with Mutual Funds**\n\nKey tax rules for Indian mutual funds:\n\n- **ELSS**: ₹1.5L deduction under Section 80C, 3-year lock-in\n- **Equity LTCG**: 10% above ₹1L exemption (held > 1 year)\n- **Equity STCG**: 15% (held < 1 year)\n- **Debt LTCG**: As per slab (held > 3 years, with indexation)\n- Switching Regular→Direct is a taxable event'
+  }
+  if (q.includes('xirr')) {
+    return '**XIRR Explained**\n\nXIRR (Extended Internal Rate of Return) is the most accurate way to measure MF portfolio returns:\n\n- Accounts for irregular cash flows (SIPs, lump sums, redemptions)\n- Gives annualized return percentage\n- Use XIRR to compare your portfolio vs benchmark\n- CAGR only works for single lump-sum investments'
+  }
+  if (q.includes('diversi') || q.includes('portfolio')) {
+    return '**Building a Diversified Portfolio**\n\nA well-diversified Indian MF portfolio should include:\n\n- **Core**: Large-cap or Flexi-cap fund (40–50%)\n- **Growth**: Mid-cap and Small-cap funds (20–30%)\n- **Stability**: Debt or Hybrid funds (20–30%)\n- **Tax Saving**: ELSS (if applicable)\n\nRebalance annually to maintain target allocation.'
+  }
+  return '**FundVista AI Assistant**\n\nI can help you with:\n\n- Direct vs Regular plan comparisons and savings calculations\n- Portfolio overlap analysis and diversification tips\n- Tax implications of switching plans\n- Understanding XIRR and risk metrics\n- Building a diversified mutual fund portfolio\n\nPlease try asking a specific question about any of these topics!'
+}
+
 export default function AICopilot() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])

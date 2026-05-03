@@ -302,7 +302,7 @@ function AllocationPieChart({ allocation }: { allocation: { equity: number; debt
           <div key={d.name} className="flex items-center gap-3">
             <span
               className="h-3.5 w-3.5 rounded-full shrink-0 ring-2 ring-offset-1 ring-offset-background"
-              style={{ backgroundColor: PIE_COLORS[i], ringColor: PIE_COLORS[i] }}
+              style={{ backgroundColor: PIE_COLORS[i] }}
             />
             <div>
               <p className="text-sm font-medium text-foreground">{d.name}</p>
