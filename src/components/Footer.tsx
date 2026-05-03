@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart } from 'lucide-react'
+import { Heart, TrendingUp, Shield, BarChart3, Calculator } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -13,13 +13,19 @@ export default function Footer() {
             <span>for Indian retail investors</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span>Data sourced from AMFI, NSE & fund house factsheets</span>
-            <span className="hidden sm:inline">·</span>
-            <span className="hidden sm:inline">Not SEBI-registered advice</span>
+            <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> 71+ Funds</span>
+            <span className="flex items-center gap-1"><Shield className="h-3 w-3" /> Risk Analysis</span>
+            <span className="flex items-center gap-1"><BarChart3 className="h-3 w-3" /> Stress Testing</span>
+            <span className="flex items-center gap-1"><Calculator className="h-3 w-3" /> Tax & SIP</span>
           </div>
         </div>
-        <div className="mt-3 text-center text-xs text-muted-foreground/60">
-          FundVista is an educational tool. Mutual fund investments are subject to market risks. Please read all scheme-related documents carefully before investing.
+        <div className="mt-3 flex flex-col items-center gap-1 sm:flex-row sm:justify-between">
+          <span className="text-xs text-muted-foreground/60">
+            Data sourced from AMFI, NSE & fund house factsheets
+          </span>
+          <span className="text-xs text-muted-foreground/60">
+            Not SEBI-registered advice · Educational tool only
+          </span>
         </div>
       </div>
     </footer>

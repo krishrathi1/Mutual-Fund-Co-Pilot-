@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
       const savingsPct = regularValue > 0 ? (savings / regularValue) * 100 : 0
 
       // Yearly breakdown for SIP
-      const yearlyBreakdown = []
+      const yearlyBreakdown: { year: number; directValue: number; regularValue: number; savings: number; cumulativeSavings: number }[] = []
       let cumulativeSavings = 0
       for (let year = 1; year <= years; year++) {
         const monthsSoFar = year * 12
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
       const savingsPct = regularValue > 0 ? (savings / regularValue) * 100 : 0
 
       // Yearly breakdown
-      const yearlyBreakdown = []
+      const yearlyBreakdown: { year: number; directValue: number; regularValue: number; savings: number; cumulativeSavings: number }[] = []
       for (let year = 1; year <= years; year++) {
         const dv = investedAmount * Math.pow(1 + directRate, year)
         const rv = investedAmount * Math.pow(1 + regularRate, year)

@@ -1,7 +1,7 @@
 'use client'
 
 import { useFundStore } from '@/lib/store'
-import { TrendingUp, Search, Briefcase, ArrowRight } from 'lucide-react'
+import { TrendingUp, Search, Briefcase, ArrowRight, Shield, Calculator, BarChart3, Target, Activity, PieChart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion'
@@ -32,6 +32,17 @@ function AnimatedCounter({ target, prefix = '₹', suffix = 'L' }: { target: num
   return <span ref={ref}>{prefix}0{suffix}</span>
 }
 
+const features = [
+  { icon: Search, label: 'Explore 71+ Funds', tab: 'explore' as const },
+  { icon: Activity, label: 'Market Dashboard', tab: 'market' as const },
+  { icon: Shield, label: 'Risk Profiler', tab: 'risk' as const },
+  { icon: Calculator, label: 'SIP/STP/SWP Planner', tab: 'sip' as const },
+  { icon: BarChart3, label: 'Stress Test', tab: 'stress' as const },
+  { icon: Target, label: 'Goal Planning', tab: 'goals' as const },
+  { icon: PieChart, label: 'Sector Exposure', tab: 'sector' as const },
+  { icon: TrendingUp, label: 'NAV History', tab: 'nav' as const },
+]
+
 export default function HeroSection() {
   const setActiveTab = useFundStore(s => s.setActiveTab)
 
@@ -49,7 +60,7 @@ export default function HeroSection() {
             >
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-medium text-emerald-700 ring-1 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800">
                 <TrendingUp className="h-4 w-4" />
-                Trusted by smart Indian investors
+                20 Powerful Tools for Smart Indian Investors
               </div>
             </motion.div>
 
@@ -115,6 +126,10 @@ export default function HeroSection() {
                 <Briefcase className="h-4 w-4" />
                 Add Your Holdings
               </Button>
+              <Button size="lg" variant="outline" onClick={() => setActiveTab('risk')} className="gap-2">
+                <Shield className="h-4 w-4" />
+                Take Risk Quiz
+              </Button>
             </motion.div>
           </div>
 
@@ -174,11 +189,30 @@ export default function HeroSection() {
 
               {/* Bottom callout */}
               <div className="mt-4 rounded-lg bg-amber-100 p-3 text-center text-sm font-medium text-amber-800 dark:bg-amber-950/30 dark:text-amber-300">
-                💡 Same portfolio · Same fund manager · Same risk — only fees differ
+                Same portfolio · Same fund manager · Same risk — only fees differ
               </div>
             </div>
           </motion.div>
         </div>
+
+        {/* Feature Quick Access Strip */}
+        <motion.div
+          className="mt-10 grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          {features.map((feature) => (
+            <button
+              key={feature.label}
+              onClick={() => setActiveTab(feature.tab)}
+              className="flex flex-col items-center gap-1.5 rounded-xl border bg-card/50 p-3 text-center transition-all hover:bg-emerald-50 hover:border-emerald-200 hover:shadow-sm dark:hover:bg-emerald-950/20 dark:hover:border-emerald-800"
+            >
+              <feature.icon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-[10px] font-medium text-foreground leading-tight">{feature.label}</span>
+            </button>
+          ))}
+        </motion.div>
       </div>
     </section>
   )

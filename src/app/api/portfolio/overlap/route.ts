@@ -154,7 +154,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Calculate pairwise overlaps
-    const overlaps = []
+    const overlaps: {
+      fund1: string; fund2: string; fund1Name: string; fund2Name: string;
+      overlapScore: number; overlapLevel: string; commonExposure: string[]; recommendation: string;
+    }[] = []
     for (let i = 0; i < funds.length; i++) {
       for (let j = i + 1; j < funds.length; j++) {
         const fund1 = funds[i]
