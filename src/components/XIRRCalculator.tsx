@@ -94,7 +94,13 @@ export default function XIRRCalculator() {
       })
       if (res.ok) {
         const data = await res.json()
-        setXirrResult(data)
+        const clientResult = calculateClientSideXIRR()
+        setXirrResult({
+          portfolioXirr: data.xirr !== undefined ? data.xirr : clientResult.portfolioXirr,
+          holdings: clientResult.holdings,
+          benchmarkXirr: clientResult.benchmarkXirr,
+          methodology: clientResult.methodology,
+        })
         setCalculated(true)
       } else {
         // Fallback: calculate client-side
@@ -166,7 +172,7 @@ export default function XIRRCalculator() {
   }
 
   const chartData = useMemo(() => {
-    if (!xirrResult) return []
+    if (!xirrResult || !xirrResult.holdings) return []
     return xirrResult.holdings.map((h) => ({
       name: h.fundName.length > 18 ? h.fundName.slice(0, 18) + '…' : h.fundName,
       'XIRR': h.xirr,
