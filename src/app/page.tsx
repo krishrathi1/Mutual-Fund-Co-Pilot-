@@ -141,19 +141,18 @@ export default function Home() {
               <nav className="hidden xl:flex items-center gap-1.5 bg-background/40 backdrop-blur-2xl px-2 py-1.5 rounded-[1.25rem] border border-white/10 shadow-2xl shadow-emerald-500/5 relative">
                 <div className="absolute inset-0 rounded-[1.25rem] bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                 
-                <div className="flex items-center gap-1">
-                  {tabs.filter(t => desktopPrimaryTabIds.includes(t.id)).map((tab) => {
-                    const isActive = activeTab === tab.id
-                    const badge = getBadge(tab.id)
-                    const Icon = tab.icon
+                <div className="flex items-center gap-1 relative z-10">
+                  {/* Primary Tab: Explore */}
+                  {(() => {
+                    const exploreTab = tabs.find(t => t.id === 'explore')!
+                    const isActive = activeTab === 'explore'
+                    const Icon = exploreTab.icon
                     return (
                       <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                        className={`group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all duration-300 z-10 ${
-                          isActive
-                            ? 'text-white'
-                            : 'text-muted-foreground/80 hover:text-foreground'
+                        key="explore"
+                        onClick={() => setActiveTab('explore')}
+                        className={`group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${
+                          isActive ? 'text-white' : 'text-muted-foreground/80 hover:text-foreground hover:bg-muted/30'
                         }`}
                       >
                         {isActive && (
@@ -164,48 +163,42 @@ export default function Home() {
                           />
                         )}
                         <Icon className={`h-4 w-4 transition-transform duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-110 opacity-70 group-hover:opacity-100'}`} />
-                        <span className="relative">{tab.label}</span>
-                        
-                        <AnimatePresence>
-                          {badge > 0 && (
-                            <motion.span 
-                              initial={{ scale: 0, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              exit={{ scale: 0, opacity: 0 }}
-                              className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] font-black shadow-sm ${
-                                isActive ? 'bg-white text-emerald-600' : 'bg-emerald-600 text-white'
-                              }`}
-                            >
-                              {badge}
-                            </motion.span>
-                          )}
-                        </AnimatePresence>
+                        <span className="relative">{exploreTab.label}</span>
                       </button>
                     )
-                  })}
-                </div>
+                  })()}
 
-                <div className="w-px h-5 bg-foreground/10 mx-2 relative z-10" />
+                  <div className="w-px h-5 bg-foreground/10 mx-2" />
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all duration-300 z-10 text-muted-foreground/80 hover:text-foreground hover:bg-muted/30">
-                      <LayoutGrid className="h-4 w-4 transition-transform duration-300 opacity-70 group-hover:opacity-100" />
-                      <span>More Tools</span>
-                      <ChevronDown className="h-3 w-3 opacity-50" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 rounded-xl border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl p-2 z-[100] mt-2">
-                    {desktopGroups.map((group, gi) => {
-                      const groupTabs = tabs.filter(t => t.group === group && !desktopPrimaryTabIds.includes(t.id))
-                      if (groupTabs.length === 0) return null
-                      
-                      return (
-                        <DropdownMenuGroup key={group}>
-                          {gi > 0 && <DropdownMenuSeparator className="my-1.5 opacity-50" />}
-                          <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/50 px-2 py-1.5 font-bold">
-                            {group}
-                          </DropdownMenuLabel>
+                  {/* Group Dropdowns */}
+                  {desktopGroups.map((group) => {
+                    const groupTabs = tabs.filter(t => t.group === group && t.id !== 'explore')
+                    if (groupTabs.length === 0) return null
+                    
+                    const isGroupActive = groupTabs.some(t => t.id === activeTab)
+                    
+                    const groupIcons: Record<string, React.ReactNode> = {
+                      'Discover': <Compass className="h-4 w-4" />,
+                      'Analyze': <Activity className="h-4 w-4" />,
+                      'Plan': <Crosshair className="h-4 w-4" />,
+                      'Optimize': <RefreshCcw className="h-4 w-4" />,
+                      'Tools': <LayoutGrid className="h-4 w-4" />
+                    }
+
+                    return (
+                      <DropdownMenu key={group}>
+                        <DropdownMenuTrigger asChild>
+                          <button className={`group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all duration-300 ${
+                            isGroupActive ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10' : 'text-muted-foreground/80 hover:text-foreground hover:bg-muted/30'
+                          }`}>
+                            <div className={`transition-transform duration-300 ${isGroupActive ? 'scale-110' : 'opacity-70 group-hover:opacity-100'}`}>
+                              {groupIcons[group] || <LayoutGrid className="h-4 w-4" />}
+                            </div>
+                            <span>{group}</span>
+                            <ChevronDown className="h-3 w-3 opacity-50 ml-1" />
+                          </button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="w-56 rounded-xl border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl p-2 z-[100] mt-2">
                           {groupTabs.map((tab) => {
                             const isActive = activeTab === tab.id
                             const badge = getBadge(tab.id)
@@ -228,11 +221,11 @@ export default function Home() {
                               </DropdownMenuItem>
                             )
                           })}
-                        </DropdownMenuGroup>
-                      )
-                    })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )
+                  })}
+                </div>
               </nav>
             </div>
 
