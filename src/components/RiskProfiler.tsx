@@ -336,25 +336,6 @@ export default function RiskProfiler() {
     })
   }, [])
 
-  const goNext = useCallback(() => {
-    if (currentStep < QUESTIONS.length - 1) {
-      setDirection(1)
-      setCurrentStep((s) => s + 1)
-    } else {
-      // Submit
-      setDirection(1)
-      setCurrentStep(QUESTIONS.length)
-      submitProfile()
-    }
-  }, [currentStep, answers, submitProfile])
-
-  const goBack = useCallback(() => {
-    if (currentStep > 0) {
-      setDirection(-1)
-      setCurrentStep((s) => s - 1)
-    }
-  }, [currentStep])
-
   const submitProfile = useCallback(async () => {
     const filledAnswers = answers.filter((a): a is number => a !== null)
     if (filledAnswers.length < QUESTIONS.length) {
@@ -387,6 +368,25 @@ export default function RiskProfiler() {
       setIsLoading(false)
     }
   }, [answers])
+
+  const goNext = useCallback(() => {
+    if (currentStep < QUESTIONS.length - 1) {
+      setDirection(1)
+      setCurrentStep((s) => s + 1)
+    } else {
+      // Submit
+      setDirection(1)
+      setCurrentStep(QUESTIONS.length)
+      submitProfile()
+    }
+  }, [currentStep, answers, submitProfile])
+
+  const goBack = useCallback(() => {
+    if (currentStep > 0) {
+      setDirection(-1)
+      setCurrentStep((s) => s - 1)
+    }
+  }, [currentStep])
 
   const retakeQuiz = useCallback(() => {
     setDirection(-1)

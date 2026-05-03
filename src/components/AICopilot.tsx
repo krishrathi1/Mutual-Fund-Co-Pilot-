@@ -79,7 +79,6 @@ export default function AICopilot() {
         }
         setMessages((prev) => [...prev, assistantMsg])
       } else {
-        // Fallback response
         const assistantMsg: ChatMessage = {
           id: `assistant-${Date.now()}`,
           role: 'assistant',
@@ -101,139 +100,6 @@ export default function AICopilot() {
     }
   }, [isLoading, messages, sessionId])
 
-  function generateFallbackResponse(question: string): string {
-    const q = question.toLowerCase()
-
-    if (q.includes('direct') || q.includes('switch')) {
-      return `Great question! Switching from Regular to Direct plans can save you 0.5–1.5% annually in expense ratios. Since both plans hold identical stocks with identical weights, the only difference is the distributor commission in Regular plans.
-
-**Key points:**
-- Direct plans have lower expense ratios (no distributor commission)
-- Both plans have the same portfolio, risk, and fund manager
-- Over 20 years, even a 1% difference can mean ₹10+ lakhs more wealth on ₹10 lakh invested
-- You can switch by contacting your fund house directly or using platforms like MFUtility, Coin, or Groww
-
-**Steps to switch:**
-1. Redeem from Regular plan
-2. Invest in Direct plan of the same fund
-3. Note: This may trigger capital gains tax
-
-Would you like to see specific savings estimates for your holdings?`
-    }
-
-    if (q.includes('save') || q.includes('saving')) {
-      return `The savings from switching to Direct plans can be substantial! Here's how it works:
-
-**Example:** If you invest ₹10 lakh in a fund with:
-- Regular plan: 1.75% expense ratio
-- Direct plan: 0.75% expense ratio
-- Difference: 1% (100 bps)
-
-**Savings over time (at 12% returns):**
-- 5 years: ~₹85,000
-- 10 years: ~₹2.6 lakh
-- 20 years: ~₹10.8 lakh
-- 30 years: ~₹35 lakh
-
-The longer you stay invested, the more the compounding works in your favor. Use our Savings Calculator tab to see exact numbers for your portfolio!`
-    }
-
-    if (q.includes('overlap')) {
-      return `Fund overlap is a common but often overlooked issue in portfolios. When multiple funds hold the same stocks, you're not as diversified as you think.
-
-**Common overlap areas:**
-- Large Cap funds often hold the same HDFC, Reliance, Infosys stocks
-- Sectoral funds naturally overlap within their sector
-- Multiple Flexi Cap funds may converge on similar large-cap heavy portfolios
-
-**What to do:**
-- Use our Overlap Analyzer to detect specific overlaps in your portfolio
-- If overlap is >60%, consider consolidating into one fund
-- Aim for complementary funds across categories (Large Cap + Mid Cap + Debt)
-
-Check the Overlap tab in FundVista for a detailed analysis of your holdings!`
-    }
-
-    if (q.includes('tax')) {
-      return `Here are the current capital gains tax rules for mutual funds (FY 2024-25):
-
-**Equity Funds (equity >65%):**
-- Short-Term CG (<12 months): 20%
-- Long-Term CG (>12 months): 12.5% with ₹1.25 lakh exemption per year
-
-**Debt Funds (purchased after April 2023):**
-- Both STCG and LTCG taxed at your income slab rate
-- No indexation benefit anymore
-
-**Tax-saving tips:**
-1. Harvest LTCG annually — book profits up to ₹1.25L tax-free, then reinvest
-2. Invest in ELSS for Section 80C deduction (up to ₹1.5L)
-3. Stagger redemptions across financial years
-4. Offset gains with losses (tax-loss harvesting)
-
-Use our Tax Calculator for a detailed breakdown of your specific tax liability!`
-    }
-
-    if (q.includes('xirr')) {
-      return `XIRR (Extended Internal Rate of Return) is the most accurate way to measure your portfolio's actual annual returns, especially when you invest at different times via SIPs.
-
-**Why XIRR matters:**
-- Simple return % doesn't account for timing of investments
-- CAGR only works for single lumpsum investments
-- XIRR handles irregular cash flows (SIPs, additional purchases, partial withdrawals)
-
-**Example:** If you invested ₹10,000/month for 3 years and your portfolio is now worth ₹4.5 lakh, your XIRR might be around 15.2% — meaning each rupee earned an annualized 15.2% return, factoring in exactly when it was invested.
-
-**Good XIRR benchmarks:**
-- Equity funds: 10-15% over 5+ years
-- Debt funds: 6-8%
-- Your portfolio XIRR should be compared to a suitable benchmark index
-
-Check the XIRR tab for your portfolio's calculated XIRR!`
-    }
-
-    if (q.includes('diversif') || q.includes('portfolio')) {
-      return `Building a diversified portfolio is crucial for managing risk while optimizing returns. Here's a framework:
-
-**Core-Satellite Approach:**
-- **Core (60-70%):** Broad market funds — Nifty 50 Index, Flexi Cap
-- **Satellite (20-30%):** Thematic bets — Mid Cap, Small Cap, Sectoral
-- **Stability (10-20%):** Debt/Liquid funds for stability and emergency needs
-
-**Risk-based allocation:**
-- **Conservative:** 30% Equity, 50% Debt, 20% Hybrid
-- **Moderate:** 55% Equity, 25% Debt, 20% Hybrid
-- **Aggressive:** 75% Equity, 10% Debt, 15% Hybrid
-
-**Diversification checklist:**
-✓ Across asset classes (equity, debt, gold)
-✓ Across market caps (large, mid, small)
-✓ Across sectors (IT, banking, pharma, FMCG)
-✓ Across fund houses (avoid single AMC concentration)
-✓ Direct plans to maximize returns
-
-Use our Goal Planner to create goal-based allocation strategies!`
-    }
-
-    return `That's a thoughtful question about mutual fund investing! Here are some general principles:
-
-**Key things to remember:**
-1. **Always prefer Direct plans** — same fund, lower cost, higher returns over time
-2. **Diversification matters** — don't put all your money in one category or fund house
-3. **Time in market beats timing the market** — stay invested for the long term
-4. **Review periodically** — check for overlap, underperformance, and changing goals
-5. **Tax efficiency** — harvest gains strategically, use ELSS for deductions
-
-For specific analysis of your holdings, explore the different tools in FundVista:
-- **Savings Calculator** for Direct vs Regular projections
-- **Tax Calculator** for capital gains liability
-- **Overlap Analyzer** for diversification check
-- **XIRR Calculator** for portfolio returns
-- **Goal Planner** for SIP-based goal planning
-
-What specific aspect would you like to dive deeper into?`
-  }
-
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -243,108 +109,136 @@ What specific aspect would you like to dive deeper into?`
 
   return (
     <>
-      {/* Floating chat bubble */}
+      {/* Premium Agent Orb */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            initial={{ scale: 0, rotate: -90 }}
+            animate={{ scale: 1, rotate: 0 }}
+            exit={{ scale: 0, rotate: 90 }}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-500/30 flex items-center justify-center transition-colors"
-            aria-label="Open AI Chat"
+            className="fixed bottom-8 right-8 z-50 h-16 w-16 rounded-[2rem] bg-emerald-600 shadow-2xl shadow-emerald-500/40 flex items-center justify-center group overflow-hidden border border-white/20"
           >
-            <MessageCircle className="h-6 w-6" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+            <motion.div 
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="absolute inset-0 bg-emerald-400/20 blur-xl" 
+            />
+            <MessageCircle className="h-7 w-7 text-white relative z-10" />
+            <div className="absolute -right-1 -top-1 h-4 w-4 bg-red-500 rounded-full border-2 border-white animate-bounce" />
           </motion.button>
         )}
       </AnimatePresence>
 
-      {/* Chat panel */}
+      {/* Advanced AI Chat Panel */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-3rem)] sm:w-[420px] h-[520px] max-h-[calc(100vh-6rem)] flex flex-col rounded-2xl border bg-background shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, scale: 0.9, y: 40, x: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 40, x: 20 }}
+            className="fixed bottom-8 right-8 z-50 w-[420px] max-w-[calc(100vw-4rem)] h-[650px] max-h-[calc(100vh-8rem)] flex flex-col rounded-[2.5rem] glass-card shadow-3xl overflow-hidden border-white/20"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b bg-emerald-600 text-white shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="rounded-full bg-white/20 p-1.5">
-                  <Bot className="h-4 w-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-semibold">FundVista AI Co-pilot</h3>
-                  <p className="text-[10px] text-emerald-100">Ask me about mutual funds</p>
-                </div>
-              </div>
-              <Button size="sm" variant="ghost" onClick={() => setIsOpen(false)} className="h-7 w-7 p-0 text-white hover:bg-white/20">
-                <X className="h-4 w-4" />
-              </Button>
+            {/* Header - Cinematic */}
+            <div className="relative h-40 bg-gradient-to-br from-emerald-600 to-teal-700 p-6 shrink-0 flex flex-col justify-end">
+               <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+                  <Sparkles className="h-32 w-32 text-white" />
+               </div>
+               <Button 
+                size="icon" 
+                variant="ghost" 
+                onClick={() => setIsOpen(false)} 
+                className="absolute top-4 right-4 h-10 w-10 rounded-2xl text-white hover:bg-white/20"
+               >
+                <X className="h-5 w-5" />
+               </Button>
+               
+               <div className="flex items-center gap-4">
+                  <div className="h-14 w-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 shadow-lg">
+                    <Bot className="h-8 w-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-black text-white tracking-tight leading-none">FundVista AI</h3>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-100 mt-1 flex items-center gap-1.5">
+                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                       Intelligence Engine Active
+                    </p>
+                  </div>
+               </div>
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            {/* Messages - Premium Scroll Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-background/40">
               {messages.length === 0 && (
-                <div className="flex flex-col items-center justify-center h-full text-center">
-                  <div className="rounded-full bg-emerald-100 dark:bg-emerald-950 p-3 mb-3">
-                    <Sparkles className="h-6 w-6 text-emerald-600" />
+                <div className="flex flex-col items-center justify-center h-full text-center py-10">
+                  <div className="h-20 w-20 rounded-[2rem] bg-emerald-500/5 flex items-center justify-center mb-6">
+                    <Sparkles className="h-10 w-10 text-emerald-500/40" />
                   </div>
-                  <p className="text-sm font-medium text-foreground">How can I help you?</p>
-                  <p className="text-xs text-muted-foreground mt-1">Ask about Direct vs Regular, tax, overlap, or any mutual fund question</p>
+                  <h4 className="text-lg font-bold text-foreground mb-2">Institutional-Grade MF Advice</h4>
+                  <p className="text-xs text-muted-foreground/60 max-w-[240px] leading-relaxed">
+                    Ask anything about portfolio construction, Direct vs Regular savings, or tax optimization.
+                  </p>
 
-                  {/* Suggested questions */}
-                  <div className="mt-4 w-full space-y-2">
-                    {SUGGESTED_QUESTIONS.slice(0, 4).map((q) => (
-                      <button
+                  <div className="mt-8 w-full space-y-3">
+                    {SUGGESTED_QUESTIONS.slice(0, 3).map((q, i) => (
+                      <motion.button
                         key={q}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
                         onClick={() => sendMessage(q)}
-                        className="w-full text-left flex items-center gap-2 rounded-lg border px-3 py-2 text-xs text-foreground hover:bg-muted/50 transition-colors"
+                        className="w-full text-left flex items-center gap-3 rounded-2xl border border-border/40 bg-card/40 p-4 text-xs font-bold text-foreground/80 hover:bg-emerald-500/5 hover:border-emerald-500/20 hover:text-emerald-600 transition-all group"
                       >
-                        <ChevronRight className="h-3 w-3 text-emerald-600 shrink-0" />
+                        <div className="h-6 w-6 rounded-lg bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500 transition-colors">
+                           <ChevronRight className="h-3 w-3 text-emerald-600 group-hover:text-white transition-colors" />
+                        </div>
                         {q}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
               )}
 
-              {messages.map((msg) => (
-                <div key={msg.id} className={`flex gap-2.5 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {messages.map((msg, i) => (
+                <motion.div 
+                  key={msg.id} 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
                   {msg.role === 'assistant' && (
-                    <div className="rounded-full bg-emerald-100 dark:bg-emerald-950 p-1.5 h-7 w-7 shrink-0 flex items-center justify-center">
-                      <Bot className="h-3.5 w-3.5 text-emerald-600" />
+                    <div className="rounded-xl bg-emerald-500 h-10 w-10 shrink-0 flex items-center justify-center shadow-lg shadow-emerald-500/20 border border-white/20">
+                      <Bot className="h-5 w-5 text-white" />
                     </div>
                   )}
                   <div
-                    className={`max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
+                    className={`max-w-[85%] rounded-3xl p-5 text-sm leading-relaxed shadow-sm ${
                       msg.role === 'user'
-                        ? 'bg-emerald-600 text-white rounded-br-md'
-                        : 'bg-muted text-foreground rounded-bl-md'
+                        ? 'bg-emerald-600 text-white rounded-tr-md font-medium'
+                        : 'bg-card border border-border/40 text-foreground rounded-tl-md'
                     }`}
                   >
-                    {msg.content.split('\n').map((line, i) => {
-                      // Simple markdown-like rendering
+                    {msg.content.split('\n').map((line, li) => {
                       if (line.startsWith('**') && line.endsWith('**')) {
-                        return <p key={i} className="font-bold mt-1 first:mt-0">{line.replace(/\*\*/g, '')}</p>
+                        return <p key={li} className="font-black mt-2 first:mt-0 text-[13px] uppercase tracking-wide">{line.replace(/\*\*/g, '')}</p>
                       }
                       if (line.startsWith('- ')) {
-                        return <p key={i} className="ml-2 mt-0.5">• {line.slice(2).replace(/\*\*/g, '')}</p>
+                        return <div key={li} className="flex gap-2 mt-1.5 ml-1">
+                           <span className="text-emerald-500 mt-1">•</span>
+                           <p className="text-foreground/80">{line.slice(2).replace(/\*\*/g, '')}</p>
+                        </div>
                       }
-                      if (line.startsWith('✓') || line.startsWith('1.') || line.startsWith('2.') || line.startsWith('3.') || line.startsWith('4.') || line.startsWith('5.')) {
-                        return <p key={i} className="mt-0.5">{line.replace(/\*\*/g, '')}</p>
-                      }
-                      if (line === '') return <br key={i} />
-                      // Handle inline bold
+                      if (line === '') return <div key={li} className="h-2" />
+                      
                       const parts = line.split(/(\*\*[^*]+\*\*)/)
                       return (
-                        <p key={i} className="mt-0.5 first:mt-0">
+                        <p key={li} className="mt-1 first:mt-0 text-foreground/90">
                           {parts.map((part, pi) => {
                             if (part.startsWith('**') && part.endsWith('**')) {
-                              return <strong key={pi}>{part.replace(/\*\*/g, '')}</strong>
+                              return <strong key={pi} className="font-bold text-foreground">{part.replace(/\*\*/g, '')}</strong>
                             }
                             return <span key={pi}>{part}</span>
                           })}
@@ -352,67 +246,48 @@ What specific aspect would you like to dive deeper into?`
                       )
                     })}
                   </div>
-                  {msg.role === 'user' && (
-                    <div className="rounded-full bg-emerald-600 p-1.5 h-7 w-7 shrink-0 flex items-center justify-center">
-                      <User className="h-3.5 w-3.5 text-white" />
-                    </div>
-                  )}
-                </div>
+                </motion.div>
               ))}
 
-              {/* Typing indicator */}
               {isLoading && (
-                <div className="flex gap-2.5">
-                  <div className="rounded-full bg-emerald-100 dark:bg-emerald-950 p-1.5 h-7 w-7 shrink-0 flex items-center justify-center">
-                    <Bot className="h-3.5 w-3.5 text-emerald-600" />
+                <div className="flex gap-4">
+                  <div className="rounded-xl bg-emerald-500 h-10 w-10 shrink-0 flex items-center justify-center animate-pulse">
+                    <Bot className="h-5 w-5 text-white" />
                   </div>
-                  <div className="bg-muted rounded-2xl rounded-bl-md px-4 py-3">
-                    <div className="flex gap-1">
-                      <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="h-2 w-2 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '300ms' }} />
-                    </div>
+                  <div className="bg-card border border-border/40 rounded-3xl rounded-tl-md px-6 py-4 flex gap-1.5 items-center">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/40 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/40 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/40 animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
                 </div>
               )}
-
               <div ref={messagesEndRef} />
             </div>
 
-            {/* More suggested questions (when conversation started) */}
-            {messages.length > 0 && messages.length < 3 && (
-              <div className="px-4 pb-2 flex gap-2 overflow-x-auto">
-                {SUGGESTED_QUESTIONS.slice(4).map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => sendMessage(q)}
-                    className="whitespace-nowrap rounded-full border px-3 py-1 text-[10px] text-muted-foreground hover:bg-muted/50 transition-colors shrink-0"
+            {/* Input - Premium Floating Bar */}
+            <div className="p-6 bg-background/80 backdrop-blur-md border-t border-border/40 shrink-0">
+               <div className="relative flex items-center">
+                  <Input
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Inquire about MF strategies..."
+                    className="h-14 rounded-2xl pl-6 pr-16 bg-muted/20 border-border/40 focus:bg-background focus:ring-emerald-500/20 text-sm font-medium"
+                    disabled={isLoading}
+                  />
+                  <Button
+                    onClick={() => sendMessage(input)}
+                    disabled={!input.trim() || isLoading}
+                    size="icon"
+                    className="absolute right-2 h-10 w-10 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20"
                   >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Input */}
-            <div className="border-t px-4 py-3 flex gap-2 shrink-0">
-              <Input
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask about mutual funds..."
-                className="text-sm"
-                disabled={isLoading}
-              />
-              <Button
-                onClick={() => sendMessage(input)}
-                disabled={!input.trim() || isLoading}
-                size="icon"
-                className="h-9 w-9 shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
+                    <Send className="h-5 w-5" />
+                  </Button>
+               </div>
+               <p className="text-[9px] text-center text-muted-foreground/50 mt-4 font-bold uppercase tracking-widest">
+                  Enhanced by FundVista Intelligence™
+               </p>
             </div>
           </motion.div>
         )}
