@@ -143,7 +143,7 @@ export default function FundHeatmap() {
       for (const tf of TIMEFRAMES) {
         const field = getReturnField(tf, 'direct')
         const values = fundGroup
-          .map((f) => (f as Record<string, unknown>)[field] as number | null)
+          .map((f) => (f as unknown as Record<string, unknown>)[field] as number | null)
           .filter((v): v is number => v !== null && v !== undefined)
 
         const expenseDiffs = fundGroup.map((f) => f.regularExpenseRatio - f.directExpenseRatio)

@@ -580,3 +580,101 @@ Work Log:
 
 ## Lint Status
 0 errors, 0 warnings.
+
+---
+Task ID: 2-a
+Agent: API Routes Agent (Current Session)
+Task: Create 8 new API routes for FundVista
+
+Work Log:
+- Read worklog.md to understand prior agent work (schema, existing routes, patterns)
+- Read prisma schema to understand Fund, Holding, WatchlistItem, Goal models and field types
+- Read existing API routes (funds/route.ts, funds/compare/route.ts, portfolio/analyze/route.ts, portfolio/overlap/route.ts, sip/planner/route.ts, funds/heatmap/route.ts) for code patterns
+- Created 8 directories for new API routes under src/app/api/
+- Created all 8 route files following existing project patterns (import db from '@/lib/db', NextRequest/NextResponse, try/catch error handling)
+- Ran ESLint: 0 errors, 0 warnings
+
+## Files Created
+
+### 1. `/src/app/api/funds/rankings/route.ts` — GET endpoint
+- Query params: category, subCategory, sortBy (return1y|return3y|return5y|sharpe|expenseRatio|aum), limit (default 10, max 100)
+- Builds Prisma where clause from category/subCategory filters
+- Maps sortBy to appropriate Prisma orderBy field (desc for returns/sharpe/aum, asc for expenseRatio)
+- Returns: { rankings: [{ rank, fundId, schemeName, fundHouse, directReturn, regularReturn, directSharpe, regularSharpe, directER, regularER, aum }] }
+
+### 2. `/src/app/api/funds/amc/route.ts` — GET endpoint
+- Query params: fundHouse (optional filter)
+- Groups all funds by fundHouse using Map
+- Computes per-AMC: fundCount, totalAum, avgDirectER, avgRegularER, avgDirectReturn1y, avgRegularReturn1y, categories breakdown
+- Handles null return values by filtering before averaging
+- Sorts AMCs by totalAum descending
+- Returns: { amcs: [{ fundHouse, fundCount, totalAum, avgDirectER, avgRegularER, avgDirectReturn1y, avgRegularReturn1y, categories }] }
+
+### 3. `/src/app/api/funds/volatility/route.ts` — POST endpoint
+- Body: { fundId }
+- Validates fundId, fetches fund from DB
+- Calculates annualized volatility from Sharpe ratio: vol ≈ (return - riskFreeRate) / sharpe
+  - Falls back to tracking-error-based estimate for index funds
+  - Final fallback: category-based default (Equity: 20%, Debt: 6%, Hybrid: 12%)
+- Estimates max drawdown by category (Equity: 25-35%, Debt: 5-10%, Hybrid: 15-20%) adjusted by Sharpe ratio
+- Downside deviation = 0.7 * total volatility
+- Sortino ratio = (return - 6%) / downsideDeviation
+- Calmar ratio = return / (maxDrawdown * 100)
+- Returns: { fundId, schemeName, category, annualizedVolatility, maxDrawdown, sortinoRatio, calmarRatio, downsideDeviation, sharpeRatio }
+
+### 4. `/src/app/api/funds/rolling-returns/route.ts` — POST endpoint
+- Body: { fundId, periods: number[] (default [1,3,5]) }
+- Validates periods (only 1, 3, 5 allowed)
+- Generates 12 monthly data points per period using deterministic seeded PRNG
+- Uses category-based variance (Equity: 8%, Debt: 2%) for realistic oscillation
+- Returns: { fundId, schemeName, rollingReturns: [{ period, data: [{ month, directReturn, regularReturn, benchmarkReturn }] }] }
+
+### 5. `/src/app/api/portfolio/alerts/route.ts` — POST endpoint
+- Body: { sessionId }
+- Fetches holdings with fund data, generates 5 alert types:
+  - HIGH_EXPENSE: Regular plan funds (severity based on bps diff and annual saving)
+  - CONCENTRATION_RISK: Single fund >30% or single fund house >50%
+  - OVERLAP_WARNING: 2+ funds in same sub-category with common holdings
+  - POOR_PERFORMANCE: Fund underperforming benchmark by >2%
+  - REBALANCE_NEEDED: Equity >80% or Debt >70%
+- Each alert has: type, severity, title, description, fundId?, action
+- Sorts by severity (high → medium → low)
+- Returns: { alerts: [...] }
+
+### 6. `/src/app/api/swp/calculator/route.ts` — POST endpoint
+- Body: { corpus, monthlyWithdrawal, expectedReturn, years }
+- Validates all inputs as positive numbers
+- Monthly simulation: return first, then withdrawal
+- Tracks: totalWithdrawn, remainingCorpus, returnsEarned, depletionYear
+- Returns yearly breakdown: openingBalance, totalWithdrawn, returnsEarned, closingBalance
+- Handles corpus depletion mid-year (sets depletionYear)
+- Returns: { totalWithdrawn, remainingCorpus, returnsEarned, yearlyBreakdown, depletionYear }
+
+### 7. `/src/app/api/stp/calculator/route.ts` — POST endpoint
+- Body: { sourceFundId, targetFundId, lumpsumAmount, monthlyTransfer, years }
+- Fetches both funds from DB to get category-based expected returns
+- Source fund earns returns then transfers monthly amount to target fund
+- Target fund earns returns on accumulated balance including transfers
+- Handles edge case where source fund value < monthly transfer
+- Returns: { totalInvested, sourceFundFinalValue, targetFundFinalValue, totalReturns, totalTransferred, yearlyBreakdown, sourceFund, targetFund }
+
+### 8. `/src/app/api/funds/screener/route.ts` — POST endpoint
+- Body: { categories[], subCategories[], minAum, maxAum, minReturn1y, maxExpenseRatio, riskometer[], sortBy, order, limit }
+- Builds Prisma where clause from all filter parameters
+- Supports: category IN, subCategory IN, AUM range, min return, max expense ratio, riskometer IN
+- Sort by: return1y, return3y, return5y, sharpe, expenseRatio (inverts direction since lower is better), aum
+- Returns: { funds, total, appliedFilters }
+
+## Technical Decisions
+- All routes follow existing project patterns: import { db } from '@/lib/db', NextRequest/NextResponse, try/catch with console.error and 500 status
+- POST routes use `await request.json()` for body parsing with validation
+- GET routes use `new URL(request.url).searchParams` for query params
+- Sharpe-based volatility estimation uses 6% risk-free rate (Indian context)
+- Rolling returns use deterministic seeded PRNG for consistent results across requests
+- SWP calculator applies returns before withdrawal (standard convention)
+- STP calculator fetches actual fund categories for realistic return estimates
+- Screener uses Prisma FloatFilter for range queries on AUM
+- All monetary values rounded to 2 decimal places using Math.round(x * 100) / 100
+
+## Lint Status
+0 errors, 0 warnings.

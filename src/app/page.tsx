@@ -23,13 +23,22 @@ import ExitLoadCalc from '@/components/ExitLoadCalc'
 import SIPPlanner from '@/components/SIPPlanner'
 import RebalancingView from '@/components/RebalancingView'
 import MarketDashboard from '@/components/MarketDashboard'
+import FundScreener from '@/components/FundScreener'
+import SWPCalculator from '@/components/SWPCalculator'
+import STPCalculator from '@/components/STPCalculator'
+import BenchmarkCompare from '@/components/BenchmarkCompare'
+import VolatilityAnalysis from '@/components/VolatilityAnalysis'
+import FundRankings from '@/components/FundRankings'
+import AMCAnalysis from '@/components/AMCAnalysis'
+import PortfolioAlerts from '@/components/PortfolioAlerts'
 import Footer from '@/components/Footer'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Compass, Landmark, Scale, Coins, TrendingUp, Sun, Moon,
   Eye, FileText, Waypoints, Crosshair, FileDown, Percent, Gauge, Activity, LayoutDashboard,
   LineChart, PieChart, Network, LogOut, RefreshCcw, Repeat,
-  ChevronDown, ChevronUp, LayoutGrid
+  ChevronDown, ChevronUp, LayoutGrid, Filter, Wallet, ArrowRightLeft, BarChart3,
+  Building2, Trophy, Bell, Zap
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
@@ -52,31 +61,44 @@ interface TabConfig {
 }
 
 const tabs: TabConfig[] = [
+  // Discover
   { id: 'explore', label: 'Explore', icon: Compass, group: 'Discover' },
   { id: 'market', label: 'Market', icon: LineChart, group: 'Discover' },
   { id: 'heatmap', label: 'Heatmap', icon: LayoutDashboard, group: 'Discover' },
   { id: 'nav', label: 'NAV Chart', icon: TrendingUp, group: 'Discover' },
+  { id: 'screener', label: 'Screener', icon: Filter, group: 'Discover' },
+  { id: 'rankings', label: 'Rankings', icon: Trophy, group: 'Discover' },
+  { id: 'amc', label: 'AMC Hub', icon: Building2, group: 'Discover' },
+  // Analyze
   { id: 'portfolio', label: 'Portfolio', icon: Landmark, group: 'Analyze' },
   { id: 'compare', label: 'Compare', icon: Scale, group: 'Analyze' },
   { id: 'overlap', label: 'Overlap', icon: Waypoints, group: 'Analyze' },
   { id: 'sector', label: 'Sectors', icon: PieChart, group: 'Analyze' },
   { id: 'diversification', label: 'Diversity', icon: Network, group: 'Analyze' },
+  { id: 'benchmark', label: 'Benchmark', icon: BarChart3, group: 'Analyze' },
+  { id: 'volatility', label: 'Volatility', icon: Activity, group: 'Analyze' },
+  // Plan
   { id: 'savings', label: 'Savings', icon: Coins, group: 'Plan' },
-  { id: 'sip', label: 'SIP/STP/SWP', icon: Repeat, group: 'Plan' },
+  { id: 'sip', label: 'SIP', icon: Repeat, group: 'Plan' },
+  { id: 'swp', label: 'SWP', icon: Wallet, group: 'Plan' },
+  { id: 'stp', label: 'STP', icon: ArrowRightLeft, group: 'Plan' },
   { id: 'goals', label: 'Goals', icon: Crosshair, group: 'Plan' },
   { id: 'risk', label: 'Risk', icon: Gauge, group: 'Plan' },
+  // Optimize
   { id: 'tax', label: 'Tax', icon: FileText, group: 'Optimize' },
   { id: 'exitload', label: 'Exit Load', icon: LogOut, group: 'Optimize' },
   { id: 'rebalance', label: 'Rebalance', icon: RefreshCcw, group: 'Optimize' },
-  { id: 'stress', label: 'Stress', icon: Activity, group: 'Optimize' },
+  { id: 'stress', label: 'Stress', icon: Zap, group: 'Optimize' },
+  { id: 'alerts', label: 'Alerts', icon: Bell, group: 'Optimize' },
+  // Tools
   { id: 'xirr', label: 'XIRR', icon: Percent, group: 'Tools' },
   { id: 'watchlist', label: 'Watchlist', icon: Eye, group: 'Tools' },
   { id: 'export', label: 'Export', icon: FileDown, group: 'Tools' },
 ]
 
 const desktopGroups = ['Discover', 'Analyze', 'Plan', 'Optimize', 'Tools']
-const desktopPrimaryTabIds = ['explore', 'market', 'portfolio', 'compare', 'goals']
-const primaryTabIds = ['explore', 'market', 'heatmap', 'nav', 'portfolio', 'compare', 'savings', 'goals']
+const desktopPrimaryTabIds = ['explore', 'market', 'portfolio', 'compare', 'goals', 'savings']
+const primaryTabIds = ['explore', 'market', 'heatmap', 'portfolio', 'compare', 'savings', 'goals', 'screener']
 const secondaryTabIds = tabs.map(t => t.id).filter(id => !primaryTabIds.includes(id))
 
 export default function Home() {
@@ -99,7 +121,7 @@ export default function Home() {
         <div className="mx-auto max-w-[1400px] px-6 lg:px-8">
           <div className="flex h-20 items-center justify-between gap-8">
             <div className="flex items-center gap-12">
-              {/* Logo - Cinematic Branding */}
+              {/* Logo */}
               <div className="flex items-center gap-4 shrink-0 group cursor-pointer" onClick={() => setActiveTab('explore')}>
                 <div className="relative flex h-12 w-12 items-center justify-center rounded-[1.25rem] bg-gradient-to-br from-emerald-500 to-teal-700 shadow-2xl shadow-emerald-500/30 group-hover:rotate-6 transition-transform duration-500">
                   <TrendingUp className="h-6 w-6 text-white" />
@@ -110,12 +132,12 @@ export default function Home() {
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-emerald-600/90 dark:text-emerald-400/90 leading-none">Co-Pilot</span>
                     <div className="h-1 w-1 rounded-full bg-emerald-500/50" />
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none">v2.0</span>
+                    <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none">v3.0</span>
                   </div>
                 </div>
               </div>
 
-              {/* Desktop Tab Navigation - Floating Command Center */}
+              {/* Desktop Tab Navigation */}
               <nav className="hidden xl:flex items-center gap-1.5 bg-background/40 backdrop-blur-2xl px-2 py-1.5 rounded-[1.25rem] border border-white/10 shadow-2xl shadow-emerald-500/5 relative">
                 <div className="absolute inset-0 rounded-[1.25rem] bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
                 
@@ -214,7 +236,7 @@ export default function Home() {
               </nav>
             </div>
 
-            {/* Right side controls - Command Center Tools */}
+            {/* Right side controls */}
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-2xl bg-emerald-500/5 border border-emerald-500/10 shadow-sm group hover:bg-emerald-500/10 transition-colors">
                 <div className="relative">
@@ -324,25 +346,38 @@ export default function Home() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] }}
+            transition={{ duration: 0.25, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
           >
+            {/* Discover */}
             {activeTab === 'explore' && <ExploreFunds />}
             {activeTab === 'market' && <MarketDashboard />}
             {activeTab === 'heatmap' && <FundHeatmap />}
             {activeTab === 'nav' && <NAVHistory />}
+            {activeTab === 'screener' && <FundScreener />}
+            {activeTab === 'rankings' && <FundRankings />}
+            {activeTab === 'amc' && <AMCAnalysis />}
+            {/* Analyze */}
             {activeTab === 'portfolio' && <PortfolioBuilder />}
             {activeTab === 'compare' && <CompareView />}
             {activeTab === 'overlap' && <FundOverlap />}
             {activeTab === 'sector' && <SectorExposure />}
             {activeTab === 'diversification' && <DiversificationScore />}
+            {activeTab === 'benchmark' && <BenchmarkCompare />}
+            {activeTab === 'volatility' && <VolatilityAnalysis />}
+            {/* Plan */}
             {activeTab === 'savings' && <SavingsCalculator />}
             {activeTab === 'sip' && <SIPPlanner />}
+            {activeTab === 'swp' && <SWPCalculator />}
+            {activeTab === 'stp' && <STPCalculator />}
             {activeTab === 'goals' && <GoalPlanner />}
             {activeTab === 'risk' && <RiskProfiler />}
+            {/* Optimize */}
             {activeTab === 'tax' && <TaxCalculator />}
             {activeTab === 'exitload' && <ExitLoadCalc />}
             {activeTab === 'rebalance' && <RebalancingView />}
             {activeTab === 'stress' && <StressTest />}
+            {activeTab === 'alerts' && <PortfolioAlerts />}
+            {/* Tools */}
             {activeTab === 'xirr' && <XIRRCalculator />}
             {activeTab === 'watchlist' && <Watchlist />}
             {activeTab === 'export' && <PortfolioExport />}

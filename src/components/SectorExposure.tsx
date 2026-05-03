@@ -1,6 +1,6 @@
 'use client'
 
-import { useFundStore } from '@/lib/store'
+import { useFundStore, type HoldingData } from '@/lib/store'
 import { formatCurrency } from '@/lib/helpers'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -35,7 +35,7 @@ interface SectorExposureResult {
 }
 
 // Client-side fallback computation
-function computeSectorExposure(holdings: { currentAmount: number; fund: { schemeName: string; category: string; subCategory: string; topHoldings: string | null } }[]): SectorExposureResult {
+function computeSectorExposure(holdings: HoldingData[]): SectorExposureResult {
   const CATEGORY_SECTORS: Record<string, { name: string; weight: number }[]> = {
     'Large Cap': [
       { name: 'Financial Services', weight: 28 },
@@ -101,9 +101,9 @@ function computeSectorExposure(holdings: { currentAmount: number; fund: { scheme
     const amount = holding.currentAmount
     let sectors: { name: string; weight: number }[] = []
 
-    if (holding.fund.topHoldings) {
+    if (holding.fund.topHolding) {
       try {
-        const parsed = JSON.parse(holding.fund.topHoldings)
+        const parsed = JSON.parse(holding.fund.topHolding)
         if (Array.isArray(parsed) && parsed.length > 0) {
           sectors = parsed
             .filter((h: Record<string, unknown>) => h.sector && h.weight)
