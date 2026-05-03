@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Fund {
+  id            String   @id @default(cuid())
+  schemeName    String   // e.g. "SBI Bluechip Fund"
+  fundHouse     String   // e.g. "SBI Mutual Fund"
+  category      String   // e.g. "Equity", "Debt", "Hybrid", "Index", "ELSS"
+  subCategory   String   // e.g. "Large Cap", "Mid Cap", "Small Cap", "Flexi Cap"
+  riskometer    String   // e.g. "Moderately High", "High", "Very High"
+  benchmark     String   // e.g. "S&P BSE 100"
+  fundManager   String   // e.g. "Sohini Andani"
+  
+  // Direct plan details
+  directIsin    String   @unique
+  directNav     Float    // Current NAV
+  directExpenseRatio Float // in basis points, e.g. 75 = 0.75%
+  directReturn1y Float?  // 1-year return %
+  directReturn3y Float?  // 3-year return % (annualized)
+  directReturn5y Float?  // 5-year return % (annualized)
+  
+  // Regular plan details  
+  regularIsin   String   @unique
+  regularNav    Float    // Current NAV
+  regularExpenseRatio Float // in basis points
+  regularReturn1y Float?
+  regularReturn3y Float?
+  regularReturn5y Float?
+  
+  aumCrore      Float    // AUM in ₹ Crores
+  exitLoad      String   // e.g. "1% for < 1 year"
+  minInvestment Int      // Minimum investment in ₹
+  launchDate    String   // Fund launch date
+  
+  // Portfolio characteristics
+  portfolioPeRatio     Float?  // Portfolio P/E
+  portfolioPbRatio     Float?  // Portfolio P/B
+  topHolding           String? // Top holding name
+  topHoldingWeight     Float?  // Top holding weight %
+  numStocks            Int?    // Number of stocks in portfolio
+  debtPercentage       Float?  // % debt allocation
+  equityPercentage     Float?  // % equity allocation
+  
+  holdings     Holding[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// User's portfolio holdings (session-based, no auth required)
+model Holding {
+  id          String   @id @default(cuid())
+  sessionId   String   // Session-based identification
+  fundId      String   // Reference to Fund
+  fund        Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
+  planType    String   // "direct" or "regular"
+  units       Float    // Number of units held
+  investedAmount Float // Total invested amount in ₹
+  currentAmount  Float // Current value in ₹
+  purchaseDate String? // Approximate purchase date
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([sessionId])
+}
