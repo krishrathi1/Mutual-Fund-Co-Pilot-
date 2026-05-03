@@ -252,7 +252,6 @@ function LargeScoreGauge({ score, size = 220 }: { score: number; size?: number }
   const sx = cx + radius * Math.cos(scoreAngle)
   const sy = cy - radius * Math.sin(scoreAngle)
 
-  const largeArc = score > 50 ? 1 : 0
   const gaugeColor = getScoreColor(score)
 
   return (
@@ -268,7 +267,7 @@ function LargeScoreGauge({ score, size = 220 }: { score: number; size?: number }
       />
       {/* Score arc with animation */}
       <motion.path
-        d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${sx} ${sy}`}
+        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${sx} ${sy}`}
         fill="none"
         stroke={gaugeColor}
         strokeWidth={12}
