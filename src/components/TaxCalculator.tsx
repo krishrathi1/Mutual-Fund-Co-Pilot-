@@ -2,7 +2,7 @@
 
 import { useFundStore, type HoldingData } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
-import { Calculator, TrendingUp, AlertTriangle, Info, Plus, Trash2, IndianRupee, PiggyBank, Loader2 } from 'lucide-react'
+import { Calculator, TrendingUp, AlertTriangle, Info, Plus, Trash2, IndianRupee, PiggyBank, Loader2, Check, ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { toast } from 'sonner'
 import { motion } from 'framer-motion'
@@ -54,7 +56,7 @@ const CATEGORY_COLORS = {
 }
 
 export default function TaxCalculator() {
-  const { holdings, fetchHoldings, funds } = useFundStore()
+  const { holdings, fetchHoldings, funds, fetchFunds } = useFundStore()
 
   const [taxHoldings, setTaxHoldings] = useState<TaxHolding[]>([])
   const [taxResults, setTaxResults] = useState<TaxResult[]>([])
@@ -62,6 +64,7 @@ export default function TaxCalculator() {
   const [calculated, setCalculated] = useState(false)
   const [loading, setLoading] = useState(false)
   const [customMode, setCustomMode] = useState(false)
+  const [comboboxOpen, setComboboxOpen] = useState(false)
 
   // Custom holding form
   const [customName, setCustomName] = useState('')
@@ -72,6 +75,7 @@ export default function TaxCalculator() {
 
   useEffect(() => {
     fetchHoldings()
+    fetchFunds()
   }, [])
 
   // Map portfolio holdings to tax holdings
@@ -93,6 +97,14 @@ export default function TaxCalculator() {
     if (cat === 'Debt') return 'debt'
     if (cat === 'Hybrid') return 'hybrid'
     return 'equity'
+  }
+
+  const handleFundNameChange = (val: string) => {
+    setCustomName(val)
+    const matched = funds.find(f => f.schemeName === val)
+    if (matched) {
+      setCustomCategory(mapCategory(matched.category))
+    }
   }
 
   const calculateTax = useCallback(async () => {
@@ -224,12 +236,15 @@ export default function TaxCalculator() {
   }, [taxResults])
 
   const chartData = useMemo(() => {
-    return filteredResults.map((r) => ({
-      name: r.name.length > 20 ? r.name.slice(0, 20) + '…' : r.name,
-      'Tax': Math.round(r.taxAmount),
-      'Net Gain': Math.round(r.netGain),
-      category: r.category,
-    }))
+    return filteredResults.map((r) => {
+      const safeName = r.name || 'Unknown Fund'
+      return {
+        name: safeName.length > 20 ? safeName.slice(0, 20) + '…' : safeName,
+        'Tax': Math.round(r.taxAmount),
+        'Net Gain': Math.round(r.netGain),
+        category: r.category,
+      }
+    })
   }, [filteredResults])
 
   const tips = useMemo(() => {
@@ -316,9 +331,47 @@ export default function TaxCalculator() {
               Add custom holding
             </p>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
-              <div className="space-y-1 lg:col-span-2">
+              <div className="space-y-1 lg:col-span-2 flex flex-col justify-end">
                 <Label className="text-[11px]">Fund Name</Label>
-                <Input value={customName} onChange={(e) => setCustomName(e.target.value)} placeholder="e.g. HDFC Flexi Cap" className="text-xs h-8" />
+                <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={comboboxOpen}
+                      className="justify-between text-xs h-8 font-normal bg-background"
+                    >
+                      {customName ? (customName.length > 25 ? customName.substring(0, 25) + '...' : customName) : "Search fund..."}
+                      <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] sm:w-[350px] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Search fund..." className="h-9 text-xs" />
+                      <CommandList>
+                        <CommandEmpty>No fund found.</CommandEmpty>
+                        <CommandGroup>
+                          {funds.map((f) => (
+                            <CommandItem
+                              key={f.id}
+                              value={f.schemeName}
+                              onSelect={() => {
+                                handleFundNameChange(f.schemeName)
+                                setComboboxOpen(false)
+                              }}
+                              className="text-xs cursor-pointer"
+                            >
+                              <Check
+                                className={`mr-2 h-4 w-4 text-emerald-600 ${customName === f.schemeName ? "opacity-100" : "opacity-0"}`}
+                              />
+                              {f.schemeName}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="space-y-1">
                 <Label className="text-[11px]">Invested (₹)</Label>

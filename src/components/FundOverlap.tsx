@@ -62,7 +62,11 @@ export default function FundOverlap() {
       })
       if (res.ok) {
         const data = await res.json()
-        setOverlapResult(data)
+        if (data && Array.isArray(data.pairs) && Array.isArray(data.matrix) && Array.isArray(data.fundNames)) {
+          setOverlapResult(data)
+        } else {
+          setOverlapResult(generateClientSideOverlap(holdings))
+        }
         setAnalyzed(true)
       } else {
         // Fallback: generate client-side mock overlap
@@ -80,23 +84,23 @@ export default function FundOverlap() {
   }, [holdings])
 
   const highOverlapPairs = useMemo(() => {
-    if (!overlapResult) return []
+    if (!overlapResult || !overlapResult.pairs) return []
     return overlapResult.pairs.filter((p) => p.overlapScore >= 60)
   }, [overlapResult])
 
   const mediumOverlapPairs = useMemo(() => {
-    if (!overlapResult) return []
+    if (!overlapResult || !overlapResult.pairs) return []
     return overlapResult.pairs.filter((p) => p.overlapScore >= 30 && p.overlapScore < 60)
   }, [overlapResult])
 
   const lowOverlapPairs = useMemo(() => {
-    if (!overlapResult) return []
+    if (!overlapResult || !overlapResult.pairs) return []
     return overlapResult.pairs.filter((p) => p.overlapScore < 30)
   }, [overlapResult])
 
   // Network graph visualization (simplified SVG)
   const networkNodes = useMemo(() => {
-    if (!overlapResult) return []
+    if (!overlapResult || !overlapResult.fundNames) return []
     const names = overlapResult.fundNames
     const radius = 120
     const cx = 200
