@@ -151,7 +151,78 @@ export interface SavingsCalculation {
   }[]
 }
 
-type TabType = 'explore' | 'portfolio' | 'compare' | 'savings'
+export interface WatchlistItem {
+  id: string
+  fundId: string
+  notes: string | null
+  targetPrice: number | null
+  createdAt: string
+  fund: FundData
+  liveNav?: { nav: string; date: string } | null
+}
+
+export interface GoalData {
+  id: string
+  name: string
+  type: 'retirement' | 'education' | 'house' | 'emergency' | 'wedding' | 'custom'
+  targetAmount: number
+  years: number
+  currentSavings: number
+  riskProfile: 'conservative' | 'moderate' | 'aggressive'
+  allocation: { equity: number; debt: number; hybrid: number }
+  monthlySip: number
+  recommendedFunds: FundData[]
+  createdAt: string
+}
+
+export interface TaxCalculation {
+  holdings: {
+    name: string
+    category: 'equity' | 'debt' | 'hybrid'
+    investedAmount: number
+    currentValue: number
+    gain: number
+    holdingPeriodDays: number
+    gainType: 'STCG' | 'LTCG'
+    taxRate: number
+    taxAmount: number
+    netGain: number
+  }[]
+  summary: {
+    totalTax: number
+    totalNetGain: number
+    effectiveTaxRate: number
+    totalGain: number
+  }
+  tips: string[]
+}
+
+export interface OverlapResult {
+  pairs: {
+    fund1: { id: string; name: string }
+    fund2: { id: string; name: string }
+    overlapScore: number
+    commonCategories: string[]
+    warning: string | null
+  }[]
+  matrix: number[][]
+  fundNames: string[]
+}
+
+export interface XIRRResult {
+  portfolioXirr: number
+  holdings: {
+    fundId: string
+    fundName: string
+    xirr: number
+    invested: number
+    current: number
+  }[]
+  benchmarkXirr: number
+  methodology: string
+}
+
+type TabType = 'explore' | 'portfolio' | 'compare' | 'savings' | 'watchlist' | 'tax' | 'overlap' | 'goals' | 'xirr' | 'export'
 type SavingsMode = 'lumpsum' | 'sip'
 
 interface FundStore {
@@ -206,6 +277,23 @@ interface FundStore {
   aiInsights: Record<string, string>
   aiInsightsLoading: Record<string, boolean>
   fetchAiInsight: (fundId: string, fundData: object) => Promise<void>
+
+  // Watchlist
+  watchlist: WatchlistItem[]
+  watchlistLoading: boolean
+  fetchWatchlist: () => Promise<void>
+  addToWatchlist: (fundId: string, notes?: string) => Promise<void>
+  removeFromWatchlist: (id: string) => Promise<void>
+  updateWatchlistNotes: (id: string, notes: string) => Promise<void>
+  watchlistNavs: Record<string, { nav: string; date: string }>
+  fetchWatchlistNavs: () => Promise<void>
+
+  // Goals
+  goals: GoalData[]
+  goalsLoading: boolean
+  fetchGoals: () => Promise<void>
+  addGoal: (goal: Omit<GoalData, 'id' | 'allocation' | 'monthlySip' | 'recommendedFunds' | 'createdAt'>) => Promise<void>
+  removeGoal: (id: string) => Promise<void>
 }
 
 // Generate a session ID
@@ -216,6 +304,22 @@ const sessionId = typeof window !== 'undefined'
       return id
     })())
   : 'server-session'
+
+const RISK_ALLOCATIONS: Record<string, { equity: number; debt: number; hybrid: number }> = {
+  conservative: { equity: 30, debt: 50, hybrid: 20 },
+  moderate: { equity: 55, debt: 25, hybrid: 20 },
+  aggressive: { equity: 75, debt: 10, hybrid: 15 },
+}
+
+function mapGoalType(name: string): GoalData['type'] {
+  const lower = name.toLowerCase()
+  if (lower.includes('retire')) return 'retirement'
+  if (lower.includes('educ') || lower.includes('college') || lower.includes('school')) return 'education'
+  if (lower.includes('house') || lower.includes('home') || lower.includes('property')) return 'house'
+  if (lower.includes('emergen')) return 'emergency'
+  if (lower.includes('wedd') || lower.includes('marriag')) return 'wedding'
+  return 'custom'
+}
 
 export const useFundStore = create<FundStore>((set, get) => ({
   // Navigation
@@ -368,7 +472,7 @@ export const useFundStore = create<FundStore>((set, get) => ({
       const data = await res.json()
       const current = get().aiInsights
       set({ 
-        aiInsights: { ...current, [fundId]: data.insight || data.explanation || 'No insight available' },
+        aiInsights: { ...current, [fundId]: data.insights || data.insight || data.explanation || 'No insight available' },
         aiInsightsLoading: { ...get().aiInsightsLoading, [fundId]: false },
       })
     } catch {
@@ -378,5 +482,117 @@ export const useFundStore = create<FundStore>((set, get) => ({
         aiInsightsLoading: { ...get().aiInsightsLoading, [fundId]: false },
       })
     }
+  },
+
+  // Watchlist
+  watchlist: [],
+  watchlistLoading: false,
+  watchlistNavs: {},
+  fetchWatchlist: async () => {
+    set({ watchlistLoading: true })
+    try {
+      const { sessionId } = get()
+      const res = await fetch(`/api/watchlist?sessionId=${sessionId}`)
+      const data = await res.json()
+      set({ watchlist: data.watchlist || data.items || [], watchlistLoading: false })
+    } catch {
+      set({ watchlistLoading: false })
+    }
+  },
+  addToWatchlist: async (fundId, notes = '') => {
+    const { sessionId } = get()
+    await fetch('/api/watchlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, fundId, notes }),
+    })
+    await get().fetchWatchlist()
+  },
+  removeFromWatchlist: async (id) => {
+    const { sessionId } = get()
+    await fetch(`/api/watchlist/${id}?sessionId=${sessionId}`, { method: 'DELETE' })
+    await get().fetchWatchlist()
+  },
+  updateWatchlistNotes: async (id, notes) => {
+    const { sessionId } = get()
+    await fetch(`/api/watchlist/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, notes }),
+    })
+    await get().fetchWatchlist()
+  },
+  fetchWatchlistNavs: async () => {
+    const { watchlist } = get()
+    const navs: Record<string, { nav: string; date: string }> = {}
+    await Promise.allSettled(
+      watchlist.map(async (item) => {
+        try {
+          const isin = item.fund.directIsin
+          if (!isin) return
+          const res = await fetch(`/api/funds/nav?isin=${isin}`)
+          const data = await res.json()
+          if (data.result) {
+            navs[item.fundId] = { nav: data.result.nav, date: data.result.date }
+          }
+        } catch { /* ignore */ }
+      })
+    )
+    set({ watchlistNavs: navs })
+  },
+
+  // Goals
+  goals: [],
+  goalsLoading: false,
+  fetchGoals: async () => {
+    set({ goalsLoading: true })
+    try {
+      const { sessionId } = get()
+      const res = await fetch(`/api/goals?sessionId=${sessionId}`)
+      const data = await res.json()
+      // Map API response to GoalData format
+      const mappedGoals: GoalData[] = (data.goals || []).map((g: Record<string, unknown>) => {
+        const name = (g.name as string) || ''
+        const riskStr = ((g.riskProfile as string) || 'Moderate').toLowerCase() as GoalData['riskProfile']
+        const allocation = g.suggestedAllocation ? JSON.parse(g.suggestedAllocation as string) : RISK_ALLOCATIONS[riskStr] || RISK_ALLOCATIONS.moderate
+        return {
+          id: g.id as string,
+          name,
+          type: mapGoalType(name),
+          targetAmount: g.targetAmount as number,
+          years: g.yearsToGoal as number,
+          currentSavings: g.currentAmount as number,
+          riskProfile: riskStr,
+          allocation,
+          monthlySip: (g.monthlySipNeeded as number) || 0,
+          recommendedFunds: [],
+          createdAt: g.createdAt as string,
+        }
+      })
+      set({ goals: mappedGoals, goalsLoading: false })
+    } catch {
+      set({ goalsLoading: false })
+    }
+  },
+  addGoal: async (goal) => {
+    const { sessionId } = get()
+    await fetch('/api/goals', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sessionId,
+        name: goal.name,
+        targetAmount: goal.targetAmount,
+        currentAmount: goal.currentSavings,
+        yearsToGoal: goal.years,
+        riskProfile: goal.riskProfile.charAt(0).toUpperCase() + goal.riskProfile.slice(1),
+      }),
+    })
+    await get().fetchGoals()
+  },
+  removeGoal: async (id) => {
+    const { sessionId } = get()
+    await fetch(`/api/goals/${id}?sessionId=${sessionId}`, { method: 'DELETE' })
+    await get().fetchGoals()
   },
 }))

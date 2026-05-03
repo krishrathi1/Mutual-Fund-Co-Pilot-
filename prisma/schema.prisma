@@ -55,8 +55,12 @@ model Fund {
   directSharpe3y      Float?   // Direct plan 3-year Sharpe ratio
   regularSharpe1y     Float?   // Regular plan 1-year Sharpe ratio
   regularSharpe3y     Float?   // Regular plan 3-year Sharpe ratio
-  
+
+  // Top 10 holdings stored as JSON string
+  topHoldings    String?  // JSON: [{name, weight, sector}]
+
   holdings     Holding[]
+  watchlistItems WatchlistItem[]
   
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -73,8 +77,40 @@ model Holding {
   investedAmount Float // Total invested amount in ₹
   currentAmount  Float // Current value in ₹
   purchaseDate String? // Approximate purchase date
+  sipAmount    Float?  // Monthly SIP amount if applicable
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([sessionId])
+}
+
+// Watchlist for bookmarking funds
+model WatchlistItem {
+  id          String   @id @default(cuid())
+  sessionId   String   // Session-based identification
+  fundId      String   // Reference to Fund
+  fund        Fund     @relation(fields: [fundId], references: [id], onDelete: Cascade)
+  notes       String?  // Optional user notes
+  targetPrice Float?   // Optional target NAV
+  createdAt   DateTime @default(now())
+  
+  @@unique([sessionId, fundId])
+  @@index([sessionId])
+}
+
+// Investment goals
+model Goal {
+  id             String   @id @default(cuid())
+  sessionId      String
+  name           String   // e.g. "Retirement", "Children's Education"
+  targetAmount   Float    // Target corpus in ₹
+  currentAmount  Float    @default(0) // Current savings toward this goal
+  yearsToGoal    Int      // Years to reach the goal
+  riskProfile    String   @default("Moderate") // Conservative, Moderate, Aggressive
+  suggestedAllocation String? // JSON: {equity: 70, debt: 20, hybrid: 10}
+  monthlySipNeeded Float? // Calculated monthly SIP needed
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
   
   @@index([sessionId])
 }

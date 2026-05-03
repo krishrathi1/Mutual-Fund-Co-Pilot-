@@ -6,9 +6,19 @@ import ExploreFunds from '@/components/ExploreFunds'
 import PortfolioBuilder from '@/components/PortfolioBuilder'
 import CompareView from '@/components/CompareView'
 import SavingsCalculator from '@/components/SavingsCalculator'
+import Watchlist from '@/components/Watchlist'
+import TaxCalculator from '@/components/TaxCalculator'
+import FundOverlap from '@/components/FundOverlap'
+import GoalPlanner from '@/components/GoalPlanner'
+import AICopilot from '@/components/AICopilot'
+import PortfolioExport from '@/components/PortfolioExport'
+import XIRRCalculator from '@/components/XIRRCalculator'
 import Footer from '@/components/Footer'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Search, Briefcase, GitCompareArrows, Calculator, TrendingUp, Sun, Moon } from 'lucide-react'
+import {
+  Search, Briefcase, GitCompareArrows, Calculator, TrendingUp, Sun, Moon,
+  Bookmark, Receipt, Layers, Target, Download, BarChart3,
+} from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 
@@ -17,10 +27,16 @@ const tabs = [
   { id: 'portfolio' as const, label: 'Portfolio', icon: Briefcase, description: 'Your holdings' },
   { id: 'compare' as const, label: 'Compare', icon: GitCompareArrows, description: 'Side-by-side analysis' },
   { id: 'savings' as const, label: 'Savings', icon: Calculator, description: 'Lifetime cost calculator' },
+  { id: 'watchlist' as const, label: 'Watchlist', icon: Bookmark, description: 'Bookmarked funds' },
+  { id: 'tax' as const, label: 'Tax', icon: Receipt, description: 'Capital gains calculator' },
+  { id: 'overlap' as const, label: 'Overlap', icon: Layers, description: 'Portfolio overlap analyzer' },
+  { id: 'goals' as const, label: 'Goals', icon: Target, description: 'Goal-based investing' },
+  { id: 'xirr' as const, label: 'XIRR', icon: BarChart3, description: 'Annualized returns' },
+  { id: 'export' as const, label: 'Export', icon: Download, description: 'Export/import portfolio' },
 ]
 
 export default function Home() {
-  const { activeTab, setActiveTab, holdings, selectedFundIds } = useFundStore()
+  const { activeTab, setActiveTab, holdings, selectedFundIds, watchlist, goals } = useFundStore()
   const { theme, setTheme } = useTheme()
 
   return (
@@ -37,21 +53,23 @@ export default function Home() {
               </div>
               <div className="flex items-baseline gap-2">
                 <h1 className="text-base font-bold tracking-tight text-foreground">FundVista</h1>
-                <span className="hidden text-[10px] font-medium uppercase tracking-widest text-emerald-600 dark:text-emerald-400 sm:block">Direct vs Regular Co-Pilot</span>
+                <span className="hidden text-[10px] font-medium uppercase tracking-widest text-emerald-600 dark:text-emerald-400 lg:block">Direct vs Regular Co-Pilot</span>
               </div>
             </div>
 
             {/* Tab pills - desktop */}
-            <nav className="hidden md:flex items-center gap-1 rounded-full bg-muted p-1 ring-1 ring-border">
+            <nav className="hidden lg:flex items-center gap-0.5 rounded-full bg-muted p-1 ring-1 ring-border">
               {tabs.map((tab) => {
                 const isActive = activeTab === tab.id
                 const badge = tab.id === 'portfolio' && holdings.length > 0 ? holdings.length
-                  : tab.id === 'compare' && selectedFundIds.length > 0 ? selectedFundIds.length : 0
+                  : tab.id === 'compare' && selectedFundIds.length > 0 ? selectedFundIds.length
+                  : tab.id === 'watchlist' && watchlist.length > 0 ? watchlist.length
+                  : tab.id === 'goals' && goals.length > 0 ? goals.length : 0
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`relative flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-medium transition-all duration-300 ${
+                    className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-medium transition-all duration-300 ${
                       isActive
                         ? 'bg-emerald-500/10 text-emerald-600 shadow-sm ring-1 ring-emerald-500/20 dark:text-emerald-400'
                         : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
@@ -64,7 +82,7 @@ export default function Home() {
                         transition={{ type: 'spring', bounce: 0.15, duration: 0.5 }}
                       />
                     )}
-                    <tab.icon className="relative h-3.5 w-3.5" />
+                    <tab.icon className="relative h-3 w-3" />
                     <span className="relative">{tab.label}</span>
                     {badge > 0 && (
                       <motion.span
@@ -100,21 +118,30 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mobile tab bar */}
-        <div className="flex md:hidden items-center gap-1 overflow-x-auto px-4 pb-2">
+        {/* Mobile / tablet tab bar */}
+        <div className="flex lg:hidden items-center gap-1 overflow-x-auto px-4 pb-2 scrollbar-none">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id
             const Icon = tab.icon
+            const badge = tab.id === 'portfolio' && holdings.length > 0 ? holdings.length
+              : tab.id === 'compare' && selectedFundIds.length > 0 ? selectedFundIds.length
+              : tab.id === 'watchlist' && watchlist.length > 0 ? watchlist.length
+              : tab.id === 'goals' && goals.length > 0 ? goals.length : 0
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-[11px] font-medium transition-all ${
+                className={`flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1.5 text-[11px] font-medium transition-all ${
                   isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground'
                 }`}
               >
                 <Icon className="h-3 w-3" />
                 {tab.label}
+                {badge > 0 && (
+                  <span className="flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-emerald-500 px-0.5 text-[8px] font-bold text-white">
+                    {badge}
+                  </span>
+                )}
               </button>
             )
           })}
@@ -138,12 +165,21 @@ export default function Home() {
             {activeTab === 'portfolio' && <PortfolioBuilder />}
             {activeTab === 'compare' && <CompareView />}
             {activeTab === 'savings' && <SavingsCalculator />}
+            {activeTab === 'watchlist' && <Watchlist />}
+            {activeTab === 'tax' && <TaxCalculator />}
+            {activeTab === 'overlap' && <FundOverlap />}
+            {activeTab === 'goals' && <GoalPlanner />}
+            {activeTab === 'xirr' && <XIRRCalculator />}
+            {activeTab === 'export' && <PortfolioExport />}
           </motion.div>
         </AnimatePresence>
       </main>
 
       {/* Footer */}
       <Footer />
+
+      {/* AI Copilot - Always visible floating chat */}
+      <AICopilot />
     </div>
   )
 }

@@ -207,6 +207,99 @@ async function fallbackFromDb(params: {
 }
 
 // ---------------------------------------------------------------------------
+// Update fund NAVs in DB from AMFI data
+// ---------------------------------------------------------------------------
+
+async function updateFundNavInDb(isin: string, nav: number): Promise<boolean> {
+  try {
+    // Try to match direct ISIN first
+    const directFund = await db.fund.findFirst({
+      where: { directIsin: isin },
+    })
+    if (directFund) {
+      await db.fund.update({
+        where: { id: directFund.id },
+        data: { directNav: nav },
+      })
+      return true
+    }
+
+    // Try regular ISIN
+    const regularFund = await db.fund.findFirst({
+      where: { regularIsin: isin },
+    })
+    if (regularFund) {
+      await db.fund.update({
+        where: { id: regularFund.id },
+        data: { regularNav: nav },
+      })
+      return true
+    }
+
+    return false
+  } catch (error) {
+    console.error('[NAV] Error updating fund NAV in DB:', error)
+    return false
+  }
+}
+
+async function updateAllFundNavsFromAmfi(allNavs: AmfiScheme[]): Promise<{ updated: number; skipped: number }> {
+  let updated = 0
+  let skipped = 0
+
+  // Get all funds from DB
+  const funds = await db.fund.findMany({
+    select: { id: true, directIsin: true, regularIsin: true },
+  })
+
+  // Build ISIN -> NAV map from AMFI data
+  const isinNavMap = new Map<string, number>()
+  for (const scheme of allNavs) {
+    if (scheme.isin) {
+      const nav = parseFloat(scheme.nav)
+      if (!isNaN(nav)) {
+        isinNavMap.set(scheme.isin, nav)
+      }
+    }
+  }
+
+  // Update each fund's NAVs
+  for (const fund of funds) {
+    let needsUpdate = false
+    const updateData: { directNav?: number; regularNav?: number } = {}
+
+    const directNav = isinNavMap.get(fund.directIsin)
+    if (directNav !== undefined) {
+      updateData.directNav = directNav
+      needsUpdate = true
+    }
+
+    const regularNav = isinNavMap.get(fund.regularIsin)
+    if (regularNav !== undefined) {
+      updateData.regularNav = regularNav
+      needsUpdate = true
+    }
+
+    if (needsUpdate) {
+      try {
+        await db.fund.update({
+          where: { id: fund.id },
+          data: updateData,
+        })
+        updated++
+      } catch (error) {
+        console.error(`[NAV] Error updating fund ${fund.id}:`, error)
+        skipped++
+      }
+    } else {
+      skipped++
+    }
+  }
+
+  return { updated, skipped }
+}
+
+// ---------------------------------------------------------------------------
 // GET handler
 // ---------------------------------------------------------------------------
 
@@ -243,6 +336,15 @@ export async function GET(request: NextRequest) {
         date: scheme.date,
         isin: scheme.isin,
       }
+
+      // Update DB in background if we have an ISIN
+      if (scheme.isin) {
+        const nav = parseFloat(scheme.nav)
+        if (!isNaN(nav)) {
+          updateFundNavInDb(scheme.isin, nav).catch(() => {})
+        }
+      }
+
       return NextResponse.json({ result })
     }
 
@@ -268,6 +370,12 @@ export async function GET(request: NextRequest) {
       const allNavs = await fetchAllNavs()
       const match = allNavs.find((s) => s.isin === isin)
       if (match) {
+        // Update DB in background
+        const nav = parseFloat(match.nav)
+        if (!isNaN(nav)) {
+          updateFundNavInDb(isin, nav).catch(() => {})
+        }
+
         return NextResponse.json({
           result: {
             schemeCode: match.schemeCode,
@@ -349,4 +457,99 @@ export async function GET(request: NextRequest) {
     { error: 'Invalid query' },
     { status: 400 }
   )
+}
+
+// ---------------------------------------------------------------------------
+// POST handler - Bulk update all fund NAVs in DB from AMFI
+// ---------------------------------------------------------------------------
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json().catch(() => ({}))
+    const { fundIds } = body as { fundIds?: string[] }
+
+    let allNavs: AmfiScheme[]
+
+    try {
+      allNavs = await fetchAllNavs()
+    } catch {
+      return NextResponse.json(
+        { error: 'Failed to fetch NAV data from AMFI API' },
+        { status: 502 }
+      )
+    }
+
+    if (fundIds && Array.isArray(fundIds) && fundIds.length > 0) {
+      // Update only specific funds
+      const funds = await db.fund.findMany({
+        where: { id: { in: fundIds } },
+        select: { id: true, directIsin: true, regularIsin: true, schemeName: true },
+      })
+
+      const isinNavMap = new Map<string, number>()
+      for (const scheme of allNavs) {
+        if (scheme.isin) {
+          const nav = parseFloat(scheme.nav)
+          if (!isNaN(nav)) {
+            isinNavMap.set(scheme.isin, nav)
+          }
+        }
+      }
+
+      const results: Array<{ fundId: string; schemeName: string; directNav: number | null; regularNav: number | null; updated: boolean }> = []
+
+      for (const fund of funds) {
+        const directNav = isinNavMap.get(fund.directIsin) ?? null
+        const regularNav = isinNavMap.get(fund.regularIsin) ?? null
+
+        const updateData: { directNav?: number; regularNav?: number } = {}
+        if (directNav !== null) updateData.directNav = directNav
+        if (regularNav !== null) updateData.regularNav = regularNav
+
+        let updated = false
+        if (Object.keys(updateData).length > 0) {
+          try {
+            await db.fund.update({
+              where: { id: fund.id },
+              data: updateData,
+            })
+            updated = true
+          } catch {
+            // Skip this fund on error
+          }
+        }
+
+        results.push({
+          fundId: fund.id,
+          schemeName: fund.schemeName,
+          directNav,
+          regularNav,
+          updated,
+        })
+      }
+
+      return NextResponse.json({
+        message: `Updated ${results.filter(r => r.updated).length} of ${results.length} funds`,
+        results,
+      })
+    }
+
+    // Update all funds
+    const { updated, skipped } = await updateAllFundNavsFromAmfi(allNavs)
+
+    return NextResponse.json({
+      message: `NAV refresh complete: ${updated} funds updated, ${skipped} skipped`,
+      updated,
+      skipped,
+      totalFunds: updated + skipped,
+      source: 'AMFI',
+      fetchedAt: new Date().toISOString(),
+    })
+  } catch (error) {
+    console.error('Error updating NAVs:', error)
+    return NextResponse.json(
+      { error: 'Failed to update NAVs' },
+      { status: 500 }
+    )
+  }
 }

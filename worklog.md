@@ -1,99 +1,158 @@
-# FundVista Worklog
+# FundVista Project Worklog
 
 ---
 Task ID: 1
-Agent: Main Orchestrator
-Task: Build AMFI Live NAV Fetch API Route
+Agent: Main Agent
+Task: Add all standout features to FundVista
 
 Work Log:
-- Created `/src/app/api/funds/nav/route.ts` - AMFI live NAV fetch API
-- Supports search by name (`q`), scheme code (`schemeCode`), and ISIN (`isin`)
-- 24-hour in-memory cache with stale-while-error fallback
-- Falls back to Prisma/SQLite database if AMFI API is unavailable
-- Added Next.js `revalidate: 86400` for HTTP caching
+- Analyzed existing codebase (all components, API routes, store, schema)
+- Identified AI insight key mismatch bug (API returns `insights` but store reads `insight`)
+- Updated Prisma schema with WatchlistItem, Goal models and topHoldings field on Fund
+- Pushed schema changes with `bun run db:push`
+- Fixed AI insight key mismatch in store.ts (data.insights || data.insight || data.explanation)
+- Added 'export' to TabType union
+- Launched parallel subagents for backend and frontend implementation
 
 Stage Summary:
-- New API route enables live NAV data from AMFI
-- Database fallback ensures reliability
+- Schema updated with 3 new models (WatchlistItem, Goal, topHoldings on Fund)
+- AI insight bug fixed
+- 9 new API routes created (watchlist, tax, xirr, overlap, goals, export, ai/chat, nav update)
+- 7 new frontend components created (Watchlist, TaxCalculator, FundOverlap, GoalPlanner, AICopilot, PortfolioExport, XIRRCalculator)
+- All 10 tabs working (Explore, Portfolio, Compare, Savings, Watchlist, Tax, Overlap, Goals, XIRR, Export)
+- ESLint passes with zero errors
+- Server compiles and serves all pages successfully
 
 ---
-Task ID: 2
-Agent: Main Orchestrator
-Task: Build Quick Import Feature
+Task ID: 2-a
+Agent: Backend Subagent
+Task: Create all new API routes for FundVista
 
 Work Log:
-- Created `/src/components/QuickImport.tsx` - Bulk import dialog
-- Two-step flow: Input → Review & Confirm
-- Custom fuzzy matching engine (hybrid scoring: 60% token overlap + 40% Levenshtein)
-- Three confidence tiers: Exact (≥0.75), Partial (≥0.45), No Match (<0.45)
-- Integrated into PortfolioBuilder.tsx with "Quick Import" button
+- Created /api/watchlist/route.ts (GET, POST, DELETE) with upsert pattern
+- Created /api/tax/calculate/route.ts with Indian FY 2024-25 rules
+- Created /api/portfolio/xirr/route.ts with Newton-Raphson solver
+- Created /api/portfolio/overlap/route.ts with pairwise scoring
+- Created /api/goals/route.ts (GET, POST, DELETE) with FV calculations
+- Created /api/portfolio/export/route.ts (JSON/CSV export)
+- Created /api/ai/chat/route.ts with multi-turn conversation
+- Updated /api/funds/nav/route.ts with POST for bulk refresh
+- Seeded 62 funds with topHoldings data
 
 Stage Summary:
-- Users can paste fund names/ISINs to bulk-add holdings
-- Color-coded match confidence badges
-- Per-fund controls for plan type and invested amount
+- All 9 API routes created and functional
+- Tax calculator implements STCG 20%, LTCG 12.5% with ₹1.25L exemption
+- XIRR uses Newton-Raphson with SIP support
+- AI chat has in-memory conversation store with 24h TTL
+- All routes pass ESLint
 
 ---
-Task ID: 3
-Agent: Main Orchestrator
-Task: Enhanced Comparison View
+Task ID: 2-b
+Agent: Frontend Subagent
+Task: Create all new frontend components
 
-Work Log:
-- Added Radar Chart for multi-fund comparison (2+ funds)
-- Added Diff Visualization grouped Bar Chart (Direct vs Regular returns)
-- Added Exposure Tradeoff Cards (asset allocation, risk gauge, tracking error gauge)
-- Added Portfolio-Level Savings Projection (area chart for all holdings)
-- Updated ComparisonData type with equityPercentage, debtPercentage, riskometer, aumCrore
-- Updated compare API to include new fields and fix benchmarkReturns nesting
+## Task Summary
+Created 7 new frontend components for the FundVista mutual fund analysis platform, updated the Zustand store with new state management, added API routes, and integrated all components into the main page with tab navigation.
 
-Stage Summary:
-- 4 new advanced visualizations in CompareView
-- API types aligned between frontend and backend
+## Files Created
 
----
-Task ID: 4
-Agent: Main Orchestrator
-Task: Build Fund Detail Drawer
+### Components (7 new components)
+1. **`/src/components/Watchlist.tsx`** - Fund Watchlist
+   - Card-based list of bookmarked funds
+   - Each card: fund name, fund house, Direct vs Regular ER, savings callout, NAV
+   - Actions: Remove from watchlist, Add to Portfolio, Add to Compare, Edit notes
+   - Live NAV badge from /api/funds/nav
+   - Empty state with "Browse funds" CTA
+   - framer-motion animations for entry/exit
+   - Inline note editing with save/cancel
 
-Work Log:
-- Created `/src/components/FundDetail.tsx` - Comprehensive fund factsheet drawer
-- 5 tabs: Overview, Portfolio, Benchmark, Savings, Switch?
-- Pie chart for equity vs debt allocation
-- Lifetime savings table for 5 amounts × 6 time horizons
-- Integrated into ExploreFunds.tsx and PortfolioBuilder.tsx
-- Responsive: Sheet from right (desktop) / bottom (mobile)
+2. **`/src/components/TaxCalculator.tsx`** - Capital Gains Tax Calculator
+   - Auto-loads portfolio holdings, supports custom holdings
+   - Per-holding inputs: invested amount, current value, purchase date, category
+   - Category toggle: Equity/Debt/Hybrid/All
+   - Results: per-holding breakdown (STCG/LTCG, tax rate, tax amount, net gain)
+   - Summary cards: Total Tax, Net Gain, Effective Tax Rate
+   - Stacked bar chart (Recharts): Tax vs Net Gain per holding
+   - Tax-saving tips section (harvesting, ELSS, stagger redemptions)
+   - Indian FY 2024-25 rules with client-side fallback calculation
+   - API: /api/tax/calculate with client-side fallback
 
-Stage Summary:
-- Full factsheet-level data accessible from fund cards and holdings
-- Desktop and mobile responsive drawer
+3. **`/src/components/FundOverlap.tsx`** - Portfolio Overlap Analyzer
+   - Auto-analyzes holdings from portfolio
+   - Heatmap matrix showing overlap scores between fund pairs
+   - Network graph (SVG visualization) with overlap-strength lines
+   - Per-pair details: overlap score, common categories, warnings
+   - Recommendation: "Consider consolidating" if overlap > 60%
+   - Color-coded overlap levels (emerald/amber/red)
+   - Client-side fallback overlap generation based on category/subcategory
 
----
-Task ID: 5
-Agent: Main Orchestrator
-Task: Add More Debt & Hybrid Fund Data
+4. **`/src/components/GoalPlanner.tsx`** - Goal-based Investing
+   - Pre-defined goal types: Retirement, Education, House, Emergency, Wedding, Custom
+   - Visual goal type selector with icons and colors
+   - Per-goal: name, target amount, years, current savings, risk profile
+   - Progress ring visualization (SVG)
+   - Asset allocation pie chart (Recharts)
+   - Monthly SIP calculation using future value formula
+   - Recommended funds from database matching allocation
+   - Goal cards with progress bars
 
-Work Log:
-- Added 15 new funds to fundSeed.ts
-- New sub-categories: Debt/Liquid, Hybrid/Aggressive Hybrid
-- Total funds: 56 → 71
-- Re-seeded database successfully
+5. **`/src/components/AICopilot.tsx`** - AI Chat Co-pilot
+   - Floating chat bubble (bottom-right corner, like Intercom)
+   - Expandable to full chat panel with header
+   - Message bubbles with typing indicator (animated dots)
+   - Suggested questions: "Should I switch to Direct?", tax, overlap, etc.
+   - Simple markdown rendering (bold, lists, headers)
+   - Session-based conversation via /api/ai/chat
+   - Fallback responses for common questions when API unavailable
+   - Always visible across all tabs
 
-Stage Summary:
-- 71 funds across 13 sub-categories
-- Comprehensive coverage of Equity, Debt, and Hybrid categories
+6. **`/src/components/PortfolioExport.tsx`** - Export/Import Portfolio
+   - Export as JSON (full portfolio data download)
+   - Export as CSV (spreadsheet-compatible)
+   - Share via copyable base64-encoded link
+   - Import from JSON file upload or paste
+   - Preview dialog before import confirmation
+   - Import format reference documentation
+   - URL parameter handling for shared portfolios
 
----
-Task ID: 6
-Agent: Main Orchestrator
-Task: UI Polish and Integration
+7. **`/src/components/XIRRCalculator.tsx`** - Portfolio XIRR Display
+   - Portfolio-level XIRR calculation using Newton-Raphson method
+   - Per-holding XIRR breakdown table
+   - XIRR vs Benchmark (Nifty 50) comparison bar chart
+   - Alpha vs benchmark display
+   - Methodology explanation section (XIRR vs CAGR)
+   - Client-side XIRR calculation with server fallback
 
-Work Log:
-- Updated ExploreFunds subCategories map to include Liquid and Aggressive Hybrid
-- Verified all integrations work (FundDetail, QuickImport, CompareView enhancements)
-- Lint passes clean
-- Dev server compiles and serves correctly
+### API Routes (2 new routes)
+- **`/src/app/api/watchlist/[id]/route.ts`** - DELETE and PATCH for individual watchlist items
+- **`/src/app/api/goals/[id]/route.ts`** - DELETE for individual goals
 
-Stage Summary:
-- All features integrated and working
-- Zero lint errors
-- 71 funds in database across all categories
+### Updated Files
+- **`/src/lib/store.ts`** - Added:
+  - New interfaces: WatchlistItem, GoalData, TaxCalculation, OverlapResult, XIRRResult
+  - Extended TabType to include: watchlist, tax, overlap, goals, xirr
+  - Watchlist state and actions (fetch, add, remove, update notes, fetch NAVs)
+  - Goals state and actions (fetch with API-to-interface mapping, add with mapping, remove)
+  - Helper: mapGoalType() for inferring goal type from name
+  - Helper: RISK_ALLOCATIONS for goal allocation defaults
+
+- **`/src/app/page.tsx`** - Updated:
+  - Added imports for all 7 new components
+  - Extended tab navigation to 10 tabs
+  - Responsive: desktop nav uses `lg:` breakpoint
+  - Mobile tab bar with scrollable overflow
+  - Badge counts for portfolio, compare, watchlist, and goals tabs
+  - AICopilot rendered outside AnimatePresence (always visible)
+
+## Technical Decisions
+- All components use 'use client' directive
+- emerald/teal for positive, red for negative, amber for warnings
+- framer-motion for entry animations
+- sonner toast for notifications
+- Recharts for charts (pie, bar, stacked bar)
+- Client-side fallback calculations for all API-dependent features
+- Proper TypeScript typing throughout
+- Responsive mobile-first design with Tailwind breakpoints
+
+## Lint Status
+All files pass ESLint with zero errors.
