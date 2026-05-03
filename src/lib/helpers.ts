@@ -17,6 +17,24 @@ export function formatBps(value: number): string {
   return `${value} bps`
 }
 
+export function formatSharpe(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '—'
+  return value.toFixed(2)
+}
+
+export function formatTrackingError(bps: number | null | undefined): string {
+  if (bps === null || bps === undefined) return '—'
+  return `${bps.toFixed(1)} bps`
+}
+
+export function getRiskAdjustedColor(delta: number): string {
+  if (delta > 0.5) return 'text-emerald-600 dark:text-emerald-400'
+  if (delta > 0) return 'text-emerald-600/80 dark:text-emerald-400/80'
+  if (delta < -0.5) return 'text-red-600 dark:text-red-400'
+  if (delta < 0) return 'text-red-600/80 dark:text-red-400/80'
+  return 'text-muted-foreground'
+}
+
 export function expenseRatioDiff(direct: number, regular: number): number {
   return Math.round((regular - direct) * 100)
 }
@@ -28,49 +46,36 @@ export function formatAUM(aumCrore: number): string {
 
 export function getRiskColor(risk: string): string {
   const map: Record<string, string> = {
-    'Low': 'bg-green-500/10 text-green-400 ring-green-500/20',
-    'Low to Moderate': 'bg-lime-500/10 text-lime-400 ring-lime-500/20',
-    'Moderate': 'bg-yellow-500/10 text-yellow-400 ring-yellow-500/20',
-    'Moderately High': 'bg-orange-500/10 text-orange-400 ring-orange-500/20',
-    'High': 'bg-red-500/10 text-red-400 ring-red-500/20',
-    'Very High': 'bg-red-500/15 text-red-300 ring-red-500/30',
+    'Low': 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
+    'Low to Moderate': 'bg-lime-500/10 text-lime-700 ring-lime-500/20 dark:text-lime-400',
+    'Moderate': 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
+    'Moderately High': 'bg-orange-500/10 text-orange-700 ring-orange-500/20 dark:text-orange-400',
+    'High': 'bg-red-500/10 text-red-700 ring-red-500/20 dark:text-red-400',
+    'Very High': 'bg-red-500/15 text-red-600 ring-red-500/30 dark:text-red-400',
   }
-  return map[risk] || 'bg-white/5 text-white/50 ring-white/10'
+  return map[risk] || 'bg-muted text-muted-foreground ring-border'
 }
 
 export function getPriorityConfig(priority: string): { color: string; dot: string } {
   const map: Record<string, { color: string; dot: string }> = {
-    'high': { color: 'bg-red-500/10 text-red-400 ring-red-500/20', dot: 'bg-red-500' },
-    'medium': { color: 'bg-amber-500/10 text-amber-400 ring-amber-500/20', dot: 'bg-amber-500' },
-    'low': { color: 'bg-emerald-500/10 text-emerald-400 ring-emerald-500/20', dot: 'bg-emerald-500' },
+    'high': { color: 'bg-red-500/10 text-red-700 ring-red-500/20 dark:text-red-400', dot: 'bg-red-500' },
+    'medium': { color: 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400', dot: 'bg-amber-500' },
+    'low': { color: 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400', dot: 'bg-emerald-500' },
   }
-  return map[priority] || { color: 'bg-white/5 text-white/50 ring-white/10', dot: 'bg-white/30' }
+  return map[priority] || { color: 'bg-muted text-muted-foreground ring-border', dot: 'bg-muted-foreground' }
+}
+
+export function getPriorityColor(priority: string): string {
+  return getPriorityConfig(priority).color
 }
 
 export function getCategoryColor(category: string): string {
   const map: Record<string, string> = {
-    'Equity': 'bg-emerald-500/10 text-emerald-400 ring-emerald-500/20',
-    'Debt': 'bg-sky-500/10 text-sky-400 ring-sky-500/20',
-    'Hybrid': 'bg-violet-500/10 text-violet-400 ring-violet-500/20',
-    'Index': 'bg-teal-500/10 text-teal-400 ring-teal-500/20',
-    'ELSS': 'bg-amber-500/10 text-amber-400 ring-amber-500/20',
+    'Equity': 'bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400',
+    'Debt': 'bg-teal-500/10 text-teal-700 ring-teal-500/20 dark:text-teal-400',
+    'Hybrid': 'bg-violet-500/10 text-violet-700 ring-violet-500/20 dark:text-violet-400',
+    'Index': 'bg-teal-500/10 text-teal-700 ring-teal-500/20 dark:text-teal-400',
+    'ELSS': 'bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400',
   }
-  return map[category] || 'bg-white/5 text-white/50 ring-white/10'
-}
-
-export function getSubCategoryGradient(sub: string): string {
-  const map: Record<string, string> = {
-    'Large Cap': 'from-emerald-500/20 to-emerald-500/5',
-    'Mid Cap': 'from-teal-500/20 to-teal-500/5',
-    'Small Cap': 'from-cyan-500/20 to-cyan-500/5',
-    'Flexi Cap': 'from-violet-500/20 to-violet-500/5',
-    'ELSS': 'from-amber-500/20 to-amber-500/5',
-    'Index Fund': 'from-sky-500/20 to-sky-500/5',
-    'Sectoral/Thematic': 'from-rose-500/20 to-rose-500/5',
-    'Balanced Advantage': 'from-violet-500/20 to-violet-500/5',
-    'Corporate Bond': 'from-sky-500/20 to-sky-500/5',
-    'Gilt': 'from-blue-500/20 to-blue-500/5',
-    'Short Duration': 'from-cyan-500/20 to-cyan-500/5',
-  }
-  return map[sub] || 'from-white/5 to-transparent'
+  return map[category] || 'bg-muted text-muted-foreground ring-border'
 }

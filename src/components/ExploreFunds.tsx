@@ -2,21 +2,23 @@
 
 import { useFundStore, type FundData } from '@/lib/store'
 import { formatCurrency, formatPercent, formatAUM, getRiskColor, getCategoryColor, expenseRatioDiff } from '@/lib/helpers'
-import { Search, SlidersHorizontal, X, TrendingUp, ArrowUpDown, Plus, GitCompareArrows } from 'lucide-react'
+import { Search, SlidersHorizontal, X, Plus, GitCompareArrows, Eye } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEffect, useState, useCallback } from 'react'
+import { toast } from 'sonner'
+import FundDetail from '@/components/FundDetail'
 
 const categories = ['All', 'Equity', 'Debt', 'Hybrid']
 const subCategories: Record<string, string[]> = {
   'All': ['All'],
   'Equity': ['All', 'Large Cap', 'Mid Cap', 'Small Cap', 'Flexi Cap', 'ELSS', 'Index Fund', 'Sectoral/Thematic'],
-  'Debt': ['All', 'Corporate Bond', 'Gilt', 'Short Duration'],
-  'Hybrid': ['All', 'Balanced Advantage'],
+  'Debt': ['All', 'Corporate Bond', 'Gilt', 'Short Duration', 'Liquid'],
+  'Hybrid': ['All', 'Balanced Advantage', 'Aggressive Hybrid'],
 }
 const sortOptions = [
   { value: 'aumCrore', label: 'AUM (Largest)' },
@@ -34,8 +36,9 @@ export default function ExploreFunds() {
     addHolding,
   } = useFundStore()
 
-  const [showFilters, setShowFilters] = useState(false)
   const [addingFund, setAddingFund] = useState<string | null>(null)
+  const [detailFund, setDetailFund] = useState<FundData | null>(null)
+  const [detailOpen, setDetailOpen] = useState(false)
 
   useEffect(() => {
     fetchFunds()
@@ -44,7 +47,6 @@ export default function ExploreFunds() {
   const handleAddToPortfolio = useCallback(async (fund: FundData) => {
     setAddingFund(fund.id)
     try {
-      // Default to regular plan since most investors discover this tool while holding regular plans
       await addHolding({
         fundId: fund.id,
         planType: 'regular',
@@ -53,6 +55,7 @@ export default function ExploreFunds() {
         units: (fund.minInvestment * 12) / fund.regularNav,
         purchaseDate: '2023-01-15',
       })
+      toast.success(`${fund.schemeName} added to portfolio`)
     } finally {
       setAddingFund(null)
     }
@@ -116,7 +119,7 @@ export default function ExploreFunds() {
           {fundsLoading ? 'Searching...' : `${fundsTotal} funds found`}
         </p>
         {selectedFundIds.length > 0 && (
-          <Button size="sm" onClick={handleCompare} className="gap-2 bg-emerald-600 hover:bg-emerald-700">
+          <Button size="sm" onClick={handleCompare} className="gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
             <GitCompareArrows className="h-4 w-4" />
             Compare {selectedFundIds.length} fund{selectedFundIds.length > 1 ? 's' : ''}
           </Button>
@@ -147,7 +150,11 @@ export default function ExploreFunds() {
                   {/* Header */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <h3 className="font-semibold text-sm leading-tight truncate" title={fund.schemeName}>{fund.schemeName}</h3>
+                      <h3
+                        className="font-semibold text-sm leading-tight truncate text-card-foreground cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+                        title={fund.schemeName}
+                        onClick={() => { setDetailFund(fund); setDetailOpen(true) }}
+                      >{fund.schemeName}</h3>
                       <p className="text-xs text-muted-foreground mt-0.5">{fund.fundHouse}</p>
                     </div>
                     <div className="flex gap-1">
@@ -157,24 +164,24 @@ export default function ExploreFunds() {
                     </div>
                   </div>
 
-                  {/* Direct vs Regular comparison mini */}
+                  {/* Direct vs Regular mini comparison */}
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="rounded-lg bg-emerald-50 p-2 dark:bg-emerald-950/20">
+                    <div className="rounded-lg bg-emerald-100/50 p-2 dark:bg-emerald-950/20">
                       <p className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400">DIRECT</p>
                       <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{fund.directExpenseRatio}%</p>
                       <p className="text-[10px] text-muted-foreground">Expense Ratio</p>
-                      <p className="text-xs font-medium mt-1">{formatPercent(fund.directReturn1y)} <span className="text-muted-foreground">1Y</span></p>
+                      <p className="text-xs font-medium mt-1 text-card-foreground">{formatPercent(fund.directReturn1y)} <span className="text-muted-foreground">1Y</span></p>
                     </div>
-                    <div className="rounded-lg bg-red-50 p-2 dark:bg-red-950/20">
+                    <div className="rounded-lg bg-red-100/50 p-2 dark:bg-red-950/20">
                       <p className="text-[10px] font-medium text-red-700 dark:text-red-400">REGULAR</p>
                       <p className="text-lg font-bold text-red-700 dark:text-red-400">{fund.regularExpenseRatio}%</p>
                       <p className="text-[10px] text-muted-foreground">Expense Ratio</p>
-                      <p className="text-xs font-medium mt-1">{formatPercent(fund.regularReturn1y)} <span className="text-muted-foreground">1Y</span></p>
+                      <p className="text-xs font-medium mt-1 text-card-foreground">{formatPercent(fund.regularReturn1y)} <span className="text-muted-foreground">1Y</span></p>
                     </div>
                   </div>
 
                   {/* Savings callout */}
-                  <div className="rounded-md bg-amber-50 px-3 py-1.5 text-center dark:bg-amber-950/20">
+                  <div className="rounded-md bg-amber-100/50 px-3 py-1.5 text-center dark:bg-amber-950/20">
                     <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
                       💰 You save <strong>{expDiff} bps/year</strong> in Direct = <strong>~₹{Math.round(expDiff * 50)}/yr</strong> on ₹5L
                     </p>
@@ -192,6 +199,15 @@ export default function ExploreFunds() {
                   <div className="flex gap-2 pt-1">
                     <Button
                       size="sm"
+                      variant="outline"
+                      onClick={() => { setDetailFund(fund); setDetailOpen(true) }}
+                      className="gap-1 text-xs"
+                    >
+                      <Eye className="h-3 w-3" />
+                      Details
+                    </Button>
+                    <Button
+                      size="sm"
                       variant={isSelected ? 'default' : 'outline'}
                       onClick={() => toggleFundSelection(fund.id)}
                       className="flex-1 gap-1 text-xs"
@@ -207,7 +223,7 @@ export default function ExploreFunds() {
                       disabled={addingFund === fund.id}
                     >
                       <Plus className="h-3 w-3" />
-                      {addingFund === fund.id ? 'Adding...' : 'Add to Portfolio'}
+                      {addingFund === fund.id ? 'Adding...' : 'Add'}
                     </Button>
                   </div>
                 </CardContent>
@@ -220,9 +236,18 @@ export default function ExploreFunds() {
       {funds.length === 0 && !fundsLoading && (
         <div className="py-16 text-center">
           <Search className="mx-auto h-12 w-12 text-muted-foreground/50" />
-          <p className="mt-4 text-lg font-medium">No funds found</p>
+          <p className="mt-4 text-lg font-medium text-foreground">No funds found</p>
           <p className="text-sm text-muted-foreground">Try adjusting your search or filters</p>
         </div>
+      )}
+
+      {/* Fund Detail Drawer */}
+      {detailFund && (
+        <FundDetail
+          fund={detailFund}
+          open={detailOpen}
+          onOpenChange={setDetailOpen}
+        />
       )}
     </div>
   )

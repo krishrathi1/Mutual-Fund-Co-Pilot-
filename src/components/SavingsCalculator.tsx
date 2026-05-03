@@ -1,8 +1,8 @@
 'use client'
 
-import { useFundStore, type FundData } from '@/lib/store'
+import { useFundStore } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
-import { Calculator, TrendingUp, Info, Play } from 'lucide-react'
+import { Calculator, TrendingUp, Info, Play, DollarSign } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useEffect, useState, useMemo } from 'react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -17,13 +18,14 @@ import {
 } from 'recharts'
 
 export default function SavingsCalculator() {
-  const { funds, fetchFunds, savingsResult, savingsLoading, calculateSavings } = useFundStore()
+  const { funds, fetchFunds, savingsResult, savingsLoading, calculateSavings, savingsMode, setSavingsMode, monthlySip, setMonthlySip } = useFundStore()
 
   const [selectedFundId, setSelectedFundId] = useState('')
   const [investedAmount, setInvestedAmount] = useState('500000')
   const [years, setYears] = useState('20')
   const [customDirect, setCustomDirect] = useState('')
   const [customRegular, setCustomRegular] = useState('')
+  const [sipAmount, setSipAmount] = useState('10000')
 
   useEffect(() => {
     if (funds.length === 0) fetchFunds()
@@ -45,6 +47,10 @@ export default function SavingsCalculator() {
     if (effectiveFundId && effectiveFundId !== 'custom') params.fundId = effectiveFundId
     if (customDirect) params.directExpenseRatio = parseFloat(customDirect)
     if (customRegular) params.regularExpenseRatio = parseFloat(customRegular)
+    if (savingsMode === 'sip') {
+      params.mode = 'sip'
+      params.monthlySip = parseFloat(sipAmount) || 10000
+    }
     calculateSavings(params as Parameters<typeof calculateSavings>[0])
   }
 
@@ -56,9 +62,13 @@ export default function SavingsCalculator() {
         years: parseInt(years) || 20,
       }
       if (effectiveFundId) params.fundId = effectiveFundId
+      if (savingsMode === 'sip') {
+        params.mode = 'sip'
+        params.monthlySip = parseFloat(sipAmount) || 10000
+      }
       calculateSavings(params as Parameters<typeof calculateSavings>[0])
     }
-  }, [effectiveFundId, calculateSavings, investedAmount, years, savingsResult])
+  }, [effectiveFundId, calculateSavings, investedAmount, years, savingsResult, savingsMode, sipAmount])
 
   const chartData = useMemo(() => {
     if (!savingsResult) return []
@@ -72,7 +82,6 @@ export default function SavingsCalculator() {
 
   const savingsBarData = useMemo(() => {
     if (!savingsResult) return []
-    // Show key milestones
     return savingsResult.yearlyBreakdown
       .filter(b => [1, 3, 5, 10, 15, 20, 25, 30].includes(b.year) || b.year === savingsResult.yearlyBreakdown.length)
       .map(b => ({
@@ -86,12 +95,29 @@ export default function SavingsCalculator() {
       {/* Calculator Inputs */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-2 text-card-foreground">
             <Calculator className="h-5 w-5 text-emerald-600" />
             Lifetime Savings Calculator
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Mode toggle */}
+          <div>
+            <Label className="mb-2 block">Investment Mode</Label>
+            <Tabs value={savingsMode} onValueChange={(v) => setSavingsMode(v as 'lumpsum' | 'sip')}>
+              <TabsList className="grid w-full max-w-xs grid-cols-2">
+                <TabsTrigger value="lumpsum" className="gap-1.5">
+                  <DollarSign className="h-3.5 w-3.5" />
+                  Lumpsum
+                </TabsTrigger>
+                <TabsTrigger value="sip" className="gap-1.5">
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  SIP
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
               <Label>Fund (optional)</Label>
@@ -110,7 +136,7 @@ export default function SavingsCalculator() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Investment Amount (₹)</Label>
+              <Label>{savingsMode === 'lumpsum' ? 'Investment Amount (₹)' : 'Lumpsum Amount (₹)'}</Label>
               <Input
                 type="number"
                 value={investedAmount}
@@ -118,6 +144,17 @@ export default function SavingsCalculator() {
                 placeholder="500000"
               />
             </div>
+            {savingsMode === 'sip' && (
+              <div className="space-y-2">
+                <Label>Monthly SIP Amount (₹)</Label>
+                <Input
+                  type="number"
+                  value={sipAmount}
+                  onChange={(e) => setSipAmount(e.target.value)}
+                  placeholder="10000"
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label>Investment Horizon (years)</Label>
               <Select value={years} onValueChange={setYears}>
@@ -132,7 +169,7 @@ export default function SavingsCalculator() {
               </Select>
             </div>
             <div className="flex items-end">
-              <Button onClick={handleCalculate} className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700" disabled={savingsLoading}>
+              <Button onClick={handleCalculate} className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white" disabled={savingsLoading}>
                 <Play className="h-4 w-4" />
                 Calculate
               </Button>
@@ -155,9 +192,9 @@ export default function SavingsCalculator() {
 
           {/* Show selected fund info */}
           {selectedFund && effectiveFundId !== 'custom' && (
-            <div className="rounded-lg bg-muted/50 p-3 text-xs">
+            <div className="rounded-lg bg-muted/50 p-3 text-xs text-foreground">
               <p><strong>{selectedFund.schemeName}</strong> ({selectedFund.fundHouse})</p>
-              <p className="mt-1">Direct: {selectedFund.directExpenseRatio}% ER · Regular: {selectedFund.regularExpenseRatio}% ER · Difference: <strong className="text-emerald-600">{(selectedFund.regularExpenseRatio - selectedFund.directExpenseRatio).toFixed(2)}%</strong></p>
+              <p className="mt-1">Direct: {selectedFund.directExpenseRatio}% ER · Regular: {selectedFund.regularExpenseRatio}% ER · Difference: <strong className="text-emerald-600 dark:text-emerald-400">{(selectedFund.regularExpenseRatio - selectedFund.directExpenseRatio).toFixed(2)}%</strong></p>
             </div>
           )}
         </CardContent>
@@ -182,7 +219,7 @@ export default function SavingsCalculator() {
             <Card className="border-red-200 dark:border-red-900">
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">Regular Plan Value</p>
-                <p className="text-2xl font-bold text-red-600">{formatCurrency(savingsResult.regularValue)}</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{formatCurrency(savingsResult.regularValue)}</p>
                 <p className="text-xs text-muted-foreground mt-1">After {years} years</p>
               </CardContent>
             </Card>
@@ -196,7 +233,7 @@ export default function SavingsCalculator() {
             <Card>
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">Extra Cost per Year</p>
-                <p className="text-2xl font-bold text-red-600">{formatCurrency(Math.round(savingsResult.savings / parseInt(years)))}</p>
+                <p className="text-2xl font-bold text-red-600 dark:text-red-400">{formatCurrency(Math.round(savingsResult.savings / parseInt(years)))}</p>
                 <p className="text-xs text-muted-foreground mt-1">What Regular plan costs you</p>
               </CardContent>
             </Card>
@@ -205,9 +242,9 @@ export default function SavingsCalculator() {
           {/* Growth chart */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="text-base flex items-center gap-2 text-card-foreground">
                 <TrendingUp className="h-4 w-4 text-emerald-600" />
-                Wealth Growth: Direct vs Regular
+                Wealth Growth: Direct vs Regular ({savingsMode === 'sip' ? 'SIP Mode' : 'Lumpsum'})
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -224,12 +261,18 @@ export default function SavingsCalculator() {
                         <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                    <XAxis dataKey="year" tick={{ fontSize: 12 }} label={{ value: 'Year', position: 'insideBottom', offset: -5, fontSize: 12 }} />
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} className="stroke-border" />
+                    <XAxis dataKey="year" tick={{ fontSize: 12 }} />
                     <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} />
                     <Tooltip
                       formatter={(value: number, name: string) => [formatCurrency(value), name]}
                       labelFormatter={(label: number) => `Year ${label}`}
+                      contentStyle={{ 
+                        backgroundColor: 'var(--card)', 
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        color: 'var(--card-foreground)'
+                      }}
                     />
                     <Legend />
                     <Area type="monotone" dataKey="Direct Plan" stroke="#10b981" fill="url(#directGrad)" strokeWidth={2} />
@@ -243,16 +286,24 @@ export default function SavingsCalculator() {
           {/* Cumulative savings bar chart */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Cumulative Savings from Switching to Direct</CardTitle>
+              <CardTitle className="text-base text-card-foreground">Cumulative Savings from Switching to Direct</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={savingsBarData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                    <CartesianGrid strokeDasharray="3 3" opacity={0.3} className="stroke-border" />
                     <XAxis dataKey="year" tick={{ fontSize: 11 }} />
                     <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} />
-                    <Tooltip formatter={(value: number) => [formatCurrency(value), 'Savings']} />
+                    <Tooltip 
+                      formatter={(value: number) => [formatCurrency(value), 'Savings']}
+                      contentStyle={{ 
+                        backgroundColor: 'var(--card)', 
+                        border: '1px solid var(--border)',
+                        borderRadius: '8px',
+                        color: 'var(--card-foreground)'
+                      }}
+                    />
                     <Bar dataKey="savings" fill="#10b981" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -263,7 +314,7 @@ export default function SavingsCalculator() {
           {/* Yearly breakdown table */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-base">Year-by-Year Breakdown</CardTitle>
+              <CardTitle className="text-base text-card-foreground">Year-by-Year Breakdown</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="max-h-96 overflow-y-auto custom-scrollbar">
@@ -280,10 +331,10 @@ export default function SavingsCalculator() {
                   <tbody>
                     {savingsResult.yearlyBreakdown.map((row) => (
                       <tr key={row.year} className="border-b last:border-0 hover:bg-muted/50">
-                        <td className="py-2 px-3 font-medium">{row.year}</td>
+                        <td className="py-2 px-3 font-medium text-foreground">{row.year}</td>
                         <td className="py-2 px-3 text-right text-emerald-700 dark:text-emerald-400">{formatCurrency(row.directValue)}</td>
                         <td className="py-2 px-3 text-right text-red-700 dark:text-red-400">{formatCurrency(row.regularValue)}</td>
-                        <td className="py-2 px-3 text-right">{formatCurrency(row.savings)}</td>
+                        <td className="py-2 px-3 text-right text-foreground">{formatCurrency(row.savings)}</td>
                         <td className="py-2 px-3 text-right font-medium text-amber-700 dark:text-amber-400">{formatCurrency(row.cumulativeSavings)}</td>
                       </tr>
                     ))}
@@ -302,7 +353,7 @@ export default function SavingsCalculator() {
                   <strong>What this means in plain English:</strong>
                 </p>
                 <p>
-                  If you invest <strong>{formatCurrency(parseFloat(investedAmount))}</strong> in a mutual fund and hold it for <strong>{years} years</strong>,
+                  If you invest <strong>{formatCurrency(parseFloat(investedAmount))}</strong>{savingsMode === 'sip' ? ` plus ₹${parseInt(sipAmount).toLocaleString('en-IN')}/month SIP` : ''} in a mutual fund and hold it for <strong>{years} years</strong>,
                   choosing the Direct plan instead of the Regular plan would give you <strong>{formatCurrency(savingsResult.savings)}</strong> more wealth.
                 </p>
                 <p>

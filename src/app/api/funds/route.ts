@@ -39,6 +39,7 @@ export async function GET(request: NextRequest) {
 
     switch (sortBy) {
       case 'aum':
+      case 'aumCrore':
         orderBy = { aumCrore: orderDir }
         break
       case 'expenseDiff':
@@ -46,16 +47,19 @@ export async function GET(request: NextRequest) {
         orderBy = { aumCrore: 'desc' }
         break
       case 'return1y':
+      case 'directReturn1y':
         orderBy = planType === 'direct'
           ? { directReturn1y: orderDir }
           : { regularReturn1y: orderDir }
         break
       case 'return3y':
+      case 'directReturn3y':
         orderBy = planType === 'direct'
           ? { directReturn3y: orderDir }
           : { regularReturn3y: orderDir }
         break
       case 'return5y':
+      case 'directReturn5y':
         orderBy = planType === 'direct'
           ? { directReturn5y: orderDir }
           : { regularReturn5y: orderDir }

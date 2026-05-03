@@ -15,12 +15,20 @@ export interface FundData {
   directReturn1y: number | null
   directReturn3y: number | null
   directReturn5y: number | null
+  directSharpe1y: number | null
+  directSharpe3y: number | null
   regularIsin: string
   regularNav: number
   regularExpenseRatio: number
   regularReturn1y: number | null
   regularReturn3y: number | null
   regularReturn5y: number | null
+  regularSharpe1y: number | null
+  regularSharpe3y: number | null
+  trackingErrorBps: number | null
+  benchmarkReturn1y: number | null
+  benchmarkReturn3y: number | null
+  benchmarkReturn5y: number | null
   aumCrore: number
   exitLoad: string
   minInvestment: number
@@ -59,6 +67,8 @@ export interface ComparisonData {
     return3y: number
     return5y: number
     isin: string
+    sharpe1y?: number | null
+    sharpe3y?: number | null
   }
   regular: {
     nav: number
@@ -67,12 +77,26 @@ export interface ComparisonData {
     return3y: number
     return5y: number
     isin: string
+    sharpe1y?: number | null
+    sharpe3y?: number | null
   }
   expenseDiff: number
   returnDiff1y: number
   returnDiff3y: number
   returnDiff5y: number
+  trackingErrorBps?: number | null
+  riskAdjustedReturnDelta?: number | null
+  benchmarkReturns?: {
+    return1y: number | null
+    return3y: number | null
+    return5y: number | null
+  }
   lifetimeSavings: Record<string, Record<string, number>>
+  // Extra fields for advanced visualizations
+  equityPercentage?: number | null
+  debtPercentage?: number | null
+  riskometer?: string
+  aumCrore?: number
 }
 
 export interface Recommendation {
@@ -128,6 +152,7 @@ export interface SavingsCalculation {
 }
 
 type TabType = 'explore' | 'portfolio' | 'compare' | 'savings'
+type SavingsMode = 'lumpsum' | 'sip'
 
 interface FundStore {
   // Navigation
@@ -171,7 +196,16 @@ interface FundStore {
   // Savings Calculator
   savingsResult: SavingsCalculation | null
   savingsLoading: boolean
-  calculateSavings: (params: { fundId?: string; investedAmount: number; years: number; directExpenseRatio?: number; regularExpenseRatio?: number; expectedReturn?: number }) => Promise<void>
+  savingsMode: SavingsMode
+  monthlySip: number
+  setSavingsMode: (mode: SavingsMode) => void
+  setMonthlySip: (amount: number) => void
+  calculateSavings: (params: { fundId?: string; investedAmount: number; years: number; directExpenseRatio?: number; regularExpenseRatio?: number; expectedReturn?: number; mode?: SavingsMode; monthlySip?: number }) => Promise<void>
+
+  // AI Insights
+  aiInsights: Record<string, string>
+  aiInsightsLoading: Record<string, boolean>
+  fetchAiInsight: (fundId: string, fundData: object) => Promise<void>
 }
 
 // Generate a session ID
@@ -200,7 +234,7 @@ export const useFundStore = create<FundStore>((set, get) => ({
   setCategoryFilter: (c) => set({ categoryFilter: c, subCategoryFilter: '' }),
   setSubCategoryFilter: (c) => set({ subCategoryFilter: c }),
   setSortBy: (s) => set({ sortBy: s }),
-  fetchFunds: async (reset = true) => {
+  fetchFunds: async (_reset = true) => {
     set({ fundsLoading: true })
     try {
       const { searchQuery, categoryFilter, subCategoryFilter, sortBy } = get()
@@ -298,6 +332,10 @@ export const useFundStore = create<FundStore>((set, get) => ({
   // Savings Calculator
   savingsResult: null,
   savingsLoading: false,
+  savingsMode: 'lumpsum',
+  monthlySip: 10000,
+  setSavingsMode: (mode) => set({ savingsMode: mode }),
+  setMonthlySip: (amount) => set({ monthlySip: amount }),
   calculateSavings: async (params) => {
     set({ savingsLoading: true })
     try {
@@ -310,6 +348,35 @@ export const useFundStore = create<FundStore>((set, get) => ({
       set({ savingsResult: data, savingsLoading: false })
     } catch {
       set({ savingsLoading: false })
+    }
+  },
+
+  // AI Insights
+  aiInsights: {},
+  aiInsightsLoading: {},
+  fetchAiInsight: async (fundId, fundData) => {
+    const { aiInsights, aiInsightsLoading } = get()
+    if (aiInsights[fundId] || aiInsightsLoading[fundId]) return
+
+    set({ aiInsightsLoading: { ...aiInsightsLoading, [fundId]: true } })
+    try {
+      const res = await fetch('/api/ai/insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fundId, ...fundData }),
+      })
+      const data = await res.json()
+      const current = get().aiInsights
+      set({ 
+        aiInsights: { ...current, [fundId]: data.insight || data.explanation || 'No insight available' },
+        aiInsightsLoading: { ...get().aiInsightsLoading, [fundId]: false },
+      })
+    } catch {
+      const current = get().aiInsights
+      set({ 
+        aiInsights: { ...current, [fundId]: 'Failed to load AI insight. The backend may not be ready yet.' },
+        aiInsightsLoading: { ...get().aiInsightsLoading, [fundId]: false },
+      })
     }
   },
 }))

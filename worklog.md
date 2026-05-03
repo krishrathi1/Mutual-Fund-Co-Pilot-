@@ -1,65 +1,99 @@
-# FundVista - MF Direct vs Regular Co-Pilot Worklog
-
-## Project Overview
-Building a Mutual Fund Direct vs Regular Co-Pilot for Indian retail investors.
-Category: Mutual Funds (Direct vs Regular variants)
-Key insight: Direct plans save 0.5-1.5% annually in expense ratio, compounding to lakhs over time.
+# FundVista Worklog
 
 ---
 Task ID: 1
-Agent: Main
-Task: Plan architecture and design
+Agent: Main Orchestrator
+Task: Build AMFI Live NAV Fetch API Route
 
 Work Log:
-- Analyzed project structure and available tech stack
-- Chose Mutual Funds (Direct vs Regular) as the focus category
-- Designed database schema with Fund model containing both Direct/Regular variant data
-- Planned single-page app with tabs: Explore, Portfolio, Compare, Savings Calculator
-- Identified key metrics: expense ratio delta, tracking error, lifetime cost savings, risk-adjusted returns
+- Created `/src/app/api/funds/nav/route.ts` - AMFI live NAV fetch API
+- Supports search by name (`q`), scheme code (`schemeCode`), and ISIN (`isin`)
+- 24-hour in-memory cache with stale-while-error fallback
+- Falls back to Prisma/SQLite database if AMFI API is unavailable
+- Added Next.js `revalidate: 86400` for HTTP caching
 
 Stage Summary:
-- Category selected: Mutual Funds Direct vs Regular
-- Architecture: Single-page Next.js app with Prisma/SQLite backend
-- Key differentiator: Transparent cost/tracking-error/exposure tradeoffs in plain language
+- New API route enables live NAV data from AMFI
+- Database fallback ensures reliability
 
 ---
-Task ID: 3-b
-Agent: seed-agent
-Task: Seed database with 55+ realistic Indian MF funds
+Task ID: 2
+Agent: Main Orchestrator
+Task: Build Quick Import Feature
 
 Work Log:
-- Created prisma/fundSeed.ts with 56 funds across 11 sub-categories with realistic Indian MF data
-- Created prisma/seed.ts as entry script (uses PrismaClient directly, clears existing data, inserts with stats)
-- Ran seed script successfully - all 56 funds inserted
-- Verified database population via aggregate stats
+- Created `/src/components/QuickImport.tsx` - Bulk import dialog
+- Two-step flow: Input → Review & Confirm
+- Custom fuzzy matching engine (hybrid scoring: 60% token overlap + 40% Levenshtein)
+- Three confidence tiers: Exact (≥0.75), Partial (≥0.45), No Match (<0.45)
+- Integrated into PortfolioBuilder.tsx with "Quick Import" button
 
 Stage Summary:
-- 56 funds seeded across categories: Large Cap (9), Mid Cap (7), Small Cap (6), Flexi Cap (6), ELSS (6), Index Fund (6), Sectoral/Thematic (6), Balanced Advantage (5), Corporate Bond (3), Gilt (1), Short Duration (1)
-- Key data ranges: Direct ER 0.10%-0.92%, Regular ER 0.75%-2.10%, Avg savings 0.86%, AUM ₹1,234-₹62,345 Cr
-- Direct NAVs consistently higher than Regular (compounding of lower expense ratio)
-- ISINs unique per fund (Direct ends odd, Regular ends even)
-- Returns realistic for Indian market (small/mid cap 20-42% 1Y, large cap 13-21% 1Y, debt 6-9% 1Y)
+- Users can paste fund names/ISINs to bulk-add holdings
+- Color-coded match confidence badges
+- Per-fund controls for plan type and invested amount
 
 ---
-Task ID: 3-a
-Agent: api-agent
-Task: Build backend API routes for fund co-pilot
+Task ID: 3
+Agent: Main Orchestrator
+Task: Enhanced Comparison View
 
 Work Log:
-- Read existing worklog and seed data format (expense ratios as percentages, not bps)
-- Created 7 API routes across the required endpoints
-- All routes tested successfully via curl against live dev server
-- Lint passes with no errors
+- Added Radar Chart for multi-fund comparison (2+ funds)
+- Added Diff Visualization grouped Bar Chart (Direct vs Regular returns)
+- Added Exposure Tradeoff Cards (asset allocation, risk gauge, tracking error gauge)
+- Added Portfolio-Level Savings Projection (area chart for all holdings)
+- Updated ComparisonData type with equityPercentage, debtPercentage, riskometer, aumCrore
+- Updated compare API to include new fields and fix benchmarkReturns nesting
 
 Stage Summary:
-- API routes created at:
-  - `/src/app/api/funds/route.ts` (GET - search, filter, sort, paginate)
-  - `/src/app/api/funds/[id]/route.ts` (GET - single fund details)
-  - `/src/app/api/funds/compare/route.ts` (GET - direct vs regular comparison with lifetime savings)
-  - `/src/app/api/holdings/route.ts` (POST - add holding, GET - list by session)
-  - `/src/app/api/holdings/[id]/route.ts` (DELETE - remove with session auth)
-  - `/src/app/api/portfolio/analyze/route.ts` (POST - full analysis with recommendations)
-  - `/src/app/api/savings/calculate/route.ts` (POST - compound interest savings calculator)
-- Key features: fund search with multi-field filtering, direct vs regular comparison, portfolio analysis with plain-language recommendations, savings calculator with yearly breakdown, session-based portfolio management
-- Expense ratio handling: DB stores percentages (0.72=0.72%), output fields convert to bps where specified
-- Recommendations only suggest Regular→Direct switches, with tax and lock-in tradeoff warnings
+- 4 new advanced visualizations in CompareView
+- API types aligned between frontend and backend
+
+---
+Task ID: 4
+Agent: Main Orchestrator
+Task: Build Fund Detail Drawer
+
+Work Log:
+- Created `/src/components/FundDetail.tsx` - Comprehensive fund factsheet drawer
+- 5 tabs: Overview, Portfolio, Benchmark, Savings, Switch?
+- Pie chart for equity vs debt allocation
+- Lifetime savings table for 5 amounts × 6 time horizons
+- Integrated into ExploreFunds.tsx and PortfolioBuilder.tsx
+- Responsive: Sheet from right (desktop) / bottom (mobile)
+
+Stage Summary:
+- Full factsheet-level data accessible from fund cards and holdings
+- Desktop and mobile responsive drawer
+
+---
+Task ID: 5
+Agent: Main Orchestrator
+Task: Add More Debt & Hybrid Fund Data
+
+Work Log:
+- Added 15 new funds to fundSeed.ts
+- New sub-categories: Debt/Liquid, Hybrid/Aggressive Hybrid
+- Total funds: 56 → 71
+- Re-seeded database successfully
+
+Stage Summary:
+- 71 funds across 13 sub-categories
+- Comprehensive coverage of Equity, Debt, and Hybrid categories
+
+---
+Task ID: 6
+Agent: Main Orchestrator
+Task: UI Polish and Integration
+
+Work Log:
+- Updated ExploreFunds subCategories map to include Liquid and Aggressive Hybrid
+- Verified all integrations work (FundDetail, QuickImport, CompareView enhancements)
+- Lint passes clean
+- Dev server compiles and serves correctly
+
+Stage Summary:
+- All features integrated and working
+- Zero lint errors
+- 71 funds in database across all categories

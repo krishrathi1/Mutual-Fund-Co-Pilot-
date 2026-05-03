@@ -46,6 +46,15 @@ model Fund {
   numStocks            Int?    // Number of stocks in portfolio
   debtPercentage       Float?  // % debt allocation
   equityPercentage     Float?  // % equity allocation
+
+  trackingErrorBps    Float?   // Tracking error between Direct and Regular in bps (typically 1-5 bps)
+  benchmarkReturn1y   Float?   // Benchmark 1-year return %
+  benchmarkReturn3y   Float?   // Benchmark 3-year return %
+  benchmarkReturn5y   Float?   // Benchmark 5-year return %
+  directSharpe1y      Float?   // Direct plan 1-year Sharpe ratio
+  directSharpe3y      Float?   // Direct plan 3-year Sharpe ratio
+  regularSharpe1y     Float?   // Regular plan 1-year Sharpe ratio
+  regularSharpe3y     Float?   // Regular plan 3-year Sharpe ratio
   
   holdings     Holding[]
   

@@ -94,6 +94,9 @@ export async function GET(request: NextRequest) {
         expectedReturn
       )
 
+      const riskAdjustedReturnDelta =
+        (fund.directSharpe1y ?? 0) - (fund.regularSharpe1y ?? 0)
+
       return {
         fundId: fund.id,
         schemeName: fund.schemeName,
@@ -107,6 +110,8 @@ export async function GET(request: NextRequest) {
           return3y: fund.directReturn3y,
           return5y: fund.directReturn5y,
           isin: fund.directIsin,
+          sharpe1y: fund.directSharpe1y,
+          sharpe3y: fund.directSharpe3y,
         },
         regular: {
           nav: fund.regularNav,
@@ -115,12 +120,26 @@ export async function GET(request: NextRequest) {
           return3y: fund.regularReturn3y,
           return5y: fund.regularReturn5y,
           isin: fund.regularIsin,
+          sharpe1y: fund.regularSharpe1y,
+          sharpe3y: fund.regularSharpe3y,
         },
         expenseDiff: expenseDiffBps, // in bps
+        trackingErrorBps: fund.trackingErrorBps,
+        benchmarkReturns: {
+          return1y: fund.benchmarkReturn1y,
+          return3y: fund.benchmarkReturn3y,
+          return5y: fund.benchmarkReturn5y,
+        },
         returnDiff1y: Math.round(returnDiff1y * 100) / 100,
         returnDiff3y: Math.round(returnDiff3y * 100) / 100,
         returnDiff5y: Math.round(returnDiff5y * 100) / 100,
+        riskAdjustedReturnDelta: Math.round(riskAdjustedReturnDelta * 100) / 100,
         lifetimeSavings,
+        // Extra fields for advanced visualizations
+        equityPercentage: fund.equityPercentage,
+        debtPercentage: fund.debtPercentage,
+        riskometer: fund.riskometer,
+        aumCrore: fund.aumCrore,
       }
     })
 

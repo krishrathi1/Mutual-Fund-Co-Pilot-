@@ -21,7 +21,18 @@ function getExpectedReturn(category: string): number {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { fundId, investedAmount, years, directExpenseRatio, regularExpenseRatio, expectedReturn } = body
+    const {
+      fundId,
+      investedAmount,
+      years,
+      directExpenseRatio,
+      regularExpenseRatio,
+      expectedReturn,
+      mode,
+      monthlySip,
+    } = body
+
+    const calculationMode = mode === 'sip' ? 'sip' : 'lumpsum'
 
     if (investedAmount == null || years == null) {
       return NextResponse.json(
@@ -35,6 +46,16 @@ export async function POST(request: NextRequest) {
         { error: 'investedAmount and years must be positive' },
         { status: 400 }
       )
+    }
+
+    // SIP mode validation
+    if (calculationMode === 'sip') {
+      if (monthlySip == null || monthlySip <= 0) {
+        return NextResponse.json(
+          { error: 'monthlySip must be a positive number for SIP mode' },
+          { status: 400 }
+        )
+      }
     }
 
     let directExpense = directExpenseRatio
@@ -73,33 +94,106 @@ export async function POST(request: NextRequest) {
     const directRate = (expectedReturnRate - directExpense) / 100
     const regularRate = (expectedReturnRate - regularExpense) / 100
 
-    // Calculate future values
-    const directValue = investedAmount * Math.pow(1 + directRate, years)
-    const regularValue = investedAmount * Math.pow(1 + regularRate, years)
-    const savings = directValue - regularValue
-    const savingsPct = regularValue > 0 ? (savings / regularValue) * 100 : 0
+    if (calculationMode === 'sip') {
+      // SIP mode: Future Value of Annuity
+      // FV = P * [((1+r)^n - 1) / r] * (1+r)
+      // where P = monthly SIP amount, r = monthly rate, n = number of months
+      const P = monthlySip
+      const n = years * 12
+      const directMonthlyRate = directRate / 12
+      const regularMonthlyRate = regularRate / 12
 
-    // Yearly breakdown
-    const yearlyBreakdown = []
-    for (let year = 1; year <= years; year++) {
-      const dv = investedAmount * Math.pow(1 + directRate, year)
-      const rv = investedAmount * Math.pow(1 + regularRate, year)
-      yearlyBreakdown.push({
-        year,
-        directValue: Math.round(dv),
-        regularValue: Math.round(rv),
-        savings: Math.round(dv - rv),
-        cumulativeSavings: Math.round(dv - rv), // Same as savings for lump sum
+      let directValue: number
+      let regularValue: number
+
+      if (directMonthlyRate === 0) {
+        directValue = P * n
+      } else {
+        directValue = P * ((Math.pow(1 + directMonthlyRate, n) - 1) / directMonthlyRate) * (1 + directMonthlyRate)
+      }
+
+      if (regularMonthlyRate === 0) {
+        regularValue = P * n
+      } else {
+        regularValue = P * ((Math.pow(1 + regularMonthlyRate, n) - 1) / regularMonthlyRate) * (1 + regularMonthlyRate)
+      }
+
+      const savings = directValue - regularValue
+      const savingsPct = regularValue > 0 ? (savings / regularValue) * 100 : 0
+
+      // Yearly breakdown for SIP
+      const yearlyBreakdown = []
+      let cumulativeSavings = 0
+      for (let year = 1; year <= years; year++) {
+        const monthsSoFar = year * 12
+
+        let dvYear: number
+        let rvYear: number
+
+        if (directMonthlyRate === 0) {
+          dvYear = P * monthsSoFar
+        } else {
+          dvYear = P * ((Math.pow(1 + directMonthlyRate, monthsSoFar) - 1) / directMonthlyRate) * (1 + directMonthlyRate)
+        }
+
+        if (regularMonthlyRate === 0) {
+          rvYear = P * monthsSoFar
+        } else {
+          rvYear = P * ((Math.pow(1 + regularMonthlyRate, monthsSoFar) - 1) / regularMonthlyRate) * (1 + regularMonthlyRate)
+        }
+
+        const yearSavings = dvYear - rvYear
+        cumulativeSavings = yearSavings
+
+        yearlyBreakdown.push({
+          year,
+          directValue: Math.round(dvYear),
+          regularValue: Math.round(rvYear),
+          savings: Math.round(yearSavings),
+          cumulativeSavings: Math.round(cumulativeSavings),
+        })
+      }
+
+      return NextResponse.json({
+        mode: 'sip',
+        monthlySip: P,
+        totalInvested: P * n,
+        directValue: Math.round(directValue),
+        regularValue: Math.round(regularValue),
+        savings: Math.round(savings),
+        savingsPct: Math.round(savingsPct * 100) / 100,
+        yearlyBreakdown,
+      })
+    } else {
+      // Lumpsum mode (default, backward compatible)
+      const directValue = investedAmount * Math.pow(1 + directRate, years)
+      const regularValue = investedAmount * Math.pow(1 + regularRate, years)
+      const savings = directValue - regularValue
+      const savingsPct = regularValue > 0 ? (savings / regularValue) * 100 : 0
+
+      // Yearly breakdown
+      const yearlyBreakdown = []
+      for (let year = 1; year <= years; year++) {
+        const dv = investedAmount * Math.pow(1 + directRate, year)
+        const rv = investedAmount * Math.pow(1 + regularRate, year)
+        yearlyBreakdown.push({
+          year,
+          directValue: Math.round(dv),
+          regularValue: Math.round(rv),
+          savings: Math.round(dv - rv),
+          cumulativeSavings: Math.round(dv - rv), // Same as savings for lump sum
+        })
+      }
+
+      return NextResponse.json({
+        mode: 'lumpsum',
+        directValue: Math.round(directValue),
+        regularValue: Math.round(regularValue),
+        savings: Math.round(savings),
+        savingsPct: Math.round(savingsPct * 100) / 100,
+        yearlyBreakdown,
       })
     }
-
-    return NextResponse.json({
-      directValue: Math.round(directValue),
-      regularValue: Math.round(regularValue),
-      savings: Math.round(savings),
-      savingsPct: Math.round(savingsPct * 100) / 100,
-      yearlyBreakdown,
-    })
   } catch (error) {
     console.error('Error calculating savings:', error)
     return NextResponse.json(

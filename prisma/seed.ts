@@ -46,6 +46,14 @@ async function main() {
           numStocks: fund.numStocks,
           debtPercentage: fund.debtPercentage,
           equityPercentage: fund.equityPercentage,
+          trackingErrorBps: fund.trackingErrorBps,
+          benchmarkReturn1y: fund.benchmarkReturn1y,
+          benchmarkReturn3y: fund.benchmarkReturn3y,
+          benchmarkReturn5y: fund.benchmarkReturn5y,
+          directSharpe1y: fund.directSharpe1y,
+          directSharpe3y: fund.directSharpe3y,
+          regularSharpe1y: fund.regularSharpe1y,
+          regularSharpe3y: fund.regularSharpe3y,
         },
       })
       inserted++

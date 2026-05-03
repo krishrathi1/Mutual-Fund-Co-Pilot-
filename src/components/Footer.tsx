@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart, ExternalLink } from 'lucide-react'
+import { Heart } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -14,8 +14,8 @@ export default function Footer() {
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span>Data sourced from AMFI, NSE & fund house factsheets</span>
-            <span>·</span>
-            <span>Not SEBI-registered advice</span>
+            <span className="hidden sm:inline">·</span>
+            <span className="hidden sm:inline">Not SEBI-registered advice</span>
           </div>
         </div>
         <div className="mt-3 text-center text-xs text-muted-foreground/60">
