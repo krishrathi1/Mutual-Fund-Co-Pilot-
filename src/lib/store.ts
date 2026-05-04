@@ -311,6 +311,15 @@ const getSessionId = () => {
 
 const sessionId = getSessionId()
 
+const hasRemotePortfolioDb = process.env.NEXT_PUBLIC_USE_REMOTE_DB === 'true'
+
+function shouldUseLocalPortfolioStorage(): boolean {
+  if (typeof window === 'undefined' || hasRemotePortfolioDb) return false
+
+  const host = window.location.hostname
+  return host !== 'localhost' && host !== '127.0.0.1' && host !== ''
+}
+
 const RISK_ALLOCATIONS: Record<string, { equity: number; debt: number; hybrid: number }> = {
   conservative: { equity: 30, debt: 50, hybrid: 20 },
   moderate: { equity: 55, debt: 25, hybrid: 20 },
@@ -547,6 +556,15 @@ export const useFundStore = create<FundStore>()(
         const { sessionId, funds, holdings } = get()
         const fund = funds.find((f) => f.id === holding.fundId)
 
+        if (shouldUseLocalPortfolioStorage()) {
+          if (!fund) {
+            throw new Error('Fund not found locally. Please refresh funds and try again.')
+          }
+
+          set({ holdings: [createLocalHolding(holding, sessionId, fund), ...holdings] })
+          return
+        }
+
         try {
           const res = await fetch('/api/holdings', {
             method: 'POST',
@@ -577,7 +595,7 @@ export const useFundStore = create<FundStore>()(
         const previousHoldings = get().holdings
         set({ holdings: previousHoldings.filter((holding) => holding.id !== holdingId) })
 
-        if (holdingId.startsWith('local-')) return
+        if (holdingId.startsWith('local-') || shouldUseLocalPortfolioStorage()) return
 
         try {
           const res = await fetch(`/api/holdings/${holdingId}?sessionId=${sessionId}`, { method: 'DELETE' })
@@ -592,6 +610,8 @@ export const useFundStore = create<FundStore>()(
       fetchHoldings: async () => {
         const { holdingsLoading } = get()
         if (holdingsLoading) return
+
+        if (shouldUseLocalPortfolioStorage()) return
         
         set({ holdingsLoading: true })
         try {
@@ -651,6 +671,11 @@ export const useFundStore = create<FundStore>()(
           set({ analysis: computePortfolioAnalysis(get().holdings), analysisLoading: false })
         }
 
+        if (shouldUseLocalPortfolioStorage()) {
+          useLocalAnalysis()
+          return
+        }
+
         try {
           const { sessionId, holdings } = get()
           const res = await fetch('/api/portfolio/analyze', {
@@ -699,13 +724,15 @@ export const useFundStore = create<FundStore>()(
       fetchAiInsight: async (fundId, fundData) => {
         const { aiInsights, aiInsightsLoading } = get()
         if (aiInsights[fundId] || aiInsightsLoading[fundId]) return
+        const data = fundData as Record<string, unknown>
+        const fundName = data.fundName || data.schemeName
 
         set({ aiInsightsLoading: { ...aiInsightsLoading, [fundId]: true } })
         try {
           const res = await fetch('/api/ai/insights', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ fundId, ...fundData }),
+            body: JSON.stringify({ fundId, ...fundData, fundName }),
           })
           const data = await res.json()
           const current = get().aiInsights

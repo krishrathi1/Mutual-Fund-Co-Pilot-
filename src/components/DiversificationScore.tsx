@@ -11,6 +11,15 @@ import {
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 
+const hasRemotePortfolioDb = process.env.NEXT_PUBLIC_USE_REMOTE_DB === 'true'
+
+function shouldUseLocalPortfolioStorage(): boolean {
+  if (typeof window === 'undefined' || hasRemotePortfolioDb) return false
+
+  const host = window.location.hostname
+  return host !== 'localhost' && host !== '127.0.0.1' && host !== ''
+}
+
 interface BreakdownItem {
   metric: string
   score: number
@@ -360,6 +369,12 @@ export default function DiversificationScore() {
 
     setLoading(true)
     setError(null)
+    if (shouldUseLocalPortfolioStorage()) {
+      setDivData(computeDiversification(holdings))
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/portfolio/diversification', {
         method: 'POST',

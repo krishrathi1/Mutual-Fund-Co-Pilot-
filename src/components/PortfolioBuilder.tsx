@@ -47,10 +47,15 @@ export default function PortfolioBuilder() {
     holdings.forEach(h => {
       if (h.planType === 'regular' && !aiInsights[h.fundId] && !aiInsightsLoading[h.fundId]) {
         fetchAiInsight(h.fundId, {
+          fundName: h.fund.schemeName,
           schemeName: h.fund.schemeName,
           directExpenseRatio: h.fund.directExpenseRatio,
           regularExpenseRatio: h.fund.regularExpenseRatio,
+          directReturn1y: h.fund.directReturn1y || 0,
+          regularReturn1y: h.fund.regularReturn1y || 0,
           category: h.fund.category,
+          subCategory: h.fund.subCategory,
+          currentAmount: h.currentAmount,
         })
       }
     })

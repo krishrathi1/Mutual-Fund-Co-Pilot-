@@ -19,6 +19,15 @@ const EMERALD_PALETTE = [
   '#5eead4', '#99f6e4',
 ]
 
+const hasRemotePortfolioDb = process.env.NEXT_PUBLIC_USE_REMOTE_DB === 'true'
+
+function shouldUseLocalPortfolioStorage(): boolean {
+  if (typeof window === 'undefined' || hasRemotePortfolioDb) return false
+
+  const host = window.location.hostname
+  return host !== 'localhost' && host !== '127.0.0.1' && host !== ''
+}
+
 interface SectorData {
   name: string
   weight: number
@@ -288,6 +297,12 @@ export default function SectorExposure() {
     }
 
     setLoading(true)
+    if (shouldUseLocalPortfolioStorage()) {
+      setExposureData(computeSectorExposure(holdings))
+      setLoading(false)
+      return
+    }
+
     try {
       const res = await fetch('/api/portfolio/sector-exposure', {
         method: 'POST',
