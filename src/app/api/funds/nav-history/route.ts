@@ -100,10 +100,8 @@ export async function GET(request: Request) {
     // Seed RNG with fundId for deterministic results
     const rng = seededRandom(hashString(fund.id))
 
-    // Generate NAV history going backwards from current NAV
+    // Generate NAV history going backwards from each plan's current NAV.
     const navHistory: { date: string; directNav: number; regularNav: number }[] = []
-    let currentDirectNav = fund.directNav
-    let currentRegularNav = fund.regularNav
 
     // Start from the current date and go backwards
     const now = new Date()
@@ -113,26 +111,22 @@ export async function GET(request: Request) {
       dates.unshift(d)
     }
 
-    // Build forward from the oldest date
-    // First, compute what the NAV was months ago by working backwards
-    const backwardsNavs: number[] = [currentDirectNav]
-    for (let i = 1; i <= months; i++) {
-      // Reverse: nav_prev = nav_next / (1 + monthlyReturn + monthlyVol * randomShock)
+    const directBackwardsNavs: number[] = [fund.directNav]
+    const regularBackwardsNavs: number[] = [fund.regularNav]
+    const expenseDiffMonthly = (fund.regularExpenseRatio - fund.directExpenseRatio) / 100 / 12
+
+    for (let i = 1; i < months; i++) {
       const randomShock = (rng() - 0.5) * 2 // Range -1 to 1
-      const monthlyChange = 1 + monthlyReturn + monthlyVol * randomShock
-      const prevNav = backwardsNavs[i - 1] / Math.max(0.5, monthlyChange)
-      backwardsNavs.unshift(prevNav)
+      const monthlyChangeDirect = 1 + monthlyReturn + monthlyVol * randomShock
+      const monthlyChangeRegular = monthlyChangeDirect - expenseDiffMonthly
+
+      directBackwardsNavs.unshift(directBackwardsNavs[0] / Math.max(0.5, monthlyChangeDirect))
+      regularBackwardsNavs.unshift(regularBackwardsNavs[0] / Math.max(0.5, monthlyChangeRegular))
     }
 
-    // The expense ratio difference between regular and direct
-    const expenseDiff = (fund.regularExpenseRatio - fund.directExpenseRatio) / 10000 // Convert bps to decimal
-
-    // Build NAV history
     for (let i = 0; i < months; i++) {
-      const directNav = Math.round(backwardsNavs[i] * 100) / 100
-      // Regular NAV is slightly higher historically (before expense erosion catches up)
-      // Approximate: regular NAV tracks direct but with expense drag
-      const regularNav = Math.round((directNav * (1 + expenseDiff * (months - i) / 12)) * 100) / 100
+      const directNav = Math.round(directBackwardsNavs[i] * 100) / 100
+      const regularNav = Math.round(regularBackwardsNavs[i] * 100) / 100
 
       navHistory.push({
         date: dates[i].toISOString().slice(0, 10),

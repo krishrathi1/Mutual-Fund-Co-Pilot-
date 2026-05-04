@@ -3,8 +3,7 @@
 import { useFundStore, type FundData } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Area, AreaChart,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -83,7 +82,7 @@ function generateMockNavHistory(fund: FundData, months: number): NavPoint[] {
   const directBackwardsNavs: number[] = [fund.directNav]
   const regularBackwardsNavs: number[] = [fund.regularNav]
   
-  for (let i = 1; i <= months; i++) {
+  for (let i = 1; i < months; i++) {
     const randomShock = (rng() - 0.5) * 2
     const monthlyChangeDirect = 1 + monthlyReturn + monthlyVol * randomShock
     
@@ -101,8 +100,8 @@ function generateMockNavHistory(fund: FundData, months: number): NavPoint[] {
   const navHistory: NavPoint[] = []
 
   for (let i = 0; i < months; i++) {
-    const directNav = Math.round(directBackwardsNavs[i + 1] * 100) / 100
-    const regularNav = Math.round(regularBackwardsNavs[i + 1] * 100) / 100
+    const directNav = Math.round(directBackwardsNavs[i] * 100) / 100
+    const regularNav = Math.round(regularBackwardsNavs[i] * 100) / 100
     navHistory.push({
       date: dates[i].toISOString().slice(0, 10),
       directNav,
@@ -122,12 +121,13 @@ function generateMockNavHistory(fund: FundData, months: number): NavPoint[] {
 
 function CustomTooltip({ active, payload, label }: {
   active?: boolean
-  payload?: Array<{ value: number; dataKey: string; color: string }>
+  payload?: Array<{ value: number; dataKey: string; color: string; payload: NavPoint & { directIndex: number; regularIndex: number } }>
   label?: string
 }) {
   if (!active || !payload || payload.length === 0) return null
-  const direct = payload.find(p => p.dataKey === 'directNav')
-  const regular = payload.find(p => p.dataKey === 'regularNav')
+  const direct = payload.find(p => p.dataKey === 'directIndex')
+  const regular = payload.find(p => p.dataKey === 'regularIndex')
+  const point = payload[0]?.payload
   const gap = direct && regular ? (direct.value - regular.value).toFixed(2) : null
 
   return (
@@ -232,9 +232,13 @@ export default function NAVHistory() {
   }, [funds, selectedFundId])
 
   const chartData = useMemo(() => {
+    const startDirect = navData[0]?.directNav || 1
+    const startRegular = navData[0]?.regularNav || 1
     return navData.map(p => ({
       ...p,
       dateLabel: new Date(p.date).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
+      directIndex: (p.directNav / startDirect) * 100,
+      regularIndex: (p.regularNav / startRegular) * 100,
     }))
   }, [navData])
 
@@ -247,11 +251,15 @@ export default function NAVHistory() {
     const years = months / 12
     const directCagr = years > 0 ? (Math.pow(endDirect / startDirect, 1 / years) - 1) * 100 : 0
     const regularCagr = years > 0 ? (Math.pow(endRegular / startRegular, 1 / years) - 1) * 100 : 0
-    const totalGap = endDirect - endRegular
+    const directIndexEnd = (endDirect / startDirect) * 100
+    const regularIndexEnd = (endRegular / startRegular) * 100
+    const totalGap = directIndexEnd - regularIndexEnd
 
     return {
       startDirect,
+      startRegular,
       endDirect,
+      endRegular,
       directChange: endDirect - startDirect,
       directChangePct: ((endDirect - startDirect) / startDirect) * 100,
       directCagr,
@@ -360,24 +368,24 @@ export default function NAVHistory() {
                           <YAxis
                             tick={{ fontSize: 11 }}
                             domain={['auto', 'auto']}
-                            tickFormatter={(v: number) => `₹${v.toFixed(0)}`}
+                            tickFormatter={(v: number) => v.toFixed(0)}
                           />
                           <Tooltip content={<CustomTooltip />} />
                           <Area
                             type="monotone"
-                            dataKey="directNav"
+                            dataKey="directIndex"
                             stroke="#10b981"
                             strokeWidth={2}
                             fill="url(#directGradient)"
-                            name="Direct NAV"
+                            name="Direct Performance"
                           />
                           <Area
                             type="monotone"
-                            dataKey="regularNav"
+                            dataKey="regularIndex"
                             stroke="#f97316"
                             strokeWidth={2}
                             fill="url(#regularGradient)"
-                            name="Regular NAV"
+                            name="Regular Performance"
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -387,11 +395,11 @@ export default function NAVHistory() {
                     <div className="flex items-center justify-center gap-6 text-xs">
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                        <span className="text-muted-foreground">Direct NAV</span>
+                        <span className="text-muted-foreground">Direct indexed to 100</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                        <span className="text-muted-foreground">Regular NAV</span>
+                        <span className="text-muted-foreground">Regular indexed to 100</span>
                       </div>
                     </div>
                   </div>
@@ -480,12 +488,12 @@ export default function NAVHistory() {
                   </p>
                   <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
                     Over {metrics.years.toFixed(0)} year{metrics.years !== 1 ? 's' : ''}, the Direct plan has generated{' '}
-                    <span className="font-bold">₹{Math.abs(metrics.totalGap).toFixed(2)}</span> more per unit than the Regular plan.
+                    <span className="font-bold">{Math.abs(metrics.totalGap).toFixed(2)}%</span> more indexed growth than the Regular plan.
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    On a ₹10 lakh investment ({(1000000 / metrics.endDirect).toFixed(0)} units), this translates to approximately{' '}
+                    On a Rs 10 lakh investment, this translates to approximately{' '}
                     <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-                      {formatCurrency(Math.abs(metrics.totalGap) * (1000000 / metrics.endDirect))}
+                      {formatCurrency(Math.abs(metrics.totalGap) * 10000)}
                     </span>{' '}
                     in additional value.
                   </p>
@@ -519,3 +527,4 @@ export default function NAVHistory() {
     </div>
   )
 }
+
