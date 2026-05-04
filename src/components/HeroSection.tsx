@@ -260,7 +260,15 @@ export default function HeroSection() {
             {features.map((feature, i) => (
               <motion.button
                 key={feature.label}
-                onClick={() => setActiveTab(feature.tab)}
+                onClick={() => {
+                  setActiveTab(feature.tab);
+                  if (feature.tab === 'explore') {
+                    const element = document.getElementById('mutual-funds-section');
+                    if (element) {
+                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                  }
+                }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 + i * 0.05 }}
