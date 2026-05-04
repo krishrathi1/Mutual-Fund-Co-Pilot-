@@ -317,6 +317,18 @@ const RISK_ALLOCATIONS: Record<string, { equity: number; debt: number; hybrid: n
   aggressive: { equity: 75, debt: 10, hybrid: 15 },
 }
 
+const EXPECTED_RETURN_BY_CATEGORY: Record<string, number> = {
+  Equity: 12,
+  ELSS: 12,
+  Index: 11,
+  Hybrid: 9,
+  Debt: 7,
+}
+
+function getExpectedReturn(category: string): number {
+  return EXPECTED_RETURN_BY_CATEGORY[category] || 10
+}
+
 function mapGoalType(name: string): GoalData['type'] {
   const lower = name.toLowerCase()
   if (lower.includes('retire')) return 'retirement'
@@ -342,6 +354,143 @@ function createLocalHolding(
     currentAmount: holding.currentAmount,
     purchaseDate: holding.purchaseDate || null,
     fund,
+  }
+}
+
+function computePortfolioAnalysis(holdings: HoldingData[]): PortfolioAnalysis {
+  if (holdings.length === 0) {
+    return {
+      totalInvested: 0,
+      currentValue: 0,
+      totalGain: 0,
+      totalGainPct: 0,
+      weightedExpenseRatio: 0,
+      annualCost: 0,
+      directSavings: {
+        annualSaving: 0,
+        fiveYearSaving: 0,
+        tenYearSaving: 0,
+        twentyYearSaving: 0,
+        lifetimeSavingAtRetirement: 0,
+      },
+      categoryBreakdown: [],
+      recommendations: [],
+      riskProfile: {
+        overallRisk: 'N/A',
+        equityPct: 0,
+        debtPct: 0,
+        concentrationRisk: 'No holdings to analyze',
+        diversificationScore: 0,
+      },
+    }
+  }
+
+  const totalInvested = holdings.reduce((sum, holding) => sum + holding.investedAmount, 0)
+  const currentValue = holdings.reduce((sum, holding) => sum + holding.currentAmount, 0)
+  const totalGain = currentValue - totalInvested
+  const totalGainPct = totalInvested > 0 ? (totalGain / totalInvested) * 100 : 0
+
+  let weightedExpenseRatio = 0
+  let annualSaving = 0
+  let fiveYearSaving = 0
+  let tenYearSaving = 0
+  let twentyYearSaving = 0
+  let lifetimeSavingAtRetirement = 0
+  let equityPct = 0
+  let debtPct = 0
+  const categoryMap = new Map<string, number>()
+  const fundHouseMap = new Map<string, number>()
+
+  for (const holding of holdings) {
+    const weight = currentValue > 0 ? holding.currentAmount / currentValue : 0
+    const fund = holding.fund
+    const expenseRatio = holding.planType === 'direct' ? fund.directExpenseRatio : fund.regularExpenseRatio
+    weightedExpenseRatio += weight * expenseRatio
+    categoryMap.set(fund.category, (categoryMap.get(fund.category) || 0) + holding.currentAmount)
+    fundHouseMap.set(fund.fundHouse, (fundHouseMap.get(fund.fundHouse) || 0) + holding.currentAmount)
+
+    if (fund.category === 'Equity' || fund.category === 'ELSS' || fund.category === 'Index') {
+      equityPct += weight * 100
+    } else if (fund.category === 'Debt') {
+      debtPct += weight * 100
+    } else if (fund.category === 'Hybrid') {
+      equityPct += weight * (fund.equityPercentage ?? 65)
+      debtPct += weight * (fund.debtPercentage ?? 35)
+    }
+
+    if (holding.planType !== 'regular') continue
+
+    const expenseDiffPct = fund.regularExpenseRatio - fund.directExpenseRatio
+    const expectedReturn = getExpectedReturn(fund.category)
+    const directRate = (expectedReturn - fund.directExpenseRatio) / 100
+    const regularRate = (expectedReturn - fund.regularExpenseRatio) / 100
+
+    annualSaving += (expenseDiffPct / 100) * holding.currentAmount
+    fiveYearSaving += holding.currentAmount * (Math.pow(1 + directRate, 5) - Math.pow(1 + regularRate, 5))
+    tenYearSaving += holding.currentAmount * (Math.pow(1 + directRate, 10) - Math.pow(1 + regularRate, 10))
+    twentyYearSaving += holding.currentAmount * (Math.pow(1 + directRate, 20) - Math.pow(1 + regularRate, 20))
+    lifetimeSavingAtRetirement += holding.currentAmount * (Math.pow(1 + directRate, 30) - Math.pow(1 + regularRate, 30))
+  }
+
+  const recommendations = holdings
+    .filter((holding) => holding.planType === 'regular')
+    .map((holding) => {
+      const expenseDiffPct = holding.fund.regularExpenseRatio - holding.fund.directExpenseRatio
+      const expenseSavingBps = Math.round(expenseDiffPct * 100)
+      const annual = (expenseDiffPct / 100) * holding.currentAmount
+      const expectedReturn = getExpectedReturn(holding.fund.category)
+      const directRate = (expectedReturn - holding.fund.directExpenseRatio) / 100
+      const regularRate = (expectedReturn - holding.fund.regularExpenseRatio) / 100
+      const tenYear = holding.currentAmount * (Math.pow(1 + directRate, 10) - Math.pow(1 + regularRate, 10))
+      const priority: Recommendation['priority'] =
+        expenseSavingBps >= 100 || annual >= 5000 ? 'high' : expenseSavingBps >= 50 || annual >= 2000 ? 'medium' : 'low'
+
+      return {
+        fundId: holding.fundId,
+        schemeName: holding.fund.schemeName,
+        currentPlan: 'regular' as const,
+        recommendedPlan: 'direct' as const,
+        expenseSavingBps,
+        annualSaving: Math.round(annual),
+        tenYearSaving: Math.round(tenYear),
+        reason: `Switching to Direct can reduce expenses by ${expenseDiffPct.toFixed(2)}% per year for this holding.`,
+        tradeoffs: [
+          'You will need to manage the investment directly.',
+          'Switching may trigger tax or exit-load implications depending on holding period.',
+        ],
+        priority,
+      }
+    })
+
+  const maxConcentration = currentValue > 0 && fundHouseMap.size > 0 ? Math.max(...fundHouseMap.values()) / currentValue * 100 : 0
+
+  return {
+    totalInvested,
+    currentValue,
+    totalGain,
+    totalGainPct,
+    weightedExpenseRatio,
+    annualCost: (weightedExpenseRatio / 100) * currentValue,
+    directSavings: {
+      annualSaving: Math.round(annualSaving),
+      fiveYearSaving: Math.round(fiveYearSaving),
+      tenYearSaving: Math.round(tenYearSaving),
+      twentyYearSaving: Math.round(twentyYearSaving),
+      lifetimeSavingAtRetirement: Math.round(lifetimeSavingAtRetirement),
+    },
+    categoryBreakdown: Array.from(categoryMap.entries()).map(([category, amount]) => ({
+      category,
+      amount: Math.round(amount),
+      pct: currentValue > 0 ? Math.round((amount / currentValue) * 10000) / 100 : 0,
+    })),
+    recommendations,
+    riskProfile: {
+      overallRisk: equityPct > 80 ? 'Aggressive' : equityPct > 60 ? 'Moderately Aggressive' : equityPct > 40 ? 'Moderate' : equityPct > 20 ? 'Conservative' : 'Very Conservative',
+      equityPct: Math.round(equityPct),
+      debtPct: Math.round(debtPct),
+      concentrationRisk: maxConcentration > 60 ? 'High concentration risk' : maxConcentration > 40 ? 'Moderate concentration risk' : 'Well diversified across fund houses',
+      diversificationScore: Math.max(0, Math.min(100, Math.round(100 - maxConcentration))),
+    },
   }
 }
 
@@ -498,17 +647,27 @@ export const useFundStore = create<FundStore>()(
       analysisLoading: false,
       fetchAnalysis: async () => {
         set({ analysisLoading: true })
+        const useLocalAnalysis = () => {
+          set({ analysis: computePortfolioAnalysis(get().holdings), analysisLoading: false })
+        }
+
         try {
-          const { sessionId } = get()
+          const { sessionId, holdings } = get()
           const res = await fetch('/api/portfolio/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId }),
           })
           const data = await res.json()
+          if (!res.ok || (holdings.length > 0 && data.currentValue === 0)) {
+            useLocalAnalysis()
+            return
+          }
+
           set({ analysis: data, analysisLoading: false })
-        } catch {
-          set({ analysisLoading: false })
+        } catch (err) {
+          console.error('Fetch analysis error:', err)
+          useLocalAnalysis()
         }
       },
 
