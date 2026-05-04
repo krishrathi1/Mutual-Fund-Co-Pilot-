@@ -24,6 +24,15 @@ const HEAT_COLORS = [
   '#f87171', '#ef4444', '#dc2626', '#991b1b',   // high (red)
 ]
 
+const hasRemotePortfolioDb = process.env.NEXT_PUBLIC_USE_REMOTE_DB === 'true'
+
+function shouldUseLocalPortfolioStorage(): boolean {
+  if (typeof window === 'undefined' || hasRemotePortfolioDb) return false
+
+  const host = window.location.hostname
+  return host !== 'localhost' && host !== '127.0.0.1' && host !== ''
+}
+
 function getHeatColor(value: number): string {
   const idx = Math.min(Math.floor(value / 10), HEAT_COLORS.length - 1)
   return HEAT_COLORS[idx]
@@ -53,6 +62,13 @@ export default function FundOverlap() {
     }
 
     setLoading(true)
+    if (shouldUseLocalPortfolioStorage()) {
+      setOverlapResult(generateClientSideOverlap(holdings))
+      setAnalyzed(true)
+      setLoading(false)
+      return
+    }
+
     try {
       const fundIds = holdings.map((h) => h.fundId)
       const res = await fetch('/api/portfolio/overlap', {
