@@ -195,7 +195,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A[User enters Explore tab] --> B[Fetch fund list from /api/funds]
+    A[User enters Explore tab] --> B["Fetch fund list from /api/funds"]
     B --> C[Render fund cards]
     C --> D{User action}
     D --> E[Search text]
@@ -209,7 +209,7 @@ flowchart TD
     G --> B
     H --> K[Fund Detail Drawer]
     I --> L[Selected funds in Zustand]
-    J --> M[POST /api/holdings]
+    J --> M["POST /api/holdings"]
 ```
 
 ### Fund Detail Drawer Flow
@@ -234,7 +234,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     A[User adds holdings] --> B[Holdings saved with sessionId]
-    B --> C[POST /api/portfolio/analyze]
+    B --> C["POST /api/portfolio/analyze"]
     C --> D[Fetch holdings with fund data]
     D --> E[Calculate total invested/current value]
     E --> F[Calculate weighted expense ratio]
@@ -306,7 +306,7 @@ flowchart TD
 sequenceDiagram
     participant U as User
     participant UI as AICopilot Component
-    participant API as /api/ai/chat
+    participant API as AI Chat API
     participant AI as AI SDK
     participant FB as Fallback Responses
 
@@ -408,7 +408,7 @@ The backend is implemented using Next.js API routes inside `src/app/api`.
 
 ```mermaid
 flowchart TB
-    API[src/app/api]
+    API["src/app/api"]
     Funds[Funds APIs]
     Portfolio[Portfolio APIs]
     Planning[Planning APIs]
@@ -425,31 +425,31 @@ flowchart TB
     API --> Watchlist
     API --> Goals
 
-    Funds --> F1[/api/funds]
-    Funds --> F2[/api/funds/compare]
-    Funds --> F3[/api/funds/screener]
-    Funds --> F4[/api/funds/nav-history]
-    Funds --> F5[/api/funds/amc]
+    Funds --> F1["/api/funds"]
+    Funds --> F2["/api/funds/compare"]
+    Funds --> F3["/api/funds/screener"]
+    Funds --> F4["/api/funds/nav-history"]
+    Funds --> F5["/api/funds/amc"]
 
-    Portfolio --> P1[/api/holdings]
-    Portfolio --> P2[/api/portfolio/analyze]
-    Portfolio --> P3[/api/portfolio/overlap]
-    Portfolio --> P4[/api/portfolio/sector-exposure]
-    Portfolio --> P5[/api/portfolio/diversification]
-    Portfolio --> P6[/api/portfolio/rebalancing]
-    Portfolio --> P7[/api/portfolio/stress-test]
-    Portfolio --> P8[/api/portfolio/xirr]
+    Portfolio --> P1["/api/holdings"]
+    Portfolio --> P2["/api/portfolio/analyze"]
+    Portfolio --> P3["/api/portfolio/overlap"]
+    Portfolio --> P4["/api/portfolio/sector-exposure"]
+    Portfolio --> P5["/api/portfolio/diversification"]
+    Portfolio --> P6["/api/portfolio/rebalancing"]
+    Portfolio --> P7["/api/portfolio/stress-test"]
+    Portfolio --> P8["/api/portfolio/xirr"]
 
-    Planning --> PL1[/api/savings/calculate]
-    Planning --> PL2[/api/sip/planner]
-    Planning --> PL3[/api/swp/calculator]
-    Planning --> PL4[/api/stp/calculator]
+    Planning --> PL1["/api/savings/calculate"]
+    Planning --> PL2["/api/sip/planner"]
+    Planning --> PL3["/api/swp/calculator"]
+    Planning --> PL4["/api/stp/calculator"]
 
-    Optimize --> O1[/api/tax/calculate]
-    AI --> A1[/api/ai/chat]
-    AI --> A2[/api/ai/insights]
-    Watchlist --> W1[/api/watchlist]
-    Goals --> G1[/api/goals]
+    Optimize --> O1["/api/tax/calculate"]
+    AI --> A1["/api/ai/chat"]
+    AI --> A2["/api/ai/insights"]
+    Watchlist --> W1["/api/watchlist"]
+    Goals --> G1["/api/goals"]
 ```
 
 ### Main API List
@@ -680,7 +680,7 @@ The chat API keeps a short conversation history by `sessionId`. If the AI call f
 
 ```mermaid
 flowchart TD
-    A[User asks question] --> B[Send message to /api/ai/chat]
+    A[User asks question] --> B["Send message to /api/ai/chat"]
     B --> C[Attach Indian mutual fund advisor system prompt]
     C --> D{AI SDK available?}
     D -->|Yes| E[Generate AI answer]
