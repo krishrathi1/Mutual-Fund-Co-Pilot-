@@ -327,6 +327,24 @@ function mapGoalType(name: string): GoalData['type'] {
   return 'custom'
 }
 
+function createLocalHolding(
+  holding: { fundId: string; planType: 'direct' | 'regular'; investedAmount: number; currentAmount: number; units: number; purchaseDate?: string },
+  sessionId: string,
+  fund: FundData
+): HoldingData {
+  return {
+    id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    sessionId,
+    fundId: holding.fundId,
+    planType: holding.planType,
+    units: holding.units,
+    investedAmount: holding.investedAmount,
+    currentAmount: holding.currentAmount,
+    purchaseDate: holding.purchaseDate || null,
+    fund,
+  }
+}
+
 export const useFundStore = create<FundStore>()(
   persist(
     (set, get) => ({
@@ -377,18 +395,50 @@ export const useFundStore = create<FundStore>()(
       holdings: [],
       holdingsLoading: false,
       addHolding: async (holding) => {
-        const { sessionId } = get()
-        await fetch('/api/holdings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...holding, sessionId }),
-        })
-        await get().fetchHoldings()
+        const { sessionId, funds, holdings } = get()
+        const fund = funds.find((f) => f.id === holding.fundId)
+
+        try {
+          const res = await fetch('/api/holdings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...holding, sessionId }),
+          })
+
+          if (res.ok) {
+            const savedHolding = await res.json()
+            set({ holdings: [savedHolding, ...holdings] })
+            return
+          }
+
+          const errorText = await res.text()
+          console.error('Add holding failed:', res.status, errorText)
+        } catch (err) {
+          console.error('Add holding error:', err)
+        }
+
+        if (!fund) {
+          throw new Error('Fund not found locally. Please refresh funds and try again.')
+        }
+
+        set({ holdings: [createLocalHolding(holding, sessionId, fund), ...holdings] })
       },
       removeHolding: async (holdingId) => {
         const { sessionId } = get()
-        await fetch(`/api/holdings/${holdingId}?sessionId=${sessionId}`, { method: 'DELETE' })
-        await get().fetchHoldings()
+        const previousHoldings = get().holdings
+        set({ holdings: previousHoldings.filter((holding) => holding.id !== holdingId) })
+
+        if (holdingId.startsWith('local-')) return
+
+        try {
+          const res = await fetch(`/api/holdings/${holdingId}?sessionId=${sessionId}`, { method: 'DELETE' })
+          if (!res.ok) {
+            const errorText = await res.text()
+            console.error('Remove holding failed:', res.status, errorText)
+          }
+        } catch (err) {
+          console.error('Remove holding error:', err)
+        }
       },
       fetchHoldings: async () => {
         const { holdingsLoading } = get()
@@ -404,7 +454,9 @@ export const useFundStore = create<FundStore>()(
           const res = await fetch(`/api/holdings?sessionId=${sessionId}`)
           const data = await res.json()
           if (res.ok) {
-            set({ holdings: data.holdings || [], holdingsLoading: false })
+            const localHoldings = get().holdings.filter((holding) => holding.id.startsWith('local-'))
+            const remoteHoldings = data.holdings || []
+            set({ holdings: [...localHoldings, ...remoteHoldings], holdingsLoading: false })
           } else {
             console.error('Fetch holdings failed:', data.error)
             set({ holdingsLoading: false })
