@@ -20,12 +20,11 @@ const ALLOCATION_BY_RISK: Record<string, { equity: number; debt: number; hybrid:
 // GET /api/goals?sessionId=xxx - Get goals for a session
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const sessionId = searchParams.get('sessionId')
+    const sessionId = request.nextUrl.searchParams.get('sessionId')
 
     if (!sessionId) {
       return NextResponse.json(
-        { error: 'sessionId query parameter is required' },
+        { error: 'Session ID required' },
         { status: 400 }
       )
     }
@@ -36,10 +35,14 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ goals })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching goals:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch goals' },
+      { 
+        error: 'Internal Server Error', 
+        message: error.message,
+        path: request.nextUrl.pathname 
+      },
       { status: 500 }
     )
   }
@@ -145,10 +148,14 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(goal, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating/updating goal:', error)
     return NextResponse.json(
-      { error: 'Failed to create/update goal' },
+      { 
+        error: 'Internal Server Error', 
+        message: error.message,
+        path: request.nextUrl.pathname 
+      },
       { status: 500 }
     )
   }
@@ -157,9 +164,8 @@ export async function POST(request: NextRequest) {
 // DELETE /api/goals?sessionId=xxx&goalId=yyy - Delete a goal
 export async function DELETE(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const sessionId = searchParams.get('sessionId')
-    const goalId = searchParams.get('goalId')
+    const sessionId = request.nextUrl.searchParams.get('sessionId')
+    const goalId = request.nextUrl.searchParams.get('goalId')
 
     if (!sessionId || !goalId) {
       return NextResponse.json(
@@ -179,7 +185,7 @@ export async function DELETE(request: NextRequest) {
 
     if (goal.sessionId !== sessionId) {
       return NextResponse.json(
-        { error: 'Goal does not belong to this session' },
+        { error: 'Unauthorized' },
         { status: 403 }
       )
     }
@@ -187,10 +193,14 @@ export async function DELETE(request: NextRequest) {
     await db.goal.delete({ where: { id: goalId } })
 
     return NextResponse.json({ success: true })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting goal:', error)
     return NextResponse.json(
-      { error: 'Failed to delete goal' },
+      { 
+        error: 'Internal Server Error', 
+        message: error.message,
+        path: request.nextUrl.pathname 
+      },
       { status: 500 }
     )
   }
