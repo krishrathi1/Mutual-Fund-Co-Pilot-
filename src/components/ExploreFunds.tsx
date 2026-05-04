@@ -67,7 +67,7 @@ export default function ExploreFunds() {
   }, [fetchComparisons, setActiveTab])
 
   return (
-    <div className="space-y-4">
+    <div id="mutual-funds-section" className="space-y-4 scroll-mt-24">
       {/* Search & Filter bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
