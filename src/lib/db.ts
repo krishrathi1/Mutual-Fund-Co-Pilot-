@@ -5,16 +5,14 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Ensure Vercel serverless functions can find the SQLite file
-const dbPath = path.join(process.cwd(), 'db/custom.db')
-const dbUrl = process.env.NODE_ENV === 'production' 
-  ? `file:${dbPath}`
-  : process.env.DATABASE_URL || 'file:./db/custom.db'
+// Ensure the SQLite file can be found reliably with an absolute path
+// On Windows, Prisma requires forward slashes in the file: URL
+const dbPath = path.join(process.cwd(), 'db/custom.db').replace(/\\/g, '/')
+const dbUrl = `file:${dbPath}`
 
 export const db =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: ['query'],
     datasources: {
       db: {
         url: dbUrl,

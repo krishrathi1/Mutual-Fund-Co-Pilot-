@@ -51,10 +51,10 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(holding, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating holding:', error)
     return NextResponse.json(
-      { error: 'Failed to create holding' },
+      { error: 'Failed to create holding', details: error.message },
       { status: 500 }
     )
   }
@@ -63,14 +63,18 @@ export async function POST(request: NextRequest) {
 // GET /api/holdings - Get all holdings for a session
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const sessionId = searchParams.get('sessionId')
+    const sessionId = request.nextUrl.searchParams.get('sessionId')
 
     if (!sessionId) {
       return NextResponse.json(
-        { error: 'sessionId query parameter is required' },
+        { error: 'Session ID required' },
         { status: 400 }
       )
+    }
+
+    // Check if db is initialized
+    if (!db) {
+      throw new Error('Database client not initialized')
     }
 
     const holdings = await db.holding.findMany({
@@ -80,10 +84,15 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ holdings })
-  } catch (error) {
-    console.error('Error fetching holdings:', error)
+  } catch (error: any) {
+    console.error('API Error in GET /api/holdings:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch holdings' },
+      { 
+        error: 'Internal Server Error', 
+        message: error.message,
+        path: request.nextUrl.pathname,
+        timestamp: new Date().toISOString()
+      },
       { status: 500 }
     )
   }

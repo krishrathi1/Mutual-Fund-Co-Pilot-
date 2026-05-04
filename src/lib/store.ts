@@ -391,13 +391,26 @@ export const useFundStore = create<FundStore>()(
         await get().fetchHoldings()
       },
       fetchHoldings: async () => {
+        const { holdingsLoading } = get()
+        if (holdingsLoading) return
+        
         set({ holdingsLoading: true })
         try {
           const { sessionId } = get()
+          if (!sessionId || sessionId === 'server-session') {
+            set({ holdingsLoading: false })
+            return
+          }
           const res = await fetch(`/api/holdings?sessionId=${sessionId}`)
           const data = await res.json()
-          set({ holdings: data.holdings, holdingsLoading: false })
-        } catch {
+          if (res.ok) {
+            set({ holdings: data.holdings || [], holdingsLoading: false })
+          } else {
+            console.error('Fetch holdings failed:', data.error)
+            set({ holdingsLoading: false })
+          }
+        } catch (err) {
+          console.error('Fetch holdings error:', err)
           set({ holdingsLoading: false })
         }
       },
@@ -503,9 +516,16 @@ export const useFundStore = create<FundStore>()(
       watchlistLoading: false,
       watchlistNavs: {},
       fetchWatchlist: async () => {
+        const { watchlistLoading } = get()
+        if (watchlistLoading) return
+        
         set({ watchlistLoading: true })
         try {
           const { sessionId } = get()
+          if (!sessionId || sessionId === 'server-session') {
+            set({ watchlistLoading: false })
+            return
+          }
           const res = await fetch(`/api/watchlist?sessionId=${sessionId}`)
           const data = await res.json()
           set({ watchlist: data.watchlist || data.items || [], watchlistLoading: false })
@@ -559,11 +579,24 @@ export const useFundStore = create<FundStore>()(
       goals: [],
       goalsLoading: false,
       fetchGoals: async () => {
+        const { goalsLoading } = get()
+        if (goalsLoading) return
+        
         set({ goalsLoading: true })
         try {
           const { sessionId } = get()
+          if (!sessionId || sessionId === 'server-session') {
+            set({ goalsLoading: false })
+            return
+          }
           const res = await fetch(`/api/goals?sessionId=${sessionId}`)
           const data = await res.json()
+          
+          if (!res.ok) {
+            set({ goalsLoading: false })
+            return
+          }
+          
           // Map API response to GoalData format
           const mappedGoals: GoalData[] = (data.goals || []).map((g: Record<string, unknown>) => {
             const name = (g.name as string) || ''
