@@ -6,33 +6,32 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Robust database path resolution
+// Robust database path resolution for both Local and Vercel
 const getDatabasePath = () => {
+  // If a full URL is provided (like in Vercel for Postgres), use it directly
+  if (process.env.DATABASE_URL?.startsWith('postgres')) {
+    return process.env.DATABASE_URL
+  }
+
   const rootPath = process.cwd()
   const possiblePaths = [
     path.join(rootPath, 'db/custom.db'),
-    path.join(rootPath, 'Desktop/Blostem/Mutual-Fund-Co-Pilot-/db/custom.db'),
-    // If we're in src/lib/db.ts, root is 2 levels up
-    path.join(__dirname, '../../db/custom.db'),
-    // Absolute fallback for this environment
-    'C:/Users/KRISH/Desktop/Blostem/Mutual-Fund-Co-Pilot-/db/custom.db'
+    path.join(rootPath, 'prisma/db/custom.db'),
+    // Fallback for Vercel deployment where files are in a different structure
+    path.join('/var/task', 'db/custom.db'),
   ]
 
   for (const p of possiblePaths) {
-    try {
-      if (fs.existsSync(p)) {
-        return p.replace(/\\/g, '/')
-      }
-    } catch (e) {
-      // ignore
+    if (fs.existsSync(p)) {
+      return `file:${p.replace(/\\/g, '/')}`
     }
   }
 
-  // Default to what we think is right
-  return path.join(rootPath, 'db/custom.db').replace(/\\/g, '/')
+  // Local development fallback
+  return process.env.DATABASE_URL || 'file:./db/custom.db'
 }
 
-const dbUrl = `file:${getDatabasePath()}`
+const dbUrl = getDatabasePath()
 
 export const db =
   globalForPrisma.prisma ??
