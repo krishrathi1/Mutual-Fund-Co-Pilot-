@@ -3,16 +3,16 @@
 import { useFundStore, type FundData } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  Area, AreaChart,
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Loader2, History, AlertTriangle } from 'lucide-react'
+import { TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Loader2, History, AlertTriangle, RefreshCw, Zap, Clock } from 'lucide-react'
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { toast } from 'sonner'
 
 interface NavPoint {
   date: string
@@ -30,7 +30,7 @@ const TIME_RANGE_MONTHS: Record<TimeRange, number> = {
   'Max': 120,
 }
 
-// Category-based volatility for client-side fallback
+// Minimal client-side fallback (simplified from original)
 function getCategoryVolatility(category: string, subCategory: string): {
   annualVol: number; annualReturn: number
 } {
@@ -46,7 +46,6 @@ function getCategoryVolatility(category: string, subCategory: string): {
   return { annualVol: 0.15, annualReturn: 0.12 }
 }
 
-// Deterministic seeded PRNG (mulberry32)
 function seededRandom(seed: number): () => number {
   let state = seed
   return () => {
@@ -111,11 +110,14 @@ function generateMockNavHistory(fund: FundData, months: number): NavPoint[] {
   return navHistory
 }
 
-function CustomTooltip({ active, payload, label }: {
+interface CustomTooltipProps {
   active?: boolean
   payload?: Array<{ value: number; dataKey: string; color: string }>
   label?: string
-}) {
+  dataSource?: 'amfi' | 'simulated'
+}
+
+function CustomTooltip({ active, payload, label, dataSource }: CustomTooltipProps) {
   if (!active || !payload || payload.length === 0) return null
   const direct = payload.find(p => p.dataKey === 'directNav')
   const regular = payload.find(p => p.dataKey === 'regularNav')
@@ -123,7 +125,21 @@ function CustomTooltip({ active, payload, label }: {
 
   return (
     <div className="rounded-lg border bg-card p-3 shadow-lg text-xs">
-      <p className="font-medium text-card-foreground mb-1.5">{label}</p>
+      <div className="flex items-center justify-between gap-3 mb-1.5">
+        <p className="font-medium text-card-foreground">{label}</p>
+        {dataSource && (
+          <Badge
+            variant="outline"
+            className={`text-[9px] px-1.5 py-0 ${
+              dataSource === 'amfi'
+                ? 'border-emerald-300 text-emerald-600 dark:border-emerald-700 dark:text-emerald-400'
+                : 'border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400'
+            }`}
+          >
+            {dataSource === 'amfi' ? 'LIVE' : 'EST'}
+          </Badge>
+        )}
+      </div>
       <div className="space-y-1">
         {direct && (
           <div className="flex items-center gap-2">
@@ -156,7 +172,10 @@ export default function NAVHistory() {
   const [timeRange, setTimeRange] = useState<TimeRange>('3Y')
   const [navData, setNavData] = useState<NavPoint[]>([])
   const [loading, setLoading] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [dataSource, setDataSource] = useState<'amfi' | 'simulated'>('simulated')
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const fetchedRef = useRef(false)
 
   useEffect(() => {
@@ -180,6 +199,9 @@ export default function NAVHistory() {
       const res = await fetch(`/api/funds/nav-history?fundId=${fundId}&months=${mos}`)
       if (res.ok) {
         const data = await res.json()
+        const source = data.source as 'amfi' | 'simulated'
+        setDataSource(source)
+        setLastUpdated(new Date().toISOString())
         const history = (data.navHistory || []).map((p: { date: string; directNav: number; regularNav: number }) => ({
           date: p.date,
           directNav: p.directNav,
@@ -191,6 +213,7 @@ export default function NAVHistory() {
         // Client-side fallback
         const fund = funds.find(f => f.id === fundId)
         if (fund) {
+          setDataSource('simulated')
           setNavData(generateMockNavHistory(fund, mos))
         } else {
           setError('Fund not found')
@@ -200,6 +223,7 @@ export default function NAVHistory() {
       // Client-side fallback
       const fund = funds.find(f => f.id === fundId)
       if (fund) {
+        setDataSource('simulated')
         setNavData(generateMockNavHistory(fund, mos))
       } else {
         setError('Failed to load NAV history')
@@ -222,6 +246,33 @@ export default function NAVHistory() {
     }
   }, [funds, selectedFundId])
 
+  const handleRefreshNAV = useCallback(async () => {
+    setRefreshing(true)
+    try {
+      const res = await fetch('/api/funds/nav', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        toast.success(`NAV refreshed: ${data.updated || 0} funds updated`)
+        // Reload fund data
+        await fetchFunds()
+        // Re-fetch NAV history for the selected fund
+        if (selectedFundId) {
+          await fetchNavHistory(selectedFundId, months)
+        }
+      } else {
+        toast.error('Failed to refresh NAV data')
+      }
+    } catch {
+      toast.error('Failed to refresh NAV data')
+    } finally {
+      setRefreshing(false)
+    }
+  }, [selectedFundId, months, fetchFunds, fetchNavHistory])
+
   const chartData = useMemo(() => {
     return navData.map(p => ({
       ...p,
@@ -240,6 +291,17 @@ export default function NAVHistory() {
     const regularCagr = years > 0 ? (Math.pow(endRegular / startRegular, 1 / years) - 1) * 100 : 0
     const totalGap = endDirect - endRegular
 
+    // Period high/low for direct NAV
+    const directNavs = navData.map(p => p.directNav).filter(n => n > 0)
+    const periodHigh = directNavs.length > 0 ? Math.max(...directNavs) : 0
+    const periodLow = directNavs.length > 0 ? Math.min(...directNavs) : 0
+
+    // 52-week high/low (last 12 months of data)
+    const last12Months = navData.slice(-12)
+    const last12Direct = last12Months.map(p => p.directNav).filter(n => n > 0)
+    const week52High = last12Direct.length > 0 ? Math.max(...last12Direct) : 0
+    const week52Low = last12Direct.length > 0 ? Math.min(...last12Direct) : 0
+
     return {
       startDirect,
       endDirect,
@@ -249,6 +311,10 @@ export default function NAVHistory() {
       regularCagr,
       totalGap,
       years,
+      periodHigh,
+      periodLow,
+      week52High,
+      week52Low,
     }
   }, [navData, selectedFund, months])
 
@@ -257,11 +323,33 @@ export default function NAVHistory() {
       {/* Header with selectors */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-card-foreground">
-            <History className="h-5 w-5 text-emerald-600" />
-            NAV History
-            <Badge variant="outline" className="ml-2 text-[10px]">Simulated</Badge>
-          </CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-card-foreground">
+              <History className="h-5 w-5 text-emerald-600" />
+              NAV History
+              {dataSource === 'amfi' ? (
+                <Badge className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-400 dark:border-emerald-700">
+                  <Zap className="h-3 w-3 mr-0.5" />
+                  LIVE
+                </Badge>
+              ) : (
+                <Badge variant="outline" className="ml-2 text-[10px] border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400">
+                  <Clock className="h-3 w-3 mr-0.5" />
+                  Estimated
+                </Badge>
+              )}
+            </CardTitle>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={handleRefreshNAV}
+              disabled={refreshing}
+              className="gap-1.5 text-xs shrink-0"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+              {refreshing ? 'Refreshing...' : 'Refresh NAV'}
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -297,12 +385,20 @@ export default function NAVHistory() {
             </div>
           </div>
 
-          {fundsLoading && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading funds...
-            </div>
-          )}
+          <div className="flex items-center justify-between">
+            {fundsLoading && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading funds...
+              </div>
+            )}
+            {lastUpdated && (
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                Last updated: {new Date(lastUpdated).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+              </p>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -353,7 +449,7 @@ export default function NAVHistory() {
                             domain={['auto', 'auto']}
                             tickFormatter={(v: number) => `₹${v.toFixed(0)}`}
                           />
-                          <Tooltip content={<CustomTooltip />} />
+                          <Tooltip content={<CustomTooltip dataSource={dataSource} />} />
                           <Area
                             type="monotone"
                             dataKey="regularNav"
@@ -384,6 +480,12 @@ export default function NAVHistory() {
                         <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
                         <span className="text-muted-foreground">Regular NAV</span>
                       </div>
+                      {dataSource === 'amfi' && (
+                        <div className="flex items-center gap-1.5">
+                          <Zap className="h-3 w-3 text-emerald-500" />
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">AMFI Live Data</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -425,6 +527,9 @@ export default function NAVHistory() {
                   <span className={`text-xs font-medium ${metrics.directChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                     {metrics.directChangePct >= 0 ? '+' : ''}{metrics.directChangePct.toFixed(1)}%
                   </span>
+                  <span className="text-[10px] text-muted-foreground ml-1">
+                    ({metrics.directChange >= 0 ? '+' : ''}₹{metrics.directChange.toFixed(2)})
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -449,6 +554,98 @@ export default function NAVHistory() {
               </CardContent>
             </Card>
           </div>
+        </motion.div>
+      )}
+
+      {/* Detailed Stats - only shown when real data is available */}
+      {metrics && !loading && dataSource === 'amfi' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+        >
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Zap className="h-3 w-3 text-emerald-500" />
+                  Period High NAV
+                </p>
+                <p className="text-lg font-bold text-foreground">₹{metrics.periodHigh.toFixed(2)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Highest in selected period</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <Zap className="h-3 w-3 text-red-500" />
+                  Period Low NAV
+                </p>
+                <p className="text-lg font-bold text-foreground">₹{metrics.periodLow.toFixed(2)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Lowest in selected period</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <TrendingUp className="h-3 w-3 text-emerald-500" />
+                  52-Week High
+                </p>
+                <p className="text-lg font-bold text-foreground">₹{metrics.week52High.toFixed(2)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Last 12 months</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                  <TrendingDown className="h-3 w-3 text-red-500" />
+                  52-Week Low
+                </p>
+                <p className="text-lg font-bold text-foreground">₹{metrics.week52Low.toFixed(2)}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Last 12 months</p>
+              </CardContent>
+            </Card>
+          </div>
+        </motion.div>
+      )}
+
+      {/* NAV Change Stats for real data */}
+      {metrics && !loading && dataSource === 'amfi' && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.18 }}
+        >
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Zap className="h-4 w-4 text-emerald-500" />
+                <p className="text-sm font-semibold text-foreground">Live NAV Change Details</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 text-sm">
+                <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                  <span className="text-muted-foreground">NAV Change (Absolute)</span>
+                  <span className={`font-bold ${metrics.directChange >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {metrics.directChange >= 0 ? '+' : ''}₹{metrics.directChange.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                  <span className="text-muted-foreground">NAV Change (%)</span>
+                  <span className={`font-bold ${metrics.directChangePct >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                    {metrics.directChangePct >= 0 ? '+' : ''}{metrics.directChangePct.toFixed(2)}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between p-2 rounded-lg bg-muted/50">
+                  <span className="text-muted-foreground">Distance from 52W High</span>
+                  <span className={`font-bold ${metrics.week52High > 0 ? (((metrics.endDirect - metrics.week52High) / metrics.week52High) * 100 < 0 ? 'text-red-600' : 'text-emerald-600') : 'text-muted-foreground'}`}>
+                    {metrics.week52High > 0
+                      ? `${(((metrics.endDirect - metrics.week52High) / metrics.week52High) * 100).toFixed(1)}%`
+                      : '—'}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       )}
 

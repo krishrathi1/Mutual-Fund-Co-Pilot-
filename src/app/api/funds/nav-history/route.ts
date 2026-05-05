@@ -1,7 +1,130 @@
 import { NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
-// Simple deterministic seeded PRNG (mulberry32)
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface AmfiScheme {
+  schemeCode: number
+  schemeName: string
+  nav: string
+  date: string
+  isin: string
+}
+
+interface AmfiSchemeDetail {
+  date: string // "dd-mm-yyyy"
+  nav: string // "123.45"
+}
+
+interface AmfiSchemeResponse {
+  status: string
+  meta?: {
+    scheme_code?: number
+    scheme_name?: string
+    isin?: string
+  }
+  data: AmfiSchemeDetail[]
+}
+
+interface CacheEntry {
+  data: AmfiScheme[]
+  fetchedAt: number
+}
+
+// ---------------------------------------------------------------------------
+// In-memory cache for MFAPI scheme list – 24-hour TTL
+// ---------------------------------------------------------------------------
+
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000
+
+let schemeListCache: CacheEntry | null = null
+
+function isCacheValid(): boolean {
+  if (!schemeListCache) return false
+  return Date.now() - schemeListCache.fetchedAt < CACHE_TTL_MS
+}
+
+// ---------------------------------------------------------------------------
+// Fetch all schemes from MFAPI
+// ---------------------------------------------------------------------------
+
+async function fetchAllSchemes(): Promise<AmfiScheme[]> {
+  if (isCacheValid() && schemeListCache) {
+    return schemeListCache.data
+  }
+
+  try {
+    const res = await fetch('https://api.mfapi.in/mf', {
+      cache: 'no-store', // We manage our own in-memory cache with TTL
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'FundVista/1.0',
+      },
+    })
+
+    if (!res.ok) {
+      throw new Error(`MFAPI returned ${res.status}`)
+    }
+
+    const data: AmfiScheme[] = await res.json()
+    schemeListCache = { data, fetchedAt: Date.now() }
+    return data
+  } catch (error) {
+    console.error('[NAV-HISTORY] Failed to fetch MFAPI scheme list:', error)
+    if (schemeListCache) {
+      console.warn('[NAV-HISTORY] Returning stale cache as fallback')
+      return schemeListCache.data
+    }
+    throw error
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Fetch NAV history for a single scheme code from MFAPI
+// ---------------------------------------------------------------------------
+
+async function fetchSchemeNavHistory(schemeCode: number): Promise<AmfiSchemeDetail[]> {
+  try {
+    const res = await fetch(`https://api.mfapi.in/mf/${schemeCode}`, {
+      cache: 'no-store', // We manage our own cache
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'FundVista/1.0',
+      },
+    })
+
+    if (!res.ok) return []
+
+    const json: AmfiSchemeResponse = await res.json()
+
+    if (json.status !== 'SUCCESS' || !json.data || json.data.length === 0) {
+      return []
+    }
+
+    return json.data
+  } catch (error) {
+    console.error(`[NAV-HISTORY] Failed to fetch scheme ${schemeCode}:`, error)
+    return []
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Parse MFAPI date format "dd-mm-yyyy" to ISO "yyyy-mm-dd"
+// ---------------------------------------------------------------------------
+
+function parseMfApiDate(dateStr: string): string {
+  const parts = dateStr.trim().split('-')
+  if (parts.length !== 3) return ''
+  const [dd, mm, yyyy] = parts
+  return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`
+}
+
+// ---------------------------------------------------------------------------
+// SIMULATED FALLBACK (kept from original code)
+// ---------------------------------------------------------------------------
+
 function seededRandom(seed: number): () => number {
   let state = seed
   return () => {
@@ -12,18 +135,16 @@ function seededRandom(seed: number): () => number {
   }
 }
 
-// Convert string to numeric seed
 function hashString(str: string): number {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i)
     hash = ((hash << 5) - hash) + char
-    hash = hash & hash // Convert to 32-bit integer
+    hash = hash & hash
   }
   return Math.abs(hash)
 }
 
-// Category-based volatility and expected return
 function getCategoryParams(category: string, subCategory: string): {
   annualVol: number
   annualReturn: number
@@ -38,7 +159,6 @@ function getCategoryParams(category: string, subCategory: string): {
     return { annualVol: 0.10, annualReturn: 0.09 }
   }
 
-  // Equity sub-categories
   if (sub.includes('small')) {
     return { annualVol: 0.20, annualReturn: 0.14 }
   }
@@ -55,9 +175,76 @@ function getCategoryParams(category: string, subCategory: string): {
     return { annualVol: 0.14, annualReturn: 0.11 }
   }
 
-  // Default equity / large cap / flexi cap
   return { annualVol: 0.15, annualReturn: 0.12 }
 }
+
+function generateSimulatedNavHistory(
+  fund: {
+    id: string
+    schemeName: string
+    category: string
+    subCategory: string
+    directNav: number
+    regularNav: number
+    directExpenseRatio: number
+    regularExpenseRatio: number
+  },
+  months: number
+): { fundId: string; schemeName: string; source: 'simulated'; navHistory: { date: string; directNav: number; regularNav: number }[] } {
+  const { annualVol, annualReturn } = getCategoryParams(fund.category, fund.subCategory)
+  const monthlyVol = annualVol / Math.sqrt(12)
+  const monthlyReturn = annualReturn / 12
+
+  const rng = seededRandom(hashString(fund.id))
+
+  const navHistory: { date: string; directNav: number; regularNav: number }[] = []
+  let currentDirectNav = fund.directNav
+
+  const now = new Date()
+  const dates: Date[] = []
+  for (let i = 0; i < months; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
+    dates.unshift(d)
+  }
+
+  const backwardsNavs: number[] = [currentDirectNav]
+  for (let i = 1; i <= months; i++) {
+    const randomShock = (rng() - 0.5) * 2
+    const monthlyChange = 1 + monthlyReturn + monthlyVol * randomShock
+    const prevNav = backwardsNavs[i - 1] / Math.max(0.5, monthlyChange)
+    backwardsNavs.unshift(prevNav)
+  }
+
+  // BUG FIX: expense ratios are stored as percentages (e.g. 0.72 = 0.72%), NOT basis points
+  const expenseDiff = (fund.regularExpenseRatio - fund.directExpenseRatio) / 100 // Convert percentage to decimal
+
+  for (let i = 0; i < months; i++) {
+    const directNav = Math.round(backwardsNavs[i] * 100) / 100
+    const regularNav = Math.round((directNav * (1 + expenseDiff * (months - i) / 12)) * 100) / 100
+
+    navHistory.push({
+      date: dates[i].toISOString().slice(0, 10),
+      directNav,
+      regularNav,
+    })
+  }
+
+  if (navHistory.length > 0) {
+    navHistory[navHistory.length - 1].directNav = fund.directNav
+    navHistory[navHistory.length - 1].regularNav = fund.regularNav
+  }
+
+  return {
+    fundId: fund.id,
+    schemeName: fund.schemeName,
+    source: 'simulated',
+    navHistory,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// GET handler
+// ---------------------------------------------------------------------------
 
 export async function GET(request: Request) {
   try {
@@ -79,6 +266,8 @@ export async function GET(request: Request) {
         schemeName: true,
         category: true,
         subCategory: true,
+        directIsin: true,
+        regularIsin: true,
         directNav: true,
         regularNav: true,
         directExpenseRatio: true,
@@ -93,65 +282,94 @@ export async function GET(request: Request) {
       )
     }
 
-    const { annualVol, annualReturn } = getCategoryParams(fund.category, fund.subCategory)
-    const monthlyVol = annualVol / Math.sqrt(12)
-    const monthlyReturn = annualReturn / 12
+    // ---- Try to fetch REAL data from MFAPI ----
+    try {
+      const allSchemes = await fetchAllSchemes()
 
-    // Seed RNG with fundId for deterministic results
-    const rng = seededRandom(hashString(fund.id))
+      // Find scheme codes matching the fund's ISINs
+      const directScheme = allSchemes.find(s => s.isin === fund.directIsin)
+      const regularScheme = allSchemes.find(s => s.isin === fund.regularIsin)
 
-    // Generate NAV history going backwards from current NAV
-    const navHistory: { date: string; directNav: number; regularNav: number }[] = []
-    let currentDirectNav = fund.directNav
-    let currentRegularNav = fund.regularNav
+      if (directScheme || regularScheme) {
+        // Fetch NAV history for both plan types
+        const [directHistoryRaw, regularHistoryRaw] = await Promise.all([
+          directScheme ? fetchSchemeNavHistory(directScheme.schemeCode) : Promise.resolve([]),
+          regularScheme ? fetchSchemeNavHistory(regularScheme.schemeCode) : Promise.resolve([]),
+        ])
 
-    // Start from the current date and go backwards
-    const now = new Date()
-    const dates: Date[] = []
-    for (let i = 0; i < months; i++) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-      dates.unshift(d)
+        // Parse and index direct NAV history by date
+        const directNavMap = new Map<string, number>()
+        for (const entry of directHistoryRaw) {
+          const isoDate = parseMfApiDate(entry.date)
+          const nav = parseFloat(entry.nav)
+          if (isoDate && !isNaN(nav)) {
+            // Only keep the first entry per date (MFAPI may have duplicates)
+            if (!directNavMap.has(isoDate)) {
+              directNavMap.set(isoDate, nav)
+            }
+          }
+        }
+
+        // Parse and index regular NAV history by date
+        const regularNavMap = new Map<string, number>()
+        for (const entry of regularHistoryRaw) {
+          const isoDate = parseMfApiDate(entry.date)
+          const nav = parseFloat(entry.nav)
+          if (isoDate && !isNaN(nav)) {
+            if (!regularNavMap.has(isoDate)) {
+              regularNavMap.set(isoDate, nav)
+            }
+          }
+        }
+
+        // Build combined NAV history
+        // Get all dates from both maps, sort them, filter to the requested months
+        const allDates = new Set<string>([
+          ...directNavMap.keys(),
+          ...regularNavMap.keys(),
+        ])
+
+        const cutoffDate = new Date()
+        cutoffDate.setMonth(cutoffDate.getMonth() - months)
+        const cutoffStr = cutoffDate.toISOString().slice(0, 10)
+
+        const navHistory: { date: string; directNav: number; regularNav: number }[] = []
+
+        const sortedDates = Array.from(allDates)
+          .filter(d => d >= cutoffStr)
+          .sort()
+
+        for (const date of sortedDates) {
+          const directNav = directNavMap.get(date)
+          const regularNav = regularNavMap.get(date)
+
+          // Only include dates where we have at least one NAV value
+          if (directNav !== undefined || regularNav !== undefined) {
+            navHistory.push({
+              date,
+              directNav: directNav ?? 0,
+              regularNav: regularNav ?? 0,
+            })
+          }
+        }
+
+        // Only return if we have meaningful data
+        if (navHistory.length >= 2) {
+          return NextResponse.json({
+            fundId: fund.id,
+            schemeName: fund.schemeName,
+            source: 'amfi',
+            navHistory,
+          })
+        }
+      }
+    } catch (error) {
+      console.error('[NAV-HISTORY] MFAPI fetch failed, falling back to simulation:', error)
     }
 
-    // Build forward from the oldest date
-    // First, compute what the NAV was months ago by working backwards
-    const backwardsNavs: number[] = [currentDirectNav]
-    for (let i = 1; i <= months; i++) {
-      // Reverse: nav_prev = nav_next / (1 + monthlyReturn + monthlyVol * randomShock)
-      const randomShock = (rng() - 0.5) * 2 // Range -1 to 1
-      const monthlyChange = 1 + monthlyReturn + monthlyVol * randomShock
-      const prevNav = backwardsNavs[i - 1] / Math.max(0.5, monthlyChange)
-      backwardsNavs.unshift(prevNav)
-    }
-
-    // The expense ratio difference between regular and direct
-    const expenseDiff = (fund.regularExpenseRatio - fund.directExpenseRatio) / 10000 // Convert bps to decimal
-
-    // Build NAV history
-    for (let i = 0; i < months; i++) {
-      const directNav = Math.round(backwardsNavs[i] * 100) / 100
-      // Regular NAV is slightly higher historically (before expense erosion catches up)
-      // Approximate: regular NAV tracks direct but with expense drag
-      const regularNav = Math.round((directNav * (1 + expenseDiff * (months - i) / 12)) * 100) / 100
-
-      navHistory.push({
-        date: dates[i].toISOString().slice(0, 10),
-        directNav,
-        regularNav,
-      })
-    }
-
-    // Override the last entry with actual current NAV
-    if (navHistory.length > 0) {
-      navHistory[navHistory.length - 1].directNav = fund.directNav
-      navHistory[navHistory.length - 1].regularNav = fund.regularNav
-    }
-
-    return NextResponse.json({
-      fundId: fund.id,
-      schemeName: fund.schemeName,
-      navHistory,
-    })
+    // ---- Fallback to simulated data ----
+    const simulated = generateSimulatedNavHistory(fund, months)
+    return NextResponse.json(simulated)
   } catch (error) {
     console.error('Error generating NAV history:', error)
     return NextResponse.json(

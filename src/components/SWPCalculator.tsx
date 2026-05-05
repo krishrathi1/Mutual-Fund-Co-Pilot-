@@ -2,7 +2,7 @@
 
 import { useFundStore } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
-import { Calculator, TrendingDown, TrendingUp, Play, Info, Clock, Wallet, AlertTriangle, Loader2 } from 'lucide-react'
+import { Calculator, TrendingDown, TrendingUp, Play, Info, Clock, Wallet, AlertTriangle, Loader2, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
@@ -42,10 +42,50 @@ export default function SWPCalculator() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<SWPResult | null>(null)
   const [error, setError] = useState('')
+  const [selectedFundId, setSelectedFundId] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
-  useState(() => {
+  useEffect(() => {
     if (funds.length === 0) fetchFunds()
-  })
+  }, [])
+
+  // Find selected fund
+  const selectedFund = useMemo(() => {
+    if (!selectedFundId) return null
+    return funds.find(f => f.id === selectedFundId) || null
+  }, [funds, selectedFundId])
+
+  // When a fund is selected, auto-fill the expected return from actual returns
+  useEffect(() => {
+    if (selectedFund) {
+      // Use 3y return if available, else 1y, else leave as-is
+      if (selectedFund.directReturn3y != null) {
+        setExpectedReturn(selectedFund.directReturn3y.toFixed(2))
+      } else if (selectedFund.directReturn1y != null) {
+        setExpectedReturn(selectedFund.directReturn1y.toFixed(2))
+      }
+    }
+  }, [selectedFundId, selectedFund])
+
+  const usingLiveData = selectedFund != null && selectedFund.directReturn3y != null
+
+  const handleRefreshNav = async () => {
+    setRefreshing(true)
+    try {
+      await fetch('/api/funds/nav', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      await fetchFunds()
+      setLastUpdated(new Date().toLocaleString('en-IN'))
+    } catch {
+      // Silently handle refresh errors
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   const handleCalculate = async () => {
     setLoading(true)
@@ -96,16 +136,84 @@ export default function SWPCalculator() {
       {/* Input Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-card-foreground">
-            <TrendingDown className="h-5 w-5 text-emerald-600" />
-            SWP Calculator
-            <Badge variant="outline" className="ml-2 text-[10px]">Systematic Withdrawal Plan</Badge>
-          </CardTitle>
-          <CardDescription>
-            Plan regular withdrawals from your investment corpus while the remainder continues to grow
-          </CardDescription>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-card-foreground">
+                <TrendingDown className="h-5 w-5 text-emerald-600" />
+                SWP Calculator
+                <Badge variant="outline" className="ml-2 text-[10px]">Systematic Withdrawal Plan</Badge>
+                {usingLiveData && (
+                  <Badge className="text-[9px] px-1.5 py-0 bg-emerald-600 text-white">Live Data</Badge>
+                )}
+              </CardTitle>
+              <CardDescription>
+                Plan regular withdrawals from your investment corpus while the remainder continues to grow
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshNav}
+              disabled={refreshing}
+              className="gap-1.5 text-xs"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh NAV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Fund selection row */}
+          <div className="space-y-2">
+            <Label>Link to Fund (optional)</Label>
+            <Select value={selectedFundId || '__none__'} onValueChange={(v) => setSelectedFundId(v === '__none__' ? '' : v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a fund to use actual returns" />
+              </SelectTrigger>
+              <SelectContent className="max-h-60">
+                <SelectItem value="__none__">No fund (manual input)</SelectItem>
+                {funds.map(f => (
+                  <SelectItem key={f.id} value={f.id}>
+                    <span className="text-xs">{f.schemeName}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Selected fund info */}
+          {selectedFund && (
+            <div className="rounded-lg bg-muted/50 p-3 text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-medium text-foreground">{selectedFund.schemeName}</span>
+                <Badge variant="outline" className="text-[9px]">{selectedFund.category}</Badge>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                  <span className="text-muted-foreground">Direct NAV:</span>
+                  <p className="font-medium">₹{selectedFund.directNav?.toFixed(2) ?? '—'}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">1Y Return:</span>
+                  <p className="font-medium">{formatPercent(selectedFund.directReturn1y)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">3Y Return:</span>
+                  <p className="font-medium">{formatPercent(selectedFund.directReturn3y)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">5Y Return:</span>
+                  <p className="font-medium">{formatPercent(selectedFund.directReturn5y)}</p>
+                </div>
+              </div>
+              {selectedFund.directReturn3y != null && (
+                <p className="text-emerald-600 dark:text-emerald-400 text-[10px]">
+                  ✅ Expected return auto-filled from fund&apos;s actual 3Y return
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <div className="space-y-2">
               <Label>Corpus Amount (₹)</Label>
@@ -126,7 +234,12 @@ export default function SWPCalculator() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Expected Return (%)</Label>
+              <Label className="flex items-center gap-1.5">
+                Expected Return (%)
+                {usingLiveData && (
+                  <Badge className="text-[9px] px-1 py-0 bg-emerald-600 text-white">Live</Badge>
+                )}
+              </Label>
               <Input
                 type="number"
                 step="0.5"
@@ -166,6 +279,14 @@ export default function SWPCalculator() {
               SWP provides regular income from your investment. The remaining corpus continues to earn returns, potentially extending the life of your investment.
             </p>
           </div>
+
+          {/* Last Updated timestamp */}
+          {lastUpdated && (
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              NAV data last refreshed: {lastUpdated}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -357,18 +478,24 @@ export default function SWPCalculator() {
               <div className="text-sm text-emerald-800 dark:text-emerald-300 space-y-2">
                 <p><strong>Summary:</strong></p>
                 <p>
-                  Starting with a corpus of <strong>{formatCurrency(parseFloat(corpus))}</strong>, withdrawing <strong>{formatCurrency(parseFloat(monthlyWithdrawal))}/month</strong> at an expected return of <strong>{expectedReturn}%</strong>,
+                  Starting with a corpus of <strong>{formatCurrency(parseFloat(corpus))}</strong>, withdrawing <strong>{formatCurrency(parseFloat(monthlyWithdrawal))}/month</strong> at an expected return of <strong>{expectedReturn}%</strong>
+                  {usingLiveData && <span className="text-emerald-700 dark:text-emerald-400"> (from actual fund data)</span>},
                   you will have withdrawn a total of <strong>{formatCurrency(result.totalWithdrawn)}</strong> over {years} years.
                 </p>
                 <p>
                   Your remaining corpus will be <strong>{formatCurrency(result.remainingCorpus)}</strong>
                   {result.depletionYear && result.depletionYear <= parseInt(years)
-                    ? ` — the corpus gets depleted in year ${result.depletionYear}.`
+                    ? ' — the corpus gets depleted in year ' + result.depletionYear + '.'
                     : ' — the corpus survives the entire period.'}
                 </p>
                 <p className="text-emerald-700 dark:text-emerald-400 font-medium">
                   💡 You earned {formatCurrency(result.returnsEarned)} in returns while withdrawing, effectively reducing the real cost of withdrawals.
                 </p>
+                {lastUpdated && (
+                  <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-2">
+                    📊 NAV data as of {lastUpdated}
+                  </p>
+                )}
               </div>
             </div>
           </div>

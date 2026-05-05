@@ -2,7 +2,7 @@
 
 import { useFundStore } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
-import { ArrowDownToLine, ArrowRightLeft, Play, Info, Loader2, TrendingUp, TrendingDown, Wallet, Target } from 'lucide-react'
+import { ArrowDownToLine, ArrowRightLeft, Play, Info, Loader2, TrendingUp, TrendingDown, Wallet, Target, RefreshCw, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -25,6 +25,19 @@ interface STPYearlyBreakdown {
   targetReturn: number
 }
 
+interface STPFundResult {
+  id: string
+  schemeName: string
+  category: string
+  expectedReturn: number
+  categoryReturn?: number
+  actualReturn?: number | null
+  directNav?: number
+  regularNav?: number
+  directReturn1y?: number | null
+  directReturn3y?: number | null
+}
+
 interface STPResult {
   totalInvested: number
   sourceFundFinalValue: number
@@ -32,8 +45,8 @@ interface STPResult {
   totalReturns: number
   totalTransferred: number
   yearlyBreakdown: STPYearlyBreakdown[]
-  sourceFund: { id: string; schemeName: string; category: string; expectedReturn: number }
-  targetFund: { id: string; schemeName: string; category: string; expectedReturn: number }
+  sourceFund: STPFundResult
+  targetFund: STPFundResult
 }
 
 export default function STPCalculator() {
@@ -47,6 +60,8 @@ export default function STPCalculator() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<STPResult | null>(null)
   const [error, setError] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
   useEffect(() => {
     if (funds.length === 0) fetchFunds()
@@ -54,6 +69,46 @@ export default function STPCalculator() {
 
   const debtFunds = useMemo(() => funds.filter(f => f.category === 'Debt' || f.category === 'Hybrid'), [funds])
   const equityFunds = useMemo(() => funds.filter(f => f.category === 'Equity' || f.category === 'ELSS' || f.category === 'Index'), [funds])
+
+  // Find selected funds from store for real-time data
+  const sourceFund = useMemo(() => funds.find(f => f.id === sourceFundId), [funds, sourceFundId])
+  const targetFund = useMemo(() => funds.find(f => f.id === targetFundId), [funds, targetFundId])
+
+  // Category-based expected returns (defaults)
+  const CATEGORY_RETURNS: Record<string, number> = { Equity: 12, ELSS: 12, Index: 11, Hybrid: 9, Debt: 7 }
+
+  // Determine effective returns: use actual 3y return if available, else category default
+  const sourceEffectiveReturn = useMemo(() => {
+    if (!sourceFund) return null
+    if (sourceFund.directReturn3y != null) return sourceFund.directReturn3y
+    return CATEGORY_RETURNS[sourceFund.category] || 10
+  }, [sourceFund])
+
+  const targetEffectiveReturn = useMemo(() => {
+    if (!targetFund) return null
+    if (targetFund.directReturn3y != null) return targetFund.directReturn3y
+    return CATEGORY_RETURNS[targetFund.category] || 10
+  }, [targetFund])
+
+  const sourceUsingActual = sourceFund != null && sourceFund.directReturn3y != null
+  const targetUsingActual = targetFund != null && targetFund.directReturn3y != null
+
+  const handleRefreshNav = async () => {
+    setRefreshing(true)
+    try {
+      await fetch('/api/funds/nav', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      await fetchFunds()
+      setLastUpdated(new Date().toLocaleString('en-IN'))
+    } catch {
+      // Silently handle refresh errors
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   const handleCalculate = async () => {
     if (!sourceFundId || !targetFundId) {
@@ -67,16 +122,21 @@ export default function STPCalculator() {
     setLoading(true)
     setError('')
     try {
+      const payload: Record<string, unknown> = {
+        sourceFundId,
+        targetFundId,
+        lumpsumAmount: parseFloat(lumpsumAmount) || 1000000,
+        monthlyTransfer: parseFloat(monthlyTransfer) || 50000,
+        years: parseInt(years) || 5,
+      }
+      // Pass actual returns if available
+      if (sourceEffectiveReturn != null) payload.sourceReturn = sourceEffectiveReturn
+      if (targetEffectiveReturn != null) payload.targetReturn = targetEffectiveReturn
+
       const res = await fetch('/api/stp/calculator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceFundId,
-          targetFundId,
-          lumpsumAmount: parseFloat(lumpsumAmount) || 1000000,
-          monthlyTransfer: parseFloat(monthlyTransfer) || 50000,
-          years: parseInt(years) || 5,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
@@ -115,14 +175,28 @@ export default function STPCalculator() {
       {/* Input Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-card-foreground">
-            <ArrowRightLeft className="h-5 w-5 text-emerald-600" />
-            STP Calculator
-            <Badge variant="outline" className="ml-2 text-[10px]">Systematic Transfer Plan</Badge>
-          </CardTitle>
-          <CardDescription>
-            Transfer from a low-risk source fund to a higher-return target fund in installments to reduce timing risk
-          </CardDescription>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-card-foreground">
+                <ArrowRightLeft className="h-5 w-5 text-emerald-600" />
+                STP Calculator
+                <Badge variant="outline" className="ml-2 text-[10px]">Systematic Transfer Plan</Badge>
+              </CardTitle>
+              <CardDescription>
+                Transfer from a low-risk source fund to a higher-return target fund in installments to reduce timing risk
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshNav}
+              disabled={refreshing}
+              className="gap-1.5 text-xs"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh NAV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
@@ -152,6 +226,30 @@ export default function STPCalculator() {
                   )}
                 </SelectContent>
               </Select>
+              {/* Source fund real-time info */}
+              {sourceFund && (
+                <div className="rounded-md bg-muted/50 p-2 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">NAV (Direct):</span>
+                    <span className="font-medium">₹{sourceFund.directNav?.toFixed(2) ?? '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Returns:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium">{formatPercent(sourceFund.directReturn3y)}</span>
+                      <Badge variant={sourceUsingActual ? 'default' : 'secondary'} className={`text-[9px] px-1 py-0 ${sourceUsingActual ? 'bg-emerald-600 text-white' : ''}`}>
+                        {sourceUsingActual ? 'Actual' : 'Estimate'}
+                      </Badge>
+                    </div>
+                  </div>
+                  {sourceFund.directReturn1y != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">1Y Return:</span>
+                      <span className="font-medium">{formatPercent(sourceFund.directReturn1y)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Target Fund */}
@@ -180,6 +278,30 @@ export default function STPCalculator() {
                   )}
                 </SelectContent>
               </Select>
+              {/* Target fund real-time info */}
+              {targetFund && (
+                <div className="rounded-md bg-muted/50 p-2 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">NAV (Direct):</span>
+                    <span className="font-medium">₹{targetFund.directNav?.toFixed(2) ?? '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Returns:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium">{formatPercent(targetFund.directReturn3y)}</span>
+                      <Badge variant={targetUsingActual ? 'default' : 'secondary'} className={`text-[9px] px-1 py-0 ${targetUsingActual ? 'bg-emerald-600 text-white' : ''}`}>
+                        {targetUsingActual ? 'Actual' : 'Estimate'}
+                      </Badge>
+                    </div>
+                  </div>
+                  {targetFund.directReturn1y != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">1Y Return:</span>
+                      <span className="font-medium">{formatPercent(targetFund.directReturn1y)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -237,6 +359,14 @@ export default function STPCalculator() {
               </span>
             </div>
           )}
+
+          {/* Last Updated timestamp */}
+          {lastUpdated && (
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              NAV data last refreshed: {lastUpdated}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -270,14 +400,24 @@ export default function STPCalculator() {
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground flex items-center gap-1"><TrendingDown className="h-3 w-3" /> Source Fund Final</p>
                 <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{formatCurrency(result.sourceFundFinalValue)}</p>
-                <p className="text-xs text-muted-foreground mt-1">{result.sourceFund.schemeName.slice(0, 30)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {result.sourceFund.schemeName.slice(0, 30)}
+                  {result.sourceFund.directNav != null && (
+                    <span className="ml-1 text-emerald-600">· NAV ₹{result.sourceFund.directNav.toFixed(2)}</span>
+                  )}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-emerald-200 dark:border-emerald-900">
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground flex items-center gap-1"><Target className="h-3 w-3" /> Target Fund Final</p>
                 <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(result.targetFundFinalValue)}</p>
-                <p className="text-xs text-muted-foreground mt-1">{result.targetFund.schemeName.slice(0, 30)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {result.targetFund.schemeName.slice(0, 30)}
+                  {result.targetFund.directNav != null && (
+                    <span className="ml-1 text-emerald-600">· NAV ₹{result.targetFund.directNav.toFixed(2)}</span>
+                  )}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-emerald-200 dark:border-emerald-900">
@@ -291,6 +431,16 @@ export default function STPCalculator() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Return Source Info */}
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className={`text-[10px] ${result.sourceFund.actualReturn != null ? 'border-emerald-500 text-emerald-700 dark:text-emerald-400' : 'border-amber-500 text-amber-700 dark:text-amber-400'}`}>
+              Source: {result.sourceFund.actualReturn != null ? `Using actual 3Y return (${result.sourceFund.actualReturn}%)` : `Using category estimate (${result.sourceFund.categoryReturn ?? result.sourceFund.expectedReturn}%)`}
+            </Badge>
+            <Badge variant="outline" className={`text-[10px] ${result.targetFund.actualReturn != null ? 'border-emerald-500 text-emerald-700 dark:text-emerald-400' : 'border-amber-500 text-amber-700 dark:text-amber-400'}`}>
+              Target: {result.targetFund.actualReturn != null ? `Using actual 3Y return (${result.targetFund.actualReturn}%)` : `Using category estimate (${result.targetFund.categoryReturn ?? result.targetFund.expectedReturn}%)`}
+            </Badge>
           </div>
 
           {/* Dual-Line Chart: Source declining + Target growing */}
@@ -423,6 +573,11 @@ export default function STPCalculator() {
                   Your total transferred amount is <strong>{formatCurrency(result.totalTransferred)}</strong>, generating total returns of <strong>{formatCurrency(result.totalReturns)}</strong>.
                   STP reduces the risk of investing a lumpsum at a market peak.
                 </p>
+                {lastUpdated && (
+                  <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-2">
+                    📊 NAV data as of {lastUpdated}
+                  </p>
+                )}
               </div>
             </div>
           </div>
