@@ -1,6 +1,6 @@
 'use client'
 
-import { Heart, TrendingUp, Shield, BarChart3, Calculator } from 'lucide-react'
+import { Heart, TrendingUp, Shield, BarChart3, Calculator, LayoutGrid } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -14,6 +14,7 @@ export default function Footer() {
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1"><TrendingUp className="h-3 w-3" /> 71+ Funds</span>
+            <span className="flex items-center gap-1"><LayoutGrid className="h-3 w-3" /> 46 Features</span>
             <span className="flex items-center gap-1"><Shield className="h-3 w-3" /> Risk Analysis</span>
             <span className="flex items-center gap-1"><BarChart3 className="h-3 w-3" /> Stress Testing</span>
             <span className="flex items-center gap-1"><Calculator className="h-3 w-3" /> Tax & SIP</span>

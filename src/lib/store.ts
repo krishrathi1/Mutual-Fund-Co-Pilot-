@@ -222,7 +222,7 @@ export interface XIRRResult {
   methodology: string
 }
 
-type TabType = 'explore' | 'portfolio' | 'compare' | 'savings' | 'watchlist' | 'tax' | 'overlap' | 'goals' | 'xirr' | 'export' | 'risk' | 'stress' | 'heatmap' | 'nav' | 'sector' | 'diversification' | 'exitload' | 'sip' | 'rebalance' | 'market' | 'screener' | 'swp' | 'stp' | 'benchmark' | 'volatility' | 'rankings' | 'amc' | 'alerts'
+type TabType = 'explore' | 'portfolio' | 'compare' | 'savings' | 'watchlist' | 'tax' | 'overlap' | 'goals' | 'xirr' | 'export' | 'risk' | 'stress' | 'heatmap' | 'nav' | 'sector' | 'diversification' | 'exitload' | 'sip' | 'rebalance' | 'market' | 'screener' | 'swp' | 'stp' | 'benchmark' | 'volatility' | 'rankings' | 'amc' | 'alerts' | 'rollingreturns' | 'captureratio' | 'categoryperf' | 'similarity' | 'riskscatter' | 'alphabeta' | 'correlation' | 'montecarlo' | 'allocation' | 'sipstepup' | 'cagr' | 'fdvsmf' | 'inflation' | 'lumpsum' | 'commission' | 'switchguide' | 'elsstax' | 'emergency'
 type SavingsMode = 'lumpsum' | 'sip'
 
 interface FundStore {

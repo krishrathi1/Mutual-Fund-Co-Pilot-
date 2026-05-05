@@ -32,13 +32,35 @@ import FundRankings from '@/components/FundRankings'
 import AMCAnalysis from '@/components/AMCAnalysis'
 import PortfolioAlerts from '@/components/PortfolioAlerts'
 import Footer from '@/components/Footer'
+// New features
+import RollingReturns from '@/components/RollingReturns'
+import CaptureRatio from '@/components/CaptureRatio'
+import CategoryPerformance from '@/components/CategoryPerformance'
+import FundSimilarity from '@/components/FundSimilarity'
+import RiskReturnScatter from '@/components/RiskReturnScatter'
+import AlphaBeta from '@/components/AlphaBeta'
+import CorrelationMatrix from '@/components/CorrelationMatrix'
+import MonteCarloSim from '@/components/MonteCarloSim'
+import AssetAllocation from '@/components/AssetAllocation'
+import SIPStepUp from '@/components/SIPStepUp'
+import CAGRCalculator from '@/components/CAGRCalculator'
+import FDvsMF from '@/components/FDvsMF'
+import InflationCalculator from '@/components/InflationCalculator'
+import LumpsumCalculator from '@/components/LumpsumCalculator'
+import CommissionDisclosure from '@/components/CommissionDisclosure'
+import FundSwitchGuide from '@/components/FundSwitchGuide'
+import ELSSTaxSaver from '@/components/ELSSTaxSaver'
+import EmergencyFund from '@/components/EmergencyFund'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Compass, Landmark, Scale, Coins, TrendingUp, Sun, Moon,
   Eye, FileText, Waypoints, Crosshair, FileDown, Percent, Gauge, Activity, LayoutDashboard,
   LineChart, PieChart, Network, LogOut, RefreshCcw, Repeat,
   ChevronDown, ChevronUp, LayoutGrid, Filter, Wallet, ArrowRightLeft, BarChart3,
-  Building2, Trophy, Bell, Zap
+  Building2, Trophy, Bell, Zap, Target, Fingerprint, Crosshair as ScatterIcon,
+  Dice5, LayoutGrid as GridIcon, Zap as StepUpIcon, Calculator,
+  GitCompare, TrendingDown, IndianRupee, AlertTriangle, ArrowRightLeft as SwitchIcon,
+  ShieldCheck, ShieldAlert
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
@@ -69,6 +91,11 @@ const tabs: TabConfig[] = [
   { id: 'screener', label: 'Screener', icon: Filter, group: 'Discover' },
   { id: 'rankings', label: 'Rankings', icon: Trophy, group: 'Discover' },
   { id: 'amc', label: 'AMC Hub', icon: Building2, group: 'Discover' },
+  { id: 'rollingreturns', label: 'Rolling Returns', icon: TrendingUp, group: 'Discover' },
+  { id: 'captureratio', label: 'Capture Ratio', icon: Target, group: 'Discover' },
+  { id: 'categoryperf', label: 'Category Perf', icon: PieChart, group: 'Discover' },
+  { id: 'similarity', label: 'Similar Funds', icon: Fingerprint, group: 'Discover' },
+  { id: 'riskscatter', label: 'Risk-Return', icon: Activity, group: 'Discover' },
   // Analyze
   { id: 'portfolio', label: 'Portfolio', icon: Landmark, group: 'Analyze' },
   { id: 'compare', label: 'Compare', icon: Scale, group: 'Analyze' },
@@ -77,19 +104,32 @@ const tabs: TabConfig[] = [
   { id: 'diversification', label: 'Diversity', icon: Network, group: 'Analyze' },
   { id: 'benchmark', label: 'Benchmark', icon: BarChart3, group: 'Analyze' },
   { id: 'volatility', label: 'Volatility', icon: Activity, group: 'Analyze' },
+  { id: 'alphabeta', label: 'Alpha/Beta', icon: Activity, group: 'Analyze' },
+  { id: 'correlation', label: 'Correlation', icon: GridIcon, group: 'Analyze' },
+  { id: 'montecarlo', label: 'Monte Carlo', icon: Dice5, group: 'Analyze' },
+  { id: 'allocation', label: 'Allocation', icon: GridIcon, group: 'Analyze' },
   // Plan
   { id: 'savings', label: 'Savings', icon: Coins, group: 'Plan' },
   { id: 'sip', label: 'SIP', icon: Repeat, group: 'Plan' },
+  { id: 'sipstepup', label: 'SIP Step-Up', icon: Zap, group: 'Plan' },
   { id: 'swp', label: 'SWP', icon: Wallet, group: 'Plan' },
   { id: 'stp', label: 'STP', icon: ArrowRightLeft, group: 'Plan' },
   { id: 'goals', label: 'Goals', icon: Crosshair, group: 'Plan' },
   { id: 'risk', label: 'Risk', icon: Gauge, group: 'Plan' },
+  { id: 'cagr', label: 'CAGR', icon: Calculator, group: 'Plan' },
+  { id: 'lumpsum', label: 'Lumpsum', icon: IndianRupee, group: 'Plan' },
+  { id: 'fdvsmf', label: 'FD vs MF', icon: GitCompare, group: 'Plan' },
+  { id: 'inflation', label: 'Inflation', icon: TrendingDown, group: 'Plan' },
   // Optimize
   { id: 'tax', label: 'Tax', icon: FileText, group: 'Optimize' },
   { id: 'exitload', label: 'Exit Load', icon: LogOut, group: 'Optimize' },
   { id: 'rebalance', label: 'Rebalance', icon: RefreshCcw, group: 'Optimize' },
   { id: 'stress', label: 'Stress', icon: Zap, group: 'Optimize' },
   { id: 'alerts', label: 'Alerts', icon: Bell, group: 'Optimize' },
+  { id: 'commission', label: 'Commission', icon: AlertTriangle, group: 'Optimize' },
+  { id: 'switchguide', label: 'Switch Guide', icon: SwitchIcon, group: 'Optimize' },
+  { id: 'elsstax', label: 'ELSS Tax Saver', icon: ShieldCheck, group: 'Optimize' },
+  { id: 'emergency', label: 'Emergency Fund', icon: ShieldAlert, group: 'Optimize' },
   // Tools
   { id: 'xirr', label: 'XIRR', icon: Percent, group: 'Tools' },
   { id: 'watchlist', label: 'Watchlist', icon: Eye, group: 'Tools' },
@@ -132,7 +172,7 @@ export default function Home() {
                   <div className="flex items-center gap-1.5 mt-1">
                     <span className="text-[9px] font-black uppercase tracking-[0.3em] text-emerald-600/90 dark:text-emerald-400/90 leading-none">Co-Pilot</span>
                     <div className="h-1 w-1 rounded-full bg-emerald-500/50" />
-                    <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none">v3.0</span>
+                    <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none">v4.0</span>
                   </div>
                 </div>
               </div>
@@ -191,11 +231,11 @@ export default function Home() {
                   <DropdownMenuTrigger asChild>
                     <button className="group relative flex items-center gap-2 rounded-xl px-4 py-2.5 text-[10px] font-black tracking-widest uppercase transition-all duration-300 z-10 text-muted-foreground/80 hover:text-foreground hover:bg-muted/30">
                       <LayoutGrid className="h-4 w-4 transition-transform duration-300 opacity-70 group-hover:opacity-100" />
-                      <span>More Tools</span>
+                      <span>All Tools ({tabs.length})</span>
                       <ChevronDown className="h-3 w-3 opacity-50" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56 rounded-xl border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl p-2 z-[100] mt-2">
+                  <DropdownMenuContent align="end" className="w-64 rounded-xl border-white/10 bg-background/95 backdrop-blur-xl shadow-2xl p-2 z-[100] mt-2 max-h-[70vh] overflow-y-auto">
                     {desktopGroups.map((group, gi) => {
                       const groupTabs = tabs.filter(t => t.group === group && !desktopPrimaryTabIds.includes(t.id))
                       if (groupTabs.length === 0) return null
@@ -204,7 +244,7 @@ export default function Home() {
                         <DropdownMenuGroup key={group}>
                           {gi > 0 && <DropdownMenuSeparator className="my-1.5 opacity-50" />}
                           <DropdownMenuLabel className="text-[10px] uppercase tracking-widest text-muted-foreground/50 px-2 py-1.5 font-bold">
-                            {group}
+                            {group} ({groupTabs.length})
                           </DropdownMenuLabel>
                           {groupTabs.map((tab) => {
                             const isActive = activeTab === tab.id
@@ -244,7 +284,7 @@ export default function Home() {
                   <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-500 animate-ping opacity-75" />
                 </div>
                 <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-[0.2em] group-hover:tracking-[0.3em] transition-all">
-                  Live Market
+                  {tabs.length} Features
                 </span>
               </div>
               
@@ -299,7 +339,7 @@ export default function Home() {
             onClick={() => setShowMoreTabs(!showMoreTabs)}
             className="flex items-center gap-2 rounded-xl border border-white/10 bg-background/40 px-3 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground hover:text-foreground ml-2 shrink-0 transition-all active:scale-95"
           >
-            <span>More</span>
+            <span>More ({secondaryTabIds.length})</span>
             {showMoreTabs ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
           </button>
         </div>
@@ -312,6 +352,7 @@ export default function Home() {
                 const isActive = activeTab === tab.id
                 const Icon = tab.icon
                 const badge = getBadge(tab.id)
+                const groupLabel = tab.group !== 'Tools' ? <span className="text-[8px] text-muted-foreground/50 mr-1">{tab.group.charAt(0)}</span> : null
                 return (
                   <button
                     key={tab.id}
@@ -320,6 +361,7 @@ export default function Home() {
                       isActive ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'text-muted-foreground hover:bg-muted/80'
                     }`}
                   >
+                    {groupLabel}
                     <Icon className="h-3 w-3" />
                     {tab.label}
                     {badge > 0 && (
@@ -356,6 +398,11 @@ export default function Home() {
             {activeTab === 'screener' && <FundScreener />}
             {activeTab === 'rankings' && <FundRankings />}
             {activeTab === 'amc' && <AMCAnalysis />}
+            {activeTab === 'rollingreturns' && <RollingReturns />}
+            {activeTab === 'captureratio' && <CaptureRatio />}
+            {activeTab === 'categoryperf' && <CategoryPerformance />}
+            {activeTab === 'similarity' && <FundSimilarity />}
+            {activeTab === 'riskscatter' && <RiskReturnScatter />}
             {/* Analyze */}
             {activeTab === 'portfolio' && <PortfolioBuilder />}
             {activeTab === 'compare' && <CompareView />}
@@ -364,19 +411,32 @@ export default function Home() {
             {activeTab === 'diversification' && <DiversificationScore />}
             {activeTab === 'benchmark' && <BenchmarkCompare />}
             {activeTab === 'volatility' && <VolatilityAnalysis />}
+            {activeTab === 'alphabeta' && <AlphaBeta />}
+            {activeTab === 'correlation' && <CorrelationMatrix />}
+            {activeTab === 'montecarlo' && <MonteCarloSim />}
+            {activeTab === 'allocation' && <AssetAllocation />}
             {/* Plan */}
             {activeTab === 'savings' && <SavingsCalculator />}
             {activeTab === 'sip' && <SIPPlanner />}
+            {activeTab === 'sipstepup' && <SIPStepUp />}
             {activeTab === 'swp' && <SWPCalculator />}
             {activeTab === 'stp' && <STPCalculator />}
             {activeTab === 'goals' && <GoalPlanner />}
             {activeTab === 'risk' && <RiskProfiler />}
+            {activeTab === 'cagr' && <CAGRCalculator />}
+            {activeTab === 'lumpsum' && <LumpsumCalculator />}
+            {activeTab === 'fdvsmf' && <FDvsMF />}
+            {activeTab === 'inflation' && <InflationCalculator />}
             {/* Optimize */}
             {activeTab === 'tax' && <TaxCalculator />}
             {activeTab === 'exitload' && <ExitLoadCalc />}
             {activeTab === 'rebalance' && <RebalancingView />}
             {activeTab === 'stress' && <StressTest />}
             {activeTab === 'alerts' && <PortfolioAlerts />}
+            {activeTab === 'commission' && <CommissionDisclosure />}
+            {activeTab === 'switchguide' && <FundSwitchGuide />}
+            {activeTab === 'elsstax' && <ELSSTaxSaver />}
+            {activeTab === 'emergency' && <EmergencyFund />}
             {/* Tools */}
             {activeTab === 'xirr' && <XIRRCalculator />}
             {activeTab === 'watchlist' && <Watchlist />}
