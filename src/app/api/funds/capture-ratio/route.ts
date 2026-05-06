@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
-const categoryBaselines: Record<string, { upside: number; downside: number }> = {
+const mutualFundCategoryBaselines: Record<string, { upside: number; downside: number }> = {
   'Equity': { upside: 105, downside: 85 },
   'Large Cap': { upside: 98, downside: 80 },
   'Mid Cap': { upside: 115, downside: 95 },
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
       })
       
       const results = funds.map(f => {
-        const baseline = categoryBaselines[f.subCategory] || categoryBaselines[f.category] || { upside: 100, downside: 90 }
+        const baseline = mutualFundCategoryBaselines[f.subCategory] || mutualFundCategoryBaselines[f.category] || { upside: 100, downside: 90 }
         const riskFactor = f.riskometer === 'Very High' ? 1.2 : f.riskometer === 'High' ? 1.1 : 0.9
         const sharpeFactor = Math.max(0.7, 1.2 - (f.directSharpe1y || 1.0) * 0.2)
 
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     const directReturn1y = fund.directReturn1y || 0
     const directReturn3y = fund.directReturn3y || 0
 
-    const baseline = categoryBaselines[fund.subCategory] || categoryBaselines[fund.category] || { upside: 100, downside: 90 }
+    const baseline = mutualFundCategoryBaselines[fund.subCategory] || mutualFundCategoryBaselines[fund.category] || { upside: 100, downside: 90 }
     
     // Risk adjustment factor (High risk = captures more downside)
     const riskFactor = fund.riskometer === 'Very High' ? 1.2 : fund.riskometer === 'High' ? 1.1 : fund.riskometer === 'Moderate' ? 0.9 : 0.8
