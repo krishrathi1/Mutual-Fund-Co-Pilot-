@@ -75,39 +75,46 @@ function generateMockNavHistory(fund: FundData, months: number): NavPoint[] {
   const now = new Date()
   const dates: Date[] = []
   for (let i = 0; i < months; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    dates.unshift(d)
+    // Generate dates from past to present
+    const d = new Date(now.getFullYear(), now.getMonth() - (months - 1 - i), 1)
+    dates.push(d)
   }
 
-  const backwardsNavs: number[] = [fund.directNav]
-  for (let i = 1; i <= months; i++) {
-    const randomShock = (rng() - 0.5) * 2
-    const monthlyChange = 1 + monthlyReturn + monthlyVol * randomShock
-    const prevNav = backwardsNavs[i - 1] / Math.max(0.5, monthlyChange)
-    backwardsNavs.unshift(prevNav)
+  // Monthly expense difference in decimal (e.g. 1% difference = 0.01 / 12)
+  const monthlyExpenseDiff = Math.max(0, (fund.regularExpenseRatio - fund.directExpenseRatio)) / 100 / 12
+
+  const navs: { direct: number; regular: number }[] = new Array(months)
+  
+  // Start from today's actual values and simulate backwards
+  let currentDirect = fund.directNav
+  let currentRegular = fund.regularNav
+  
+  navs[months - 1] = { direct: currentDirect, regular: currentRegular }
+
+  for (let i = months - 2; i >= 0; i--) {
+    // Generate a random monthly return for this step
+    const randomShock = (rng() - 0.5) * 2 // -1 to 1
+    const r = monthlyReturn + monthlyVol * randomShock
+    
+    // Backwards growth factors
+    // If Forward is: NAV_new = NAV_old * (1 + r)
+    // Then Backward is: NAV_old = NAV_new / (1 + r)
+    const gDirect = 1 + r
+    const gRegular = 1 + r - monthlyExpenseDiff
+    
+    // Ensure we don't divide by zero or negative growth (unlikely with 1 + r)
+    currentDirect = currentDirect / Math.max(0.5, gDirect)
+    currentRegular = currentRegular / Math.max(0.5, gRegular)
+    
+    navs[i] = { direct: currentDirect, regular: currentRegular }
   }
 
-  const expenseDiff = (fund.regularExpenseRatio - fund.directExpenseRatio) / 10000
-  const navHistory: NavPoint[] = []
-
-  for (let i = 0; i < months; i++) {
-    const directNav = Math.round(backwardsNavs[i] * 100) / 100
-    const regularNav = Math.round((directNav * (1 + expenseDiff * (months - i) / 12)) * 100) / 100
-    navHistory.push({
-      date: dates[i].toISOString().slice(0, 10),
-      directNav,
-      regularNav,
-      gap: Math.round((directNav - regularNav) * 100) / 100,
-    })
-  }
-
-  if (navHistory.length > 0) {
-    navHistory[navHistory.length - 1].directNav = fund.directNav
-    navHistory[navHistory.length - 1].regularNav = fund.regularNav
-    navHistory[navHistory.length - 1].gap = Math.round((fund.directNav - fund.regularNav) * 100) / 100
-  }
-
-  return navHistory
+  return navs.map((n, i) => ({
+    date: dates[i].toISOString().slice(0, 10),
+    directNav: Math.round(n.direct * 100) / 100,
+    regularNav: Math.round(n.regular * 100) / 100,
+    gap: Math.round((n.direct - n.regular) * 100) / 100,
+  }))
 }
 
 interface CustomTooltipProps {

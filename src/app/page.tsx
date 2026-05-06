@@ -37,6 +37,26 @@ import { TABS as tabs } from '@/lib/constants'
 import { useTheme } from 'next-themes'
 import { motion, AnimatePresence } from 'framer-motion'
 
+// Feature Components
+import RollingReturns from '@/components/RollingReturns'
+import CaptureRatio from '@/components/CaptureRatio'
+import CategoryPerformance from '@/components/CategoryPerformance'
+import FundSimilarity from '@/components/FundSimilarity'
+import RiskReturnScatter from '@/components/RiskReturnScatter'
+import AlphaBeta from '@/components/AlphaBeta'
+import CorrelationMatrix from '@/components/CorrelationMatrix'
+import MonteCarloSim from '@/components/MonteCarloSim'
+import AssetAllocation from '@/components/AssetAllocation'
+import SIPStepUp from '@/components/SIPStepUp'
+import CAGRCalculator from '@/components/CAGRCalculator'
+import FDvsMF from '@/components/FDvsMF'
+import InflationCalculator from '@/components/InflationCalculator'
+import LumpsumCalculator from '@/components/LumpsumCalculator'
+import CommissionDisclosure from '@/components/CommissionDisclosure'
+import FundSwitchGuide from '@/components/FundSwitchGuide'
+import ELSSTaxSaver from '@/components/ELSSTaxSaver'
+import EmergencyFund from '@/components/EmergencyFund'
+
 export default function Home() {
   const { activeTab, setActiveTab, holdings, selectedFundIds, watchlist, goals } = useFundStore()
   const { theme, setTheme } = useTheme()
