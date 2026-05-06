@@ -38,7 +38,7 @@ export default function CaptureRatio() {
   const chartData = allFunds.slice(0, 15).map(f => ({
     name: f.schemeName.split(' ').slice(0, 3).join(' '),
     'Upside 1Y': f.upsideCapture1y || 0,
-    'Upside 3Y': f.upsideCapture3y || 0,
+    'Downside 1Y': f.downsideCapture1y || 0,
     category: f.category
   }))
 
@@ -118,8 +118,8 @@ export default function CaptureRatio() {
               <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
               <Tooltip formatter={(v: number) => [`${v}%`]} />
               <Legend />
-              <Bar dataKey="Upside 1Y" fill="#10b981" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Upside 3Y" fill="#0d9488" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="Upside 1Y" fill="#10b981" radius={[4, 4, 0, 0]} name="Upside Capture" />
+              <Bar dataKey="Downside 1Y" fill="#ef4444" radius={[4, 4, 0, 0]} name="Downside Capture" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
