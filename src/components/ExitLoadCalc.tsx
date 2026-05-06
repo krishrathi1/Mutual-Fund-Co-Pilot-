@@ -161,15 +161,17 @@ export default function ExitLoadCalc() {
       let equityLtcgExemptionUsed = 0
 
       for (const h of selected) {
-        const fund = h.fund
+        const fund = h?.fund
+        if (!fund) continue
+
         const cat = mapCategory(fund.category)
         const holdingDays = getHoldingDays(h)
-        const gain = h.currentAmount - h.investedAmount
+        const gain = (h?.currentAmount ?? 0) - (h?.investedAmount ?? 0)
 
         // Exit load
         const { pct: exitLoadPct, rule: exitLoadRule, thresholdDays } = parseExitLoad(fund.exitLoad)
         const effectiveExitLoadPct = holdingDays < thresholdDays ? exitLoadPct : 0
-        const exitLoadCost = h.currentAmount * (effectiveExitLoadPct / 100)
+        const exitLoadCost = (h?.currentAmount ?? 0) * (effectiveExitLoadPct / 100)
 
         // Capital gains tax
         let capitalGainsTax = 0
@@ -188,8 +190,8 @@ export default function ExitLoadCalc() {
         }
 
         const totalSwitchingCost = exitLoadCost + capitalGainsTax
-        const expenseDiff = fund.regularExpenseRatio - fund.directExpenseRatio
-        const annualSaving = h.currentAmount * (expenseDiff / 100)
+        const expenseDiff = (fund?.regularExpenseRatio ?? 0) - (fund?.directExpenseRatio ?? 0)
+        const annualSaving = (h?.currentAmount ?? 0) * (expenseDiff / 100)
         const breakEvenMonths = annualSaving > 0 ? Math.ceil((totalSwitchingCost / annualSaving) * 12) : 999
         const netAnnualSavingAfterBE = annualSaving
 
@@ -197,8 +199,8 @@ export default function ExitLoadCalc() {
           holdingId: h.id,
           fundName: fund.schemeName,
           category: cat,
-          investedAmount: h.investedAmount,
-          currentAmount: h.currentAmount,
+          investedAmount: h?.investedAmount ?? 0,
+          currentAmount: h?.currentAmount ?? 0,
           exitLoadPct: effectiveExitLoadPct,
           exitLoadRule,
           holdingDays,
@@ -347,7 +349,7 @@ export default function ExitLoadCalc() {
               <div className="max-h-72 overflow-y-auto space-y-2">
                 {regularHoldings.map((h) => {
                   const isSelected = selectedHoldings.has(h.id)
-                  const { pct, thresholdDays, rule } = parseExitLoad(h.fund.exitLoad)
+                  const { pct, thresholdDays, rule } = parseExitLoad(h?.fund?.exitLoad || '')
                   const holdingDays = getHoldingDays(h)
                   const willApplyExitLoad = holdingDays < thresholdDays
 
@@ -371,12 +373,12 @@ export default function ExitLoadCalc() {
                             }`}>
                               {isSelected && <CheckCircle2 className="h-3 w-3 text-white" />}
                             </div>
-                            <span className="text-sm font-medium text-foreground truncate">{h.fund.schemeName}</span>
+                            <span className="text-sm font-medium text-foreground truncate">{h?.fund?.schemeName || 'Unknown Fund'}</span>
                           </div>
                           <div className="ml-6 mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                            <span>Current: {formatCurrency(h.currentAmount)}</span>
-                            <span>Gain: <span className={h.currentAmount - h.investedAmount >= 0 ? 'text-emerald-600' : 'text-red-600'}>
-                              {formatCurrency(h.currentAmount - h.investedAmount)}
+                            <span>Current: {formatCurrency(h?.currentAmount ?? 0)}</span>
+                            <span>Gain: <span className={(h?.currentAmount ?? 0) - (h?.investedAmount ?? 0) >= 0 ? 'text-emerald-600' : 'text-red-600'}>
+                              {formatCurrency((h?.currentAmount ?? 0) - (h?.investedAmount ?? 0))}
                             </span></span>
                             <span className="flex items-center gap-1">
                               Exit Load:
@@ -395,7 +397,7 @@ export default function ExitLoadCalc() {
                                 </Badge>
                               )}
                             </span>
-                            <span>ER Diff: <span className="text-emerald-600 dark:text-emerald-400">{(h.fund.regularExpenseRatio - h.fund.directExpenseRatio).toFixed(2)}%</span></span>
+                            <span>ER Diff: <span className="text-emerald-600 dark:text-emerald-400">{((h?.fund?.regularExpenseRatio ?? 0) - (h?.fund?.directExpenseRatio ?? 0)).toFixed(2)}%</span></span>
                           </div>
                         </div>
                       </div>

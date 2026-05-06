@@ -86,8 +86,8 @@ export default function SwitchGuide() {
 
   const estimatedAnnualSaving = useMemo(() => {
     return regularHoldings.reduce((s, h) => {
-      const diff = h.fund.regularExpenseRatio - h.fund.directExpenseRatio
-      return s + h.currentAmount * (diff / 100)
+      const diff = (h?.fund?.regularExpenseRatio ?? 0) - (h?.fund?.directExpenseRatio ?? 0)
+      return s + (h?.currentAmount ?? 0) * (diff / 100)
     }, 0)
   }, [regularHoldings])
 
@@ -361,14 +361,14 @@ export default function SwitchGuide() {
                         <CardContent>
                           <div className="max-h-64 overflow-y-auto space-y-2">
                             {regularHoldings.map((h) => {
-                              const diff = h.fund.regularExpenseRatio - h.fund.directExpenseRatio
-                              const annualSave = h.currentAmount * (diff / 100)
+                              const diff = (h?.fund?.regularExpenseRatio ?? 0) - (h?.fund?.directExpenseRatio ?? 0)
+                              const annualSave = (h?.currentAmount ?? 0) * (diff / 100)
                               return (
                                 <div key={h.id} className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2 text-xs">
                                   <div className="flex-1 min-w-0">
-                                    <span className="font-medium text-foreground truncate block">{h.fund.schemeName}</span>
+                                    <span className="font-medium text-foreground truncate block">{h?.fund?.schemeName || 'Unknown Fund'}</span>
                                     <span className="text-muted-foreground">
-                                      ER: {h.fund.regularExpenseRatio}% → {h.fund.directExpenseRatio}% (save {diff.toFixed(2)}%)
+                                      ER: {h?.fund?.regularExpenseRatio}% → {h?.fund?.directExpenseRatio}% (save {diff.toFixed(2)}%)
                                     </span>
                                   </div>
                                   <span className="font-bold text-emerald-600 dark:text-emerald-400 ml-2 shrink-0">
@@ -441,8 +441,9 @@ export default function SwitchGuide() {
                       <CardContent>
                         <div className="max-h-64 overflow-y-auto space-y-2">
                           {regularHoldings.map((h) => {
+                            if (!h?.fund) return null
                             const { pct, thresholdDays, rule } = parseExitLoad(h.fund.exitLoad)
-                            const gain = h.currentAmount - h.investedAmount
+                            const gain = (h.currentAmount ?? 0) - (h.investedAmount ?? 0)
                             const cat = h.fund.category === 'Debt' ? 'debt' : 'equity'
                             const holdingDays = h.purchaseDate
                               ? Math.floor((Date.now() - new Date(h.purchaseDate).getTime()) / (1000 * 60 * 60 * 24))

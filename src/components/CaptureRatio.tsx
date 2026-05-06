@@ -22,7 +22,10 @@ export default function CaptureRatio() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    fetch('/api/funds/capture-ratio').then(r => r.json()).then(d => setAllFunds(d.funds || [])).catch(() => {})
+    fetch('/api/funds/capture-ratio')
+      .then(r => r.ok ? r.json() : { funds: [] })
+      .then(d => setAllFunds(d.funds || []))
+      .catch(() => setAllFunds([]))
   }, [])
 
   useEffect(() => {
@@ -30,7 +33,13 @@ export default function CaptureRatio() {
     let cancelled = false
     const timer = setTimeout(() => {
       setLoading(true)
-      fetch(`/api/funds/capture-ratio?fundId=${selectedFundId}`).then(r => r.json()).then(d => { if (!cancelled) { setResult(d); setLoading(false) } }).catch(() => { if (!cancelled) setLoading(false) })
+      fetch(`/api/funds/capture-ratio?fundId=${selectedFundId}`)
+        .then(r => {
+          if (!r.ok) throw new Error('Failed')
+          return r.json()
+        })
+        .then(d => { if (!cancelled) { setResult(d); setLoading(false) } })
+        .catch(() => { if (!cancelled) { setResult(null); setLoading(false) } })
     }, 0)
     return () => { cancelled = true; clearTimeout(timer) }
   }, [selectedFundId])

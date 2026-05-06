@@ -26,7 +26,13 @@ export default function FundSwitchGuide() {
 
   useEffect(() => {
     if (!selectedFundId) return
-    fetch(`/api/funds/switch-guide?fundId=${selectedFundId}&amount=${investmentAmount}&holdingYears=${holdingYears}`).then(r => r.json()).then(d => setResult(d)).catch(() => {})
+    fetch(`/api/funds/switch-guide?fundId=${selectedFundId}&amount=${investmentAmount}&holdingYears=${holdingYears}`)
+      .then(r => {
+        if (!r.ok) throw new Error('Failed to fetch')
+        return r.json()
+      })
+      .then(d => setResult(d))
+      .catch(() => setResult(null))
   }, [selectedFundId, investmentAmount, holdingYears])
 
   return (
@@ -56,7 +62,7 @@ export default function FundSwitchGuide() {
         </CardContent>
       </Card>
 
-      {result && (
+      {result && result.regularPlan && result.directPlan && (
         <>
           <div className="grid gap-4 sm:grid-cols-2">
             <Card className="border-red-200 dark:border-red-800 bg-red-50/30 dark:bg-red-950/10">

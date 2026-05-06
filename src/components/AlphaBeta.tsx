@@ -16,7 +16,10 @@ export default function AlphaBeta() {
   const [sortBy, setSortBy] = useState<'alpha1y' | 'beta1y' | 'rSquared'>('alpha1y')
 
   useEffect(() => {
-    fetch('/api/funds/alpha-beta').then(r => r.json()).then(d => setAllFunds(d.funds || [])).catch(() => {})
+    fetch('/api/funds/alpha-beta')
+      .then(r => r.ok ? r.json() : { funds: [] })
+      .then(d => setAllFunds(d.funds || []))
+      .catch(() => setAllFunds([]))
   }, [])
 
   const sorted = [...allFunds].sort((a, b) => (b[sortBy] || 0) - (a[sortBy] || 0))
@@ -54,14 +57,18 @@ export default function AlphaBeta() {
           <CardContent className="pt-6 text-center">
             <Activity className="mx-auto h-6 w-6 text-amber-600" />
             <p className="text-xs text-muted-foreground mt-1">Avg Beta</p>
-            <p className="text-2xl font-bold text-amber-600">{(allFunds.reduce((s, f) => s + f.beta1y, 0) / allFunds.length).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-amber-600">
+              {allFunds.length > 0 ? (allFunds.reduce((s, f) => s + f.beta1y, 0) / allFunds.length).toFixed(2) : '0.00'}
+            </p>
             <p className="text-xs text-muted-foreground">Market sensitivity</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6 text-center">
             <p className="text-xs text-muted-foreground mt-1">Avg R²</p>
-            <p className="text-2xl font-bold">{(allFunds.reduce((s, f) => s + f.rSquared, 0) / allFunds.length).toFixed(0)}%</p>
+            <p className="text-2xl font-bold">
+              {allFunds.length > 0 ? (allFunds.reduce((s, f) => s + f.rSquared, 0) / allFunds.length).toFixed(0) : '0'}%
+            </p>
             <p className="text-xs text-muted-foreground">Benchmark correlation</p>
           </CardContent>
         </Card>

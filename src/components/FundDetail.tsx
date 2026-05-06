@@ -96,37 +96,37 @@ export default function FundDetail({ fund, open, onOpenChange }: FundDetailProps
   }, [])
 
   // Derived data
-  const expDiffBps = expenseRatioDiff(fund.directExpenseRatio, fund.regularExpenseRatio)
+  const expDiffBps = expenseRatioDiff(fund?.directExpenseRatio ?? 0, fund?.regularExpenseRatio ?? 0)
   const lifetimeSavings = useMemo(
-    () => calcLifetimeSavings(fund.directExpenseRatio, fund.regularExpenseRatio, fund.category),
-    [fund.directExpenseRatio, fund.regularExpenseRatio, fund.category],
+    () => calcLifetimeSavings(fund?.directExpenseRatio ?? 0, fund?.regularExpenseRatio ?? 0, fund?.category || 'Equity'),
+    [fund?.directExpenseRatio, fund?.regularExpenseRatio, fund?.category],
   )
 
   // Allocation data for pie chart
   const allocationData = useMemo(() => {
     const items: { name: string; value: number }[] = []
-    if (fund.equityPercentage && fund.equityPercentage > 0) items.push({ name: 'Equity', value: fund.equityPercentage })
-    if (fund.debtPercentage && fund.debtPercentage > 0) items.push({ name: 'Debt', value: fund.debtPercentage })
+    if (fund?.equityPercentage && fund.equityPercentage > 0) items.push({ name: 'Equity', value: fund.equityPercentage })
+    if (fund?.debtPercentage && fund.debtPercentage > 0) items.push({ name: 'Debt', value: fund.debtPercentage })
     const accounted = items.reduce((s, i) => s + i.value, 0)
     if (accounted < 100 && accounted > 0) items.push({ name: 'Others', value: Math.round(100 - accounted) })
     if (items.length === 0) items.push({ name: 'N/A', value: 100 })
     return items
-  }, [fund.equityPercentage, fund.debtPercentage])
+  }, [fund?.equityPercentage, fund?.debtPercentage])
 
   // Benchmark comparison rows
   const benchmarkRows = useMemo(() => {
     const rows: { period: string; direct: number | null; regular: number | null; benchmark: number | null }[] = [
-      { period: '1 Year', direct: fund.directReturn1y, regular: fund.regularReturn1y, benchmark: fund.benchmarkReturn1y },
-      { period: '3 Years', direct: fund.directReturn3y, regular: fund.regularReturn3y, benchmark: fund.benchmarkReturn3y },
-      { period: '5 Years', direct: fund.directReturn5y, regular: fund.regularReturn5y, benchmark: fund.benchmarkReturn5y },
+      { period: '1 Year', direct: fund?.directReturn1y ?? null, regular: fund?.regularReturn1y ?? null, benchmark: fund?.benchmarkReturn1y ?? null },
+      { period: '3 Years', direct: fund?.directReturn3y ?? null, regular: fund?.regularReturn3y ?? null, benchmark: fund?.benchmarkReturn3y ?? null },
+      { period: '5 Years', direct: fund?.directReturn5y ?? null, regular: fund?.regularReturn5y ?? null, benchmark: fund?.benchmarkReturn5y ?? null },
     ]
     return rows
   }, [fund])
 
   // Expense ratio bar widths (max 3% scale)
   const maxER = 3
-  const directERWidth = Math.min((fund.directExpenseRatio / maxER) * 100, 100)
-  const regularERWidth = Math.min((fund.regularExpenseRatio / maxER) * 100, 100)
+  const directERWidth = Math.min(((fund?.directExpenseRatio ?? 0) / maxER) * 100, 100)
+  const regularERWidth = Math.min(((fund?.regularExpenseRatio ?? 0) / maxER) * 100, 100)
 
   // Recommendation
   const recommendation = useMemo(() => {

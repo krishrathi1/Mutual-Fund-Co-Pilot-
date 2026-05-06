@@ -15,7 +15,11 @@ export async function GET(request: NextRequest) {
 
     const expenseSaving = fund.regularExpenseRatio - fund.directExpenseRatio
     const annualSaving = investmentAmount * expenseSaving / 100
-    const cumulativeSaving10y = Math.round(annualSaving * 10 + annualSaving * (Math.pow(1.12, 10) - 1) / 0.12 * 0.12)
+    // Future Value of an Annuity formula: P * ((1+r)^n - 1) / r
+    // Projecting savings reinvestment at 12% CAGR over 10 years
+    const savingRate = 0.12
+    const savingYears = 10
+    const cumulativeSaving10y = Math.round(annualSaving * (Math.pow(1 + savingRate, savingYears) - 1) / savingRate)
 
     // Tax impact of switching
     const gain = investmentAmount * (fund.regularReturn1y || 10) / 100 * holdingYears
@@ -55,6 +59,7 @@ export async function GET(request: NextRequest) {
     const switchRecommended = annualSaving > totalSwitchCost / Math.min(holdingYears, 5)
 
     // Steps
+    const hasExitLoad = actualExitLoadPct > 0
     const steps = [
       { step: 1, title: 'Check Exit Load', detail: hasExitLoad ? `Exit load: ${fund.exitLoad}. Cost: ₹${Math.round(exitLoadCost).toLocaleString('en-IN')}` : 'No exit load - good!', status: hasExitLoad ? 'warning' : 'ok' },
       { step: 2, title: 'Calculate Tax Impact', detail: isLongTerm ? `LTCG tax: 12.5% on gains above ₹1.25L. Estimated tax: ₹${Math.round(taxOnSwitch).toLocaleString('en-IN')}` : `STCG tax: 20% on gains. Estimated tax: ₹${Math.round(taxOnSwitch).toLocaleString('en-IN')}`, status: taxOnSwitch > annualSaving ? 'warning' : 'ok' },

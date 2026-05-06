@@ -9,7 +9,7 @@ import {
   Lightbulb, AlertTriangle,
 } from 'lucide-react'
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, useSpring, useTransform } from 'framer-motion'
 
 interface BreakdownItem {
   metric: string
@@ -237,97 +237,96 @@ function getScoreColor(score: number): string {
 }
 
 // Large animated SVG semicircular gauge
-function LargeScoreGauge({ score, size = 220 }: { score: number; size?: number }) {
-  const radius = (size - 20) / 2
+function LargeScoreGauge({ score, size = 240 }: { score: number; size?: number }) {
+  const radius = (size - 30) / 2
   const cx = size / 2
-  const cy = size / 2 + 8
-  const startAngle = 180 // Degrees
-  const endAngle = 0
-  
+  const cy = size / 2 + 10
   const gaugeColor = getScoreColor(score)
   
-  // Animate the score value directly for the gauge
-  const [animatedScore, setAnimatedScore] = useState(0)
+  // Use motion values for perfectly synchronized animation
+  const animatedScore = useSpring(0, { bounce: 0, duration: 1500 })
   
   useEffect(() => {
-    const duration = 1500
-    const start = 0
-    const end = score
-    const startTime = Date.now()
-    
-    const animate = () => {
-      const now = Date.now()
-      const elapsed = now - startTime
-      const progress = Math.min(elapsed / duration, 1)
-      const eased = 1 - Math.pow(1 - progress, 3) // easeOutCubic
-      
-      setAnimatedScore(start + (end - start) * eased)
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate)
-      }
-    }
-    
-    requestAnimationFrame(animate)
-  }, [score])
+    animatedScore.set(score)
+  }, [score, animatedScore])
 
-  const currentAngle = (180 - (animatedScore / 100) * 180) * (Math.PI / 180)
-  const sx = cx + radius * Math.cos(currentAngle)
-  const sy = cy - radius * Math.sin(currentAngle)
+  // Transform score to path coordinates
+  const pathLength = useTransform(animatedScore, [0, 100], [0, 1])
+  
+  // Calculate indicator position
+  const angle = useTransform(animatedScore, (s) => (180 - (s / 100) * 180) * (Math.PI / 180))
+  const sx = useTransform(angle, (a) => cx + radius * Math.cos(a))
+  const sy = useTransform(angle, (a) => cy - radius * Math.sin(a))
 
-  const x1 = cx + radius * Math.cos(Math.PI)
-  const y1 = cy - radius * Math.sin(Math.PI)
-  const x2 = cx + radius * Math.cos(0)
-  const y2 = cy - radius * Math.sin(0)
+  const x1 = cx - radius
+  const y1 = cy
 
   return (
-    <svg width={size} height={size / 2 + 16} viewBox={`0 0 ${size} ${size / 2 + 16}`} className="overflow-visible">
-      {/* Background arc */}
-      <path
-        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
-        fill="none"
-        stroke="currentColor"
-        className="text-muted/15"
-        strokeWidth={14}
-        strokeLinecap="round"
-      />
-      {/* Score arc */}
-      <path
-        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${sx} ${sy}`}
-        fill="none"
-        stroke={gaugeColor}
-        strokeWidth={14}
-        strokeLinecap="round"
-      />
-      {/* Score indicator (circle) */}
-      <circle
-        cx={sx}
-        cy={sy}
-        r={8}
-        fill="white"
-        stroke={gaugeColor}
-        strokeWidth={4}
-        className="shadow-sm transition-transform duration-200"
-      />
-      {/* Tick marks */}
-      {[0, 25, 50, 75, 100].map((tick) => {
-        const angle = (180 - (tick / 100) * 180) * (Math.PI / 180)
-        const innerR = radius - 16
-        const outerR = radius + 8
-        const tx1 = cx + innerR * Math.cos(angle)
-        const ty1 = cy - innerR * Math.sin(angle)
-        const tx2 = cx + outerR * Math.cos(angle)
-        const ty2 = cy - outerR * Math.sin(angle)
-        return (
-          <line
-            key={tick}
-            x1={tx1} y1={ty1} x2={tx2} y2={ty2}
-            className="stroke-muted-foreground/30"
-            strokeWidth={1}
-          />
-        )
-      })}
-    </svg>
+    <div className="relative flex items-center justify-center overflow-visible" style={{ width: size, height: size / 2 + 20 }}>
+      <svg
+        width={size}
+        height={size / 2 + 20}
+        viewBox={`0 0 ${size} ${size / 2 + 20}`}
+        className="overflow-visible"
+      >
+        <defs>
+          <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#ef4444" />
+            <stop offset="50%" stopColor="#f59e0b" />
+            <stop offset="100%" stopColor="#10b981" />
+          </linearGradient>
+        </defs>
+
+        {/* Background track */}
+        <path
+          d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
+          fill="none"
+          stroke="currentColor"
+          className="text-muted/10 dark:text-muted/5"
+          strokeWidth={16}
+          strokeLinecap="round"
+        />
+
+        {/* Animated Score Arc */}
+        <motion.path
+          d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${cx + radius} ${cy}`}
+          fill="none"
+          stroke={gaugeColor}
+          strokeWidth={16}
+          strokeLinecap="round"
+          style={{ pathLength }}
+        />
+
+        {/* Ticks */}
+        {[0, 25, 50, 75, 100].map((tick) => {
+          const tickAngle = (180 - (tick / 100) * 180) * (Math.PI / 180)
+          const innerR = radius - 18
+          const outerR = radius + 10
+          return (
+            <line
+              key={tick}
+              x1={cx + innerR * Math.cos(tickAngle)}
+              y1={cy - innerR * Math.sin(tickAngle)}
+              x2={cx + outerR * Math.cos(tickAngle)}
+              y2={cy - outerR * Math.sin(tickAngle)}
+              className="stroke-muted-foreground/30"
+              strokeWidth={1.5}
+            />
+          )
+        })}
+
+        {/* Synchronized Indicator Circle */}
+        <motion.circle
+          cx={sx}
+          cy={sy}
+          r={10}
+          fill="white"
+          stroke={gaugeColor}
+          strokeWidth={4}
+          style={{ filter: 'drop-shadow(0px 2px 4px rgba(0,0,0,0.2))' }}
+        />
+      </svg>
+    </div>
   )
 }
 
