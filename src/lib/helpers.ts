@@ -1,10 +1,13 @@
-export function formatCurrency(amount: number): string {
-  if (Math.abs(amount) >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`
-  if (Math.abs(amount) >= 100000) return `₹${(amount / 100000).toFixed(2)} L`
+export function formatCurrency(amount: number | null | undefined): string {
+  if (amount === null || amount === undefined || isNaN(amount)) return '₹0'
+  const absAmount = Math.abs(amount)
+  if (absAmount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`
+  if (absAmount >= 100000) return `₹${(amount / 100000).toFixed(2)} L`
   return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
-export function formatCurrencyFull(amount: number): string {
+export function formatCurrencyFull(amount: number | null | undefined): string {
+  if (amount === null || amount === undefined || isNaN(amount)) return '₹0'
   return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
@@ -13,7 +16,8 @@ export function formatPercent(value: number | null | undefined, decimals = 2): s
   return `${value >= 0 ? '+' : ''}${value.toFixed(decimals)}%`
 }
 
-export function formatBps(value: number): string {
+export function formatBps(value: number | null | undefined): string {
+  if (value === null || value === undefined || isNaN(value)) return '0 bps'
   return `${value} bps`
 }
 
@@ -39,7 +43,8 @@ export function expenseRatioDiff(direct: number, regular: number): number {
   return Math.round((regular - direct) * 100)
 }
 
-export function formatAUM(aumCrore: number): string {
+export function formatAUM(aumCrore: number | null | undefined): string {
+  if (aumCrore === null || aumCrore === undefined || isNaN(aumCrore)) return '—'
   if (aumCrore >= 100) return `₹${(aumCrore / 100).toFixed(1)}K Cr`
   return `₹${aumCrore.toFixed(0)} Cr`
 }

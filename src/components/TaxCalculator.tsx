@@ -79,7 +79,7 @@ export default function TaxCalculator() {
     if (holdings.length > 0 && taxHoldings.length === 0 && !customMode) {
       const mapped: TaxHolding[] = holdings.map((h) => ({
         id: h.id,
-        name: h.fund.schemeName,
+        name: h.fund?.schemeName || 'Unknown Fund',
         investedAmount: h.investedAmount,
         currentValue: h.currentAmount,
         purchaseDate: h.purchaseDate || '2023-01-15',
@@ -224,12 +224,15 @@ export default function TaxCalculator() {
   }, [taxResults])
 
   const chartData = useMemo(() => {
-    return filteredResults.map((r) => ({
-      name: r.name.length > 20 ? r.name.slice(0, 20) + '…' : r.name,
-      'Tax': Math.round(r.taxAmount),
-      'Net Gain': Math.round(r.netGain),
-      category: r.category,
-    }))
+    return filteredResults.map((r) => {
+      const name = r.name || 'Unknown Fund'
+      return {
+        name: name.length > 20 ? name.slice(0, 20) + '…' : name,
+        'Tax': Math.round(r.taxAmount),
+        'Net Gain': Math.round(r.netGain),
+        category: r.category,
+      }
+    })
   }, [filteredResults])
 
   const tips = useMemo(() => {

@@ -72,8 +72,10 @@ export async function POST(request: NextRequest) {
     const targetCategoryReturn = getExpectedReturn(targetFund.category)
     const sourceAnnualReturn = (sourceReturn != null ? sourceReturn : sourceCategoryReturn) / 100
     const targetAnnualReturn = (targetReturn != null ? targetReturn : targetCategoryReturn) / 100
-    const sourceMonthlyRate = sourceAnnualReturn / 12
-    const targetMonthlyRate = targetAnnualReturn / 12
+
+    // Use CAGR formula for monthly rates to avoid overestimating returns
+    const sourceMonthlyRate = Math.pow(1 + sourceAnnualReturn, 1 / 12) - 1
+    const targetMonthlyRate = Math.pow(1 + targetAnnualReturn, 1 / 12) - 1
     const totalMonths = years * 12
 
     let sourceFundValue = lumpsumAmount
@@ -88,15 +90,25 @@ export async function POST(request: NextRequest) {
       transferred: number
       sourceReturn: number
       targetReturn: number
-    }[] = []
+    }[] = [
+      // Start with Year 0 (Initial state)
+      {
+        year: 0,
+        sourceFundValue: Math.round(sourceFundValue * 100) / 100,
+        targetFundValue: 0,
+        transferred: 0,
+        sourceReturn: 0,
+        targetReturn: 0,
+      }
+    ]
 
     let yearTransferred = 0
     let yearSourceReturn = 0
     let yearTargetReturn = 0
 
     for (let month = 1; month <= totalMonths; month++) {
-      // Mark year boundary
-      if ((month - 1) % 12 === 0) {
+      // Mark year boundary at start of year
+      if (month > 1 && (month - 1) % 12 === 0) {
         yearTransferred = 0
         yearSourceReturn = 0
         yearTargetReturn = 0

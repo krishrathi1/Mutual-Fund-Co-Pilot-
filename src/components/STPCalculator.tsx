@@ -155,7 +155,7 @@ export default function STPCalculator() {
   const chartData = useMemo(() => {
     if (!result) return []
     return result.yearlyBreakdown.map(b => ({
-      year: `Yr ${b.year}`,
+      year: b.year === 0 ? 'Start' : `Yr ${b.year}`,
       'Source Fund': Math.round(b.sourceFundValue),
       'Target Fund': Math.round(b.targetFundValue),
     }))
@@ -164,7 +164,7 @@ export default function STPCalculator() {
   const totalValueData = useMemo(() => {
     if (!result) return []
     return result.yearlyBreakdown.map(b => ({
-      year: `Yr ${b.year}`,
+      year: b.year === 0 ? 'Start' : `Yr ${b.year}`,
       'Total Value': Math.round(b.sourceFundValue + b.targetFundValue),
       'Amount Invested': Math.round(result.totalInvested),
     }))
@@ -544,7 +544,9 @@ export default function STPCalculator() {
                   <tbody>
                     {result.yearlyBreakdown.map((row) => (
                       <tr key={row.year} className="border-b last:border-0 hover:bg-muted/50">
-                        <td className="py-2 px-3 font-medium text-foreground">{row.year}</td>
+                        <td className="py-2 px-3 font-medium text-foreground">
+                          {row.year === 0 ? <Badge variant="outline" className="text-[10px] bg-muted">Start</Badge> : row.year}
+                        </td>
                         <td className="py-2 px-3 text-right text-teal-700 dark:text-teal-400">{formatCurrency(row.transferred)}</td>
                         <td className="py-2 px-3 text-right text-amber-700 dark:text-amber-400">{formatCurrency(row.sourceReturn)}</td>
                         <td className="py-2 px-3 text-right text-emerald-700 dark:text-emerald-400">{formatCurrency(row.targetReturn)}</td>
