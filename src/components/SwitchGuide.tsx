@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose,
 } from '@/components/ui/dialog'
-import { useMemo, useState, useCallback } from 'react'
+import { useMemo, useState, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -100,6 +100,23 @@ export default function SwitchGuide() {
     }
     return saving
   }, [estimatedAnnualSaving])
+
+  function parseExitLoad(exitLoadStr: string): { pct: number; thresholdDays: number; rule: string } {
+    if (!exitLoadStr || exitLoadStr.toLowerCase() === 'nil' || exitLoadStr.trim() === '') {
+      return { pct: 0, thresholdDays: 0, rule: 'Nil' }
+    }
+    const withinMatch = exitLoadStr.match(/([\d.]+)%\s*(?:for\s+redemption\s+|if\s+redeemed\s+)?within\s+(\d+)\s*(year|month|day)s?/i)
+    if (withinMatch) {
+      const pct = parseFloat(withinMatch[1])
+      const num = parseInt(withinMatch[2])
+      const unit = withinMatch[3].toLowerCase()
+      let thresholdDays = num
+      if (unit === 'year') thresholdDays = num * 365
+      else if (unit === 'month') thresholdDays = num * 30
+      return { pct, thresholdDays, rule: `${pct}% within ${num} ${unit}${num > 1 ? 's' : ''}` }
+    }
+    return { pct: 0, thresholdDays: 0, rule: exitLoadStr }
+  }
 
   const toggleChecklist = (item: string) => {
     setChecklist(prev => {
@@ -424,13 +441,13 @@ export default function SwitchGuide() {
                       <CardContent>
                         <div className="max-h-64 overflow-y-auto space-y-2">
                           {regularHoldings.map((h) => {
-                            const exitLoadStr = h.fund.exitLoad || 'Nil'
-                            const isNil = exitLoadStr.toLowerCase() === 'nil' || !exitLoadStr.trim()
+                            const { pct, thresholdDays, rule } = parseExitLoad(h.fund.exitLoad)
                             const gain = h.currentAmount - h.investedAmount
                             const cat = h.fund.category === 'Debt' ? 'debt' : 'equity'
                             const holdingDays = h.purchaseDate
                               ? Math.floor((Date.now() - new Date(h.purchaseDate).getTime()) / (1000 * 60 * 60 * 24))
                               : 365
+                            const appliesExitLoad = holdingDays < thresholdDays
                             const isLTCG = cat === 'equity' ? holdingDays >= 365 : holdingDays >= 1095
                             const taxRate = cat === 'debt' ? 0.30 : (isLTCG ? 0.125 : 0.20)
                             const estTax = Math.max(0, gain * taxRate)
@@ -444,7 +461,9 @@ export default function SwitchGuide() {
                                   </Badge>
                                 </div>
                                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-muted-foreground">
-                                  <span>Exit Load: <span className={isNil ? 'text-emerald-600 font-medium' : 'text-amber-600 font-medium'}>{isNil ? 'Nil ✓' : exitLoadStr}</span></span>
+                                  <span>Exit Load: <span className={!appliesExitLoad ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'}>
+                                    {rule} {!appliesExitLoad ? '✓ Passed' : '⚠ Applies'}
+                                  </span></span>
                                   <span>Gain: <span className={gain >= 0 ? 'text-emerald-600' : 'text-red-600'}>{formatCurrency(gain)}</span></span>
                                   <span>Tax Type: <span className="font-medium">{isLTCG ? 'LTCG' : 'STCG'}</span></span>
                                   <span>Est. Tax: <span className="text-amber-600 font-medium">{formatCurrency(estTax)}</span></span>

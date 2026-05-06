@@ -225,12 +225,12 @@ export default function TaxCalculator() {
 
   const chartData = useMemo(() => {
     return filteredResults.map((r) => {
-      const name = r.name || 'Unknown Fund'
+      const n = r?.name || 'Unknown Fund'
       return {
-        name: name.length > 20 ? name.slice(0, 20) + '…' : name,
-        'Tax': Math.round(r.taxAmount),
-        'Net Gain': Math.round(r.netGain),
-        category: r.category,
+        name: n.length > 20 ? n.slice(0, 20) + '…' : n,
+        'Tax': Math.round(r?.taxAmount || 0),
+        'Net Gain': Math.round(r?.netGain || 0),
+        category: r?.category,
       }
     })
   }, [filteredResults])

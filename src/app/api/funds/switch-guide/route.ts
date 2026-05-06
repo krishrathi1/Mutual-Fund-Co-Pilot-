@@ -3,7 +3,7 @@ import { db } from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
+    const { searchParams } = request.nextUrl
     const fundId = searchParams.get('fundId')
     const investmentAmount = parseFloat(searchParams.get('amount') || '500000')
     const holdingYears = parseFloat(searchParams.get('holdingYears') || '3')
@@ -27,10 +27,28 @@ export async function GET(request: NextRequest) {
     const taxRate = isLongTerm ? ltcgRate : stcgRate
     const taxOnSwitch = isLongTerm ? Math.max(0, gain - ltcgExempt) * ltcgRate : gain * stcgRate
 
-    // Exit load
-    const hasExitLoad = fund.exitLoad !== 'Nil' && fund.exitLoad !== 'nil'
-    const exitLoadPct = hasExitLoad ? 0.01 : 0
-    const exitLoadCost = investmentAmount * exitLoadPct
+    // Better exit load parsing
+    const parseExitLoad = (exitLoadStr: string | null) => {
+      if (!exitLoadStr || exitLoadStr.toLowerCase() === 'nil' || exitLoadStr.trim() === '') {
+        return { pct: 0, thresholdDays: 0 }
+      }
+      const match = exitLoadStr.match(/([\d.]+)%\s*(?:for\s+redemption\s+|if\s+redeemed\s+)?within\s+(\d+)\s*(year|month|day)s?/i)
+      if (match) {
+        const pct = parseFloat(match[1]) / 100
+        const num = parseInt(match[2])
+        const unit = match[3].toLowerCase()
+        let days = num
+        if (unit === 'year') days = num * 365
+        else if (unit === 'month') days = num * 30
+        return { pct, thresholdDays: days }
+      }
+      return { pct: 0.01, thresholdDays: 365 } // Fallback
+    }
+
+    const { pct: exitLoadPct, thresholdDays } = parseExitLoad(fund.exitLoad)
+    const holdingDays = holdingYears * 365
+    const actualExitLoadPct = holdingDays < thresholdDays ? exitLoadPct : 0
+    const exitLoadCost = investmentAmount * actualExitLoadPct
 
     const totalSwitchCost = taxOnSwitch + exitLoadCost
     const breakEvenMonths = totalSwitchCost > 0 && annualSaving > 0 ? Math.ceil(totalSwitchCost / annualSaving * 12) : 0

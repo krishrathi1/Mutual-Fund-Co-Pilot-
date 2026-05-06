@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 // Budget 2024 rules applied
 
 interface TaxHoldingInput {
+  name: string
   investedAmount: number
   currentAmount: number
   purchaseDate: string
@@ -12,6 +13,7 @@ interface TaxHoldingInput {
 }
 
 interface TaxHoldingResult {
+  name: string
   invested: number
   current: number
   gain: number
@@ -79,6 +81,7 @@ export async function POST(request: NextRequest) {
     // Track total LTCG across all equity holdings for exemption calculation
     let totalEquityLTCG = 0
     const intermediateResults: Array<{
+      name: string
       invested: number
       current: number
       gain: number
@@ -129,6 +132,7 @@ export async function POST(request: NextRequest) {
       }
 
       intermediateResults.push({
+        name: holding.name || 'Unknown Fund',
         invested,
         current,
         gain,
@@ -188,6 +192,7 @@ export async function POST(request: NextRequest) {
       totalNetGain += netGain
 
       results.push({
+        name: r.name,
         invested: Math.round(r.invested),
         current: Math.round(r.current),
         gain: Math.round(r.gain),

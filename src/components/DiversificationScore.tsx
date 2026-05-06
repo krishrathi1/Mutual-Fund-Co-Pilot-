@@ -241,18 +241,44 @@ function LargeScoreGauge({ score, size = 220 }: { score: number; size?: number }
   const radius = (size - 20) / 2
   const cx = size / 2
   const cy = size / 2 + 8
-  const startAngle = Math.PI
+  const startAngle = 180 // Degrees
   const endAngle = 0
-  const scoreAngle = startAngle - (score / 100) * Math.PI
-
-  const x1 = cx + radius * Math.cos(startAngle)
-  const y1 = cy - radius * Math.sin(startAngle)
-  const x2 = cx + radius * Math.cos(endAngle)
-  const y2 = cy - radius * Math.sin(endAngle)
-  const sx = cx + radius * Math.cos(scoreAngle)
-  const sy = cy - radius * Math.sin(scoreAngle)
-
+  
   const gaugeColor = getScoreColor(score)
+  
+  // Animate the score value directly for the gauge
+  const [animatedScore, setAnimatedScore] = useState(0)
+  
+  useEffect(() => {
+    const duration = 1500
+    const start = 0
+    const end = score
+    const startTime = Date.now()
+    
+    const animate = () => {
+      const now = Date.now()
+      const elapsed = now - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3) // easeOutCubic
+      
+      setAnimatedScore(start + (end - start) * eased)
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+    
+    requestAnimationFrame(animate)
+  }, [score])
+
+  const currentAngle = (180 - (animatedScore / 100) * 180) * (Math.PI / 180)
+  const sx = cx + radius * Math.cos(currentAngle)
+  const sy = cy - radius * Math.sin(currentAngle)
+
+  const x1 = cx + radius * Math.cos(Math.PI)
+  const y1 = cy - radius * Math.sin(Math.PI)
+  const x2 = cx + radius * Math.cos(0)
+  const y2 = cy - radius * Math.sin(0)
 
   return (
     <svg width={size} height={size / 2 + 16} viewBox={`0 0 ${size} ${size / 2 + 16}`} className="overflow-visible">
@@ -265,33 +291,27 @@ function LargeScoreGauge({ score, size = 220 }: { score: number; size?: number }
         strokeWidth={14}
         strokeLinecap="round"
       />
-      {/* Score arc with animation */}
-      <motion.path
+      {/* Score arc */}
+      <path
         d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${sx} ${sy}`}
         fill="none"
         stroke={gaugeColor}
         strokeWidth={14}
         strokeLinecap="round"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 1.5, ease: 'easeOut' }}
       />
-      {/* Score knob (circle) */}
-      <motion.circle
+      {/* Score indicator (circle) */}
+      <circle
         cx={sx}
         cy={sy}
         r={8}
         fill="white"
         stroke={gaugeColor}
         strokeWidth={4}
-        initial={{ opacity: 0, scale: 0 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 1.2, duration: 0.4 }}
-        className="shadow-md"
+        className="shadow-sm transition-transform duration-200"
       />
       {/* Tick marks */}
       {[0, 25, 50, 75, 100].map((tick) => {
-        const angle = Math.PI - (tick / 100) * Math.PI
+        const angle = (180 - (tick / 100) * 180) * (Math.PI / 180)
         const innerR = radius - 16
         const outerR = radius + 8
         const tx1 = cx + innerR * Math.cos(angle)

@@ -52,40 +52,41 @@ function parseExitLoad(exitLoadStr: string): { pct: number; thresholdDays: numbe
     return { pct: 0, thresholdDays: 0, rule: 'Nil' }
   }
 
-  // Pattern: "1% for < 1 year" or "0.5% for < 6 months" or "1% for < 365 days"
-  const match = exitLoadStr.match(/([\d.]+)%\s*for\s*<\s*(\d+)\s*(year|month|day)/i)
-  if (match) {
-    const pct = parseFloat(match[1])
-    const num = parseInt(match[2])
-    const unit = match[3].toLowerCase()
-    let thresholdDays = num
-    if (unit === 'year') thresholdDays = num * 365
-    else if (unit === 'month') thresholdDays = num * 30
-    return { pct, thresholdDays, rule: `${pct}% for < ${num} ${unit}${num > 1 ? 's' : ''}` }
-  }
-
-  // Pattern: "1% if redeemed within 1 year"
-  const match2 = exitLoadStr.match(/([\d.]+)%\s*if\s*redeemed\s*within\s*(\d+)\s*(year|month|day)/i)
-  if (match2) {
-    const pct = parseFloat(match2[1])
-    const num = parseInt(match2[2])
-    const unit = match2[3].toLowerCase()
+  // Common pattern: "1% for redemption within 365 days", "1% if redeemed within 1 year", "1% within 6 months"
+  // This covers most variations of "within", "for redemption within", "if redeemed within"
+  const withinMatch = exitLoadStr.match(/([\d.]+)%\s*(?:for\s+redemption\s+|if\s+redeemed\s+)?within\s+(\d+)\s*(year|month|day)s?/i)
+  if (withinMatch) {
+    const pct = parseFloat(withinMatch[1])
+    const num = parseInt(withinMatch[2])
+    const unit = withinMatch[3].toLowerCase()
     let thresholdDays = num
     if (unit === 'year') thresholdDays = num * 365
     else if (unit === 'month') thresholdDays = num * 30
     return { pct, thresholdDays, rule: `${pct}% within ${num} ${unit}${num > 1 ? 's' : ''}` }
   }
 
-  // Pattern: "1% before 1 year"
-  const match3 = exitLoadStr.match(/([\d.]+)%\s*(?:before|prior to)\s*(\d+)\s*(year|month|day)/i)
-  if (match3) {
-    const pct = parseFloat(match3[1])
-    const num = parseInt(match3[2])
-    const unit = match3[3].toLowerCase()
+  // Pattern for "<" or "before": "1% for < 1 year", "1% before 365 days", "1% prior to 1 year"
+  const beforeMatch = exitLoadStr.match(/([\d.]+)%\s*(?:for\s*<\s*|before\s+|prior\s+to\s+)(\d+)\s*(year|month|day)s?/i)
+  if (beforeMatch) {
+    const pct = parseFloat(beforeMatch[1])
+    const num = parseInt(beforeMatch[2])
+    const unit = beforeMatch[3].toLowerCase()
     let thresholdDays = num
     if (unit === 'year') thresholdDays = num * 365
     else if (unit === 'month') thresholdDays = num * 30
     return { pct, thresholdDays, rule: `${pct}% before ${num} ${unit}${num > 1 ? 's' : ''}` }
+  }
+
+  // Simple percentage match: "1% for 365 days"
+  const simpleMatch = exitLoadStr.match(/([\d.]+)%\s*for\s*(\d+)\s*(year|month|day)s?/i)
+  if (simpleMatch) {
+    const pct = parseFloat(simpleMatch[1])
+    const num = parseInt(simpleMatch[2])
+    const unit = simpleMatch[3].toLowerCase()
+    let thresholdDays = num
+    if (unit === 'year') thresholdDays = num * 365
+    else if (unit === 'month') thresholdDays = num * 30
+    return { pct, thresholdDays, rule: `${pct}% for ${num} ${unit}${num > 1 ? 's' : ''}` }
   }
 
   return { pct: 0, thresholdDays: 0, rule: exitLoadStr }

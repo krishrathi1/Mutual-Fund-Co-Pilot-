@@ -1,5 +1,5 @@
 export function formatCurrency(amount: number | null | undefined): string {
-  if (amount === null || amount === undefined || isNaN(amount)) return '₹0'
+  if (amount == null || isNaN(amount)) return '₹0'
   const absAmount = Math.abs(amount)
   if (absAmount >= 10000000) return `₹${(amount / 10000000).toFixed(2)} Cr`
   if (absAmount >= 100000) return `₹${(amount / 100000).toFixed(2)} L`
@@ -7,7 +7,7 @@ export function formatCurrency(amount: number | null | undefined): string {
 }
 
 export function formatCurrencyFull(amount: number | null | undefined): string {
-  if (amount === null || amount === undefined || isNaN(amount)) return '₹0'
+  if (amount == null || isNaN(amount)) return '₹0'
   return `₹${amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
 }
 
