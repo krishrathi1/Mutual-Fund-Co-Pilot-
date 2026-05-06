@@ -1,22 +1,22 @@
+// Fresh build trigger
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+
+const categoryBaselines: Record<string, { upside: number; downside: number }> = {
+  'Equity': { upside: 105, downside: 85 },
+  'Large Cap': { upside: 98, downside: 80 },
+  'Mid Cap': { upside: 115, downside: 95 },
+  'Small Cap': { upside: 125, downside: 105 },
+  'Debt': { upside: 80, downside: 40 },
+  'Hybrid': { upside: 90, downside: 65 },
+  'Index': { upside: 99, downside: 100 },
+  'ELSS': { upside: 110, downside: 90 }
+}
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const fundId = searchParams.get('fundId')
-
-    // Category-based baseline capture ratios
-    const categoryBaselines: Record<string, { upside: number; downside: number }> = {
-      'Equity': { upside: 105, downside: 85 },
-      'Large Cap': { upside: 98, downside: 80 },
-      'Mid Cap': { upside: 115, downside: 95 },
-      'Small Cap': { upside: 125, downside: 105 },
-      'Debt': { upside: 80, downside: 40 },
-      'Hybrid': { upside: 90, downside: 65 },
-      'Index': { upside: 99, downside: 100 },
-      'ELSS': { upside: 110, downside: 90 }
-    }
 
     if (!fundId) {
       const funds = await db.fund.findMany({ 
@@ -59,18 +59,6 @@ export async function GET(request: NextRequest) {
     const bmReturn3y = fund.benchmarkReturn3y || 0
     const directReturn1y = fund.directReturn1y || 0
     const directReturn3y = fund.directReturn3y || 0
-
-    // Category-based baseline capture ratios (typical for Indian MFs)
-    const categoryBaselines: Record<string, { upside: number; downside: number }> = {
-      'Equity': { upside: 105, downside: 85 },
-      'Large Cap': { upside: 98, downside: 80 },
-      'Mid Cap': { upside: 115, downside: 95 },
-      'Small Cap': { upside: 125, downside: 105 },
-      'Debt': { upside: 80, downside: 40 },
-      'Hybrid': { upside: 90, downside: 65 },
-      'Index': { upside: 99, downside: 100 },
-      'ELSS': { upside: 110, downside: 90 }
-    }
 
     const baseline = categoryBaselines[fund.subCategory] || categoryBaselines[fund.category] || { upside: 100, downside: 90 }
     
