@@ -2,7 +2,7 @@
 
 import { useFundStore } from '@/lib/store'
 import { TABS as tabs, GROUPS as groups } from '@/lib/constants'
-import { Compass, TrendingUp, Sun, Moon, ChevronDown, Zap } from 'lucide-react'
+import { Compass, TrendingUp, Sun, Moon, ChevronDown } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useState, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
@@ -136,10 +136,6 @@ export default function Navbar() {
               <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-teal-400" />
             </Button>
             
-            <div className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-600/20 text-[11px] font-bold uppercase tracking-widest cursor-default">
-              <Zap className="h-4 w-4" />
-              PRO
-            </div>
           </div>
 
         </div>
