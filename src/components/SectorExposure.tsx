@@ -209,37 +209,48 @@ function ScoreGauge({ score, size = 120 }: { score: number; size?: number }) {
   const sx = cx + radius * Math.cos(scoreAngle)
   const sy = cy - radius * Math.sin(scoreAngle)
 
-  const largeArc = score > 50 ? 1 : 0
-
   const gaugeColor = score >= 80 ? '#10b981' : score >= 65 ? '#f59e0b' : score >= 50 ? '#f97316' : '#ef4444'
 
   return (
-    <svg width={size} height={size / 2 + 10} viewBox={`0 0 ${size} ${size / 2 + 10}`}>
+    <svg width={size} height={size / 2 + 15} viewBox={`0 0 ${size} ${size / 2 + 15}`} className="overflow-visible">
       {/* Background arc */}
       <path
         d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
         fill="none"
         stroke="currentColor"
-        className="text-muted/30"
-        strokeWidth={8}
+        className="text-muted/15"
+        strokeWidth={10}
         strokeLinecap="round"
       />
       {/* Score arc */}
       <motion.path
-        d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${sx} ${sy}`}
+        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${sx} ${sy}`}
         fill="none"
         stroke={gaugeColor}
-        strokeWidth={8}
+        strokeWidth={10}
         strokeLinecap="round"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
         transition={{ duration: 1.2, ease: 'easeOut' }}
       />
+      {/* Score knob (circle) */}
+      <motion.circle
+        cx={sx}
+        cy={sy}
+        r={6}
+        fill="white"
+        stroke={gaugeColor}
+        strokeWidth={3}
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1, duration: 0.3 }}
+        className="shadow-sm"
+      />
       {/* Score text */}
-      <text x={cx} y={cy - 8} textAnchor="middle" className="fill-foreground text-2xl font-bold" style={{ fontSize: '1.5rem' }}>
+      <text x={cx} y={cy - 10} textAnchor="middle" className="fill-foreground font-bold" style={{ fontSize: '1.75rem' }}>
         {score}
       </text>
-      <text x={cx} y={cy + 8} textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '0.65rem' }}>
+      <text x={cx} y={cy + 10} textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: '0.75rem', fontWeight: 500 }}>
         out of 100
       </text>
     </svg>

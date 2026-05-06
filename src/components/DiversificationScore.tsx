@@ -252,30 +252,42 @@ function LargeScoreGauge({ score, size = 220 }: { score: number; size?: number }
   const sx = cx + radius * Math.cos(scoreAngle)
   const sy = cy - radius * Math.sin(scoreAngle)
 
-  const largeArc = score > 50 ? 1 : 0
   const gaugeColor = getScoreColor(score)
 
   return (
-    <svg width={size} height={size / 2 + 16} viewBox={`0 0 ${size} ${size / 2 + 16}`}>
+    <svg width={size} height={size / 2 + 16} viewBox={`0 0 ${size} ${size / 2 + 16}`} className="overflow-visible">
       {/* Background arc */}
       <path
         d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2}`}
         fill="none"
         stroke="currentColor"
-        className="text-muted/20"
-        strokeWidth={12}
+        className="text-muted/15"
+        strokeWidth={14}
         strokeLinecap="round"
       />
       {/* Score arc with animation */}
       <motion.path
-        d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${sx} ${sy}`}
+        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${sx} ${sy}`}
         fill="none"
         stroke={gaugeColor}
-        strokeWidth={12}
+        strokeWidth={14}
         strokeLinecap="round"
         initial={{ pathLength: 0 }}
         animate={{ pathLength: 1 }}
         transition={{ duration: 1.5, ease: 'easeOut' }}
+      />
+      {/* Score knob (circle) */}
+      <motion.circle
+        cx={sx}
+        cy={sy}
+        r={8}
+        fill="white"
+        stroke={gaugeColor}
+        strokeWidth={4}
+        initial={{ opacity: 0, scale: 0 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 1.2, duration: 0.4 }}
+        className="shadow-md"
       />
       {/* Tick marks */}
       {[0, 25, 50, 75, 100].map((tick) => {
