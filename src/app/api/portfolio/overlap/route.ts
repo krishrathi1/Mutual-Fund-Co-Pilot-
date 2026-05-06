@@ -181,8 +181,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Sort by overlap score descending (highest overlap first)
-    overlaps.sort((a, b) => b.overlapScore - a.overlapScore)
+    // Build matrix and fundNames
+    const fundNames = funds.map(f => f.schemeName)
+    const matrix: number[][] = Array.from({ length: funds.length }, () => Array(funds.length).fill(0))
+    
+    for (let i = 0; i < funds.length; i++) {
+      matrix[i][i] = 100
+    }
+
+    const pairs = overlaps.map(o => {
+      // Find indices for matrix
+      const idx1 = funds.findIndex(f => f.id === o.fund1)
+      const idx2 = funds.findIndex(f => f.id === o.fund2)
+      if (idx1 >= 0 && idx2 >= 0) {
+        matrix[idx1][idx2] = o.overlapScore
+        matrix[idx2][idx1] = o.overlapScore
+      }
+
+      return {
+        fund1: { id: o.fund1, name: o.fund1Name },
+        fund2: { id: o.fund2, name: o.fund2Name },
+        overlapScore: o.overlapScore,
+        commonCategories: o.commonExposure,
+        warning: o.recommendation
+      }
+    })
 
     // Overall portfolio diversification assessment
     const avgOverlap = overlaps.length > 0
@@ -196,7 +219,9 @@ export async function POST(request: NextRequest) {
     else diversificationRating = 'Excellent - Minimal overlap, strong diversification'
 
     return NextResponse.json({
-      overlaps,
+      pairs,
+      matrix,
+      fundNames,
       summary: {
         totalPairs: overlaps.length,
         highOverlapPairs: overlaps.filter(o => o.overlapScore >= 50).length,

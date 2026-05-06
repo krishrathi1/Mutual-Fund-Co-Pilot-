@@ -67,7 +67,7 @@ export default function ExploreFunds() {
   }, [fetchComparisons, setActiveTab])
 
   return (
-    <div id="mutual-funds-section" className="space-y-4 scroll-mt-24">
+    <div className="space-y-4">
       {/* Search & Filter bar */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
@@ -141,7 +141,7 @@ export default function ExploreFunds() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {funds.map((fund) => {
+          {funds?.map((fund) => {
             const expDiff = expenseRatioDiff(fund.directExpenseRatio, fund.regularExpenseRatio)
             const isSelected = selectedFundIds.includes(fund.id)
             return (
@@ -233,7 +233,7 @@ export default function ExploreFunds() {
         </div>
       )}
 
-      {funds.length === 0 && !fundsLoading && (
+      {(funds?.length === 0 || !funds) && !fundsLoading && (
         <div className="py-16 text-center">
           <Search className="mx-auto h-12 w-12 text-muted-foreground/50" />
           <p className="mt-4 text-lg font-medium text-foreground">No funds found</p>

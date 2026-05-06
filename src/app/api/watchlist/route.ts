@@ -4,11 +4,12 @@ import { db } from '@/lib/db'
 // GET /api/watchlist?sessionId=xxx - Get watchlist items with fund data
 export async function GET(request: NextRequest) {
   try {
-    const sessionId = request.nextUrl.searchParams.get('sessionId')
+    const { searchParams } = new URL(request.url)
+    const sessionId = searchParams.get('sessionId')
 
     if (!sessionId) {
       return NextResponse.json(
-        { error: 'Session ID required' },
+        { error: 'sessionId query parameter is required' },
         { status: 400 }
       )
     }
@@ -20,14 +21,10 @@ export async function GET(request: NextRequest) {
     })
 
     return NextResponse.json({ watchlist: watchlistItems })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error fetching watchlist:', error)
     return NextResponse.json(
-      { 
-        error: 'Internal Server Error', 
-        message: error.message,
-        path: request.nextUrl.pathname 
-      },
+      { error: 'Failed to fetch watchlist' },
       { status: 500 }
     )
   }
@@ -85,14 +82,10 @@ export async function POST(request: NextRequest) {
     })
 
     return NextResponse.json(watchlistItem, { status: 201 })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error adding to watchlist:', error)
     return NextResponse.json(
-      { 
-        error: 'Internal Server Error', 
-        message: error.message,
-        path: request.nextUrl.pathname 
-      },
+      { error: 'Failed to add to watchlist' },
       { status: 500 }
     )
   }
@@ -101,8 +94,9 @@ export async function POST(request: NextRequest) {
 // DELETE /api/watchlist?sessionId=xxx&fundId=yyy - Remove from watchlist
 export async function DELETE(request: NextRequest) {
   try {
-    const sessionId = request.nextUrl.searchParams.get('sessionId')
-    const fundId = request.nextUrl.searchParams.get('fundId')
+    const { searchParams } = new URL(request.url)
+    const sessionId = searchParams.get('sessionId')
+    const fundId = searchParams.get('fundId')
 
     if (!sessionId || !fundId) {
       return NextResponse.json(
@@ -127,14 +121,10 @@ export async function DELETE(request: NextRequest) {
     })
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error removing from watchlist:', error)
     return NextResponse.json(
-      { 
-        error: 'Internal Server Error', 
-        message: error.message,
-        path: request.nextUrl.pathname 
-      },
+      { error: 'Failed to remove from watchlist' },
       { status: 500 }
     )
   }

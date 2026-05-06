@@ -19,15 +19,6 @@ const EMERALD_PALETTE = [
   '#5eead4', '#99f6e4',
 ]
 
-const hasRemotePortfolioDb = process.env.NEXT_PUBLIC_USE_REMOTE_DB === 'true'
-
-function shouldUseLocalPortfolioStorage(): boolean {
-  if (typeof window === 'undefined' || hasRemotePortfolioDb) return false
-
-  const host = window.location.hostname
-  return host !== 'localhost' && host !== '127.0.0.1' && host !== ''
-}
-
 interface SectorData {
   name: string
   weight: number
@@ -218,6 +209,8 @@ function ScoreGauge({ score, size = 120 }: { score: number; size?: number }) {
   const sx = cx + radius * Math.cos(scoreAngle)
   const sy = cy - radius * Math.sin(scoreAngle)
 
+  const largeArc = score > 50 ? 1 : 0
+
   const gaugeColor = score >= 80 ? '#10b981' : score >= 65 ? '#f59e0b' : score >= 50 ? '#f97316' : '#ef4444'
 
   return (
@@ -233,7 +226,7 @@ function ScoreGauge({ score, size = 120 }: { score: number; size?: number }) {
       />
       {/* Score arc */}
       <motion.path
-        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${sx} ${sy}`}
+        d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${sx} ${sy}`}
         fill="none"
         stroke={gaugeColor}
         strokeWidth={8}
@@ -297,12 +290,6 @@ export default function SectorExposure() {
     }
 
     setLoading(true)
-    if (shouldUseLocalPortfolioStorage()) {
-      setExposureData(computeSectorExposure(holdings))
-      setLoading(false)
-      return
-    }
-
     try {
       const res = await fetch('/api/portfolio/sector-exposure', {
         method: 'POST',

@@ -17,7 +17,7 @@ function getExpectedReturn(category: string): number {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { sourceFundId, targetFundId, lumpsumAmount, monthlyTransfer, years } = body
+    const { sourceFundId, targetFundId, lumpsumAmount, monthlyTransfer, years, sourceReturn, targetReturn } = body
 
     // Validate required fields
     if (!sourceFundId || !targetFundId) {
@@ -68,8 +68,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const sourceAnnualReturn = getExpectedReturn(sourceFund.category) / 100
-    const targetAnnualReturn = getExpectedReturn(targetFund.category) / 100
+    const sourceCategoryReturn = getExpectedReturn(sourceFund.category)
+    const targetCategoryReturn = getExpectedReturn(targetFund.category)
+    const sourceAnnualReturn = (sourceReturn != null ? sourceReturn : sourceCategoryReturn) / 100
+    const targetAnnualReturn = (targetReturn != null ? targetReturn : targetCategoryReturn) / 100
     const sourceMonthlyRate = sourceAnnualReturn / 12
     const targetMonthlyRate = targetAnnualReturn / 12
     const totalMonths = years * 12
@@ -146,13 +148,25 @@ export async function POST(request: NextRequest) {
         id: sourceFund.id,
         schemeName: sourceFund.schemeName,
         category: sourceFund.category,
-        expectedReturn: getExpectedReturn(sourceFund.category),
+        expectedReturn: sourceReturn != null ? sourceReturn : sourceCategoryReturn,
+        categoryReturn: sourceCategoryReturn,
+        actualReturn: sourceReturn != null ? sourceReturn : null,
+        directNav: sourceFund.directNav,
+        regularNav: sourceFund.regularNav,
+        directReturn1y: sourceFund.directReturn1y,
+        directReturn3y: sourceFund.directReturn3y,
       },
       targetFund: {
         id: targetFund.id,
         schemeName: targetFund.schemeName,
         category: targetFund.category,
-        expectedReturn: getExpectedReturn(targetFund.category),
+        expectedReturn: targetReturn != null ? targetReturn : targetCategoryReturn,
+        categoryReturn: targetCategoryReturn,
+        actualReturn: targetReturn != null ? targetReturn : null,
+        directNav: targetFund.directNav,
+        regularNav: targetFund.regularNav,
+        directReturn1y: targetFund.directReturn1y,
+        directReturn3y: targetFund.directReturn3y,
       },
     })
   } catch (error) {

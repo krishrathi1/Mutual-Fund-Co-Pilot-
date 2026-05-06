@@ -24,15 +24,6 @@ const HEAT_COLORS = [
   '#f87171', '#ef4444', '#dc2626', '#991b1b',   // high (red)
 ]
 
-const hasRemotePortfolioDb = process.env.NEXT_PUBLIC_USE_REMOTE_DB === 'true'
-
-function shouldUseLocalPortfolioStorage(): boolean {
-  if (typeof window === 'undefined' || hasRemotePortfolioDb) return false
-
-  const host = window.location.hostname
-  return host !== 'localhost' && host !== '127.0.0.1' && host !== ''
-}
-
 function getHeatColor(value: number): string {
   const idx = Math.min(Math.floor(value / 10), HEAT_COLORS.length - 1)
   return HEAT_COLORS[idx]
@@ -62,13 +53,6 @@ export default function FundOverlap() {
     }
 
     setLoading(true)
-    if (shouldUseLocalPortfolioStorage()) {
-      setOverlapResult(generateClientSideOverlap(holdings))
-      setAnalyzed(true)
-      setLoading(false)
-      return
-    }
-
     try {
       const fundIds = holdings.map((h) => h.fundId)
       const res = await fetch('/api/portfolio/overlap', {
@@ -78,11 +62,7 @@ export default function FundOverlap() {
       })
       if (res.ok) {
         const data = await res.json()
-        if (data && Array.isArray(data.pairs) && Array.isArray(data.matrix) && Array.isArray(data.fundNames)) {
-          setOverlapResult(data)
-        } else {
-          setOverlapResult(generateClientSideOverlap(holdings))
-        }
+        setOverlapResult(data)
         setAnalyzed(true)
       } else {
         // Fallback: generate client-side mock overlap
@@ -100,23 +80,23 @@ export default function FundOverlap() {
   }, [holdings])
 
   const highOverlapPairs = useMemo(() => {
-    if (!overlapResult || !overlapResult.pairs) return []
+    if (!overlapResult) return []
     return overlapResult.pairs.filter((p) => p.overlapScore >= 60)
   }, [overlapResult])
 
   const mediumOverlapPairs = useMemo(() => {
-    if (!overlapResult || !overlapResult.pairs) return []
+    if (!overlapResult) return []
     return overlapResult.pairs.filter((p) => p.overlapScore >= 30 && p.overlapScore < 60)
   }, [overlapResult])
 
   const lowOverlapPairs = useMemo(() => {
-    if (!overlapResult || !overlapResult.pairs) return []
+    if (!overlapResult) return []
     return overlapResult.pairs.filter((p) => p.overlapScore < 30)
   }, [overlapResult])
 
   // Network graph visualization (simplified SVG)
   const networkNodes = useMemo(() => {
-    if (!overlapResult || !overlapResult.fundNames) return []
+    if (!overlapResult) return []
     const names = overlapResult.fundNames
     const radius = 120
     const cx = 200

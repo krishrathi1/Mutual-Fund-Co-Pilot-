@@ -3,7 +3,7 @@
 import { formatCurrency } from '@/lib/helpers'
 import {
   Calculator, TrendingUp, ArrowDownToLine, ArrowUpFromLine, Loader2, Play, Info,
-  ChevronUp, Target, Wallet, Clock,
+  ChevronUp, Target, Wallet, Clock, RefreshCw, Zap, Database, Activity,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -12,14 +12,33 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   LineChart, Line,
 } from 'recharts'
+import { useFundStore } from '@/lib/store'
 
 type PlannerMode = 'sip' | 'stp' | 'swp'
+
+// ===== Realtime SIP Result Type =====
+interface RealtimeSIPResult {
+  source: 'realtime' | 'projected'
+  fundId: string
+  schemeName: string
+  category: string
+  planType: 'direct' | 'regular'
+  monthlySip: number
+  years: number
+  totalInvested: number
+  currentValue: number
+  absoluteReturn: number
+  returnPct: number
+  annualizedReturn: number
+  navHistory: { date: string; nav: number; units: number; invested: number }[]
+  yearlyBreakdown: { year: number; invested: number; value: number; returnPct: number }[]
+}
 
 // ===== SIP Client-Side Calculation =====
 function calculateSIP(
@@ -197,6 +216,37 @@ export default function SIPPlanner() {
   const [stepUpPercent, setStepUpPercent] = useState('10')
   const [sipResult, setSipResult] = useState<ReturnType<typeof calculateSIP> | null>(null)
 
+  // Real-time SIP state
+  const [realtimeMode, setRealtimeMode] = useState(false)
+  const [selectedFundId, setSelectedFundId] = useState('')
+  const [planType, setPlanType] = useState<'direct' | 'regular'>('direct')
+  const [realtimeResult, setRealtimeResult] = useState<RealtimeSIPResult | null>(null)
+  const [refreshingNav, setRefreshingNav] = useState(false)
+
+  // Fund store
+  const { funds, fundsLoading, fetchFunds } = useFundStore()
+
+  // Fetch funds when entering SIP mode or when component mounts
+  useEffect(() => {
+    if (funds.length === 0) {
+      fetchFunds()
+    }
+  }, [funds.length, fetchFunds])
+
+  // Auto-fill expected return when a fund is selected
+  useEffect(() => {
+    if (!selectedFundId || !realtimeMode) return
+    const fund = funds.find(f => f.id === selectedFundId)
+    if (!fund) return
+    // Prefer 3y return, then 1y, then 5y
+    const returnField = planType === 'direct'
+      ? (fund.directReturn3y ?? fund.directReturn1y ?? fund.directReturn5y)
+      : (fund.regularReturn3y ?? fund.regularReturn1y ?? fund.regularReturn5y)
+    if (returnField !== null && returnField !== undefined) {
+      setSipReturn(String(Math.round(returnField * 10) / 10))
+    }
+  }, [selectedFundId, planType, funds, realtimeMode])
+
   // STP state
   const [stpLumpSum, setStpLumpSum] = useState('1000000')
   const [stpTransferAmount, setStpTransferAmount] = useState('50000')
@@ -213,9 +263,60 @@ export default function SIPPlanner() {
   const [swpReturn, setSwpReturn] = useState('8')
   const [swpResult, setSwpResult] = useState<ReturnType<typeof calculateSWP> | null>(null)
 
+  // Refresh NAV handler
+  const handleRefreshNav = useCallback(async () => {
+    setRefreshingNav(true)
+    try {
+      await fetch('/api/funds/nav', { method: 'POST' })
+    } catch {
+      // Silently fail
+    } finally {
+      setRefreshingNav(false)
+    }
+  }, [])
+
   const handleCalculate = useCallback(async () => {
     setLoading(true)
     try {
+      // If in SIP mode with realtime mode enabled and a fund selected, use realtime API
+      if (mode === 'sip' && realtimeMode && selectedFundId) {
+        try {
+          const res = await fetch('/api/sip/realtime-returns', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              fundId: selectedFundId,
+              monthlySip: parseFloat(sipAmount),
+              years: parseInt(sipYears),
+              planType,
+            }),
+          })
+          if (res.ok) {
+            const data: RealtimeSIPResult = await res.json()
+            setRealtimeResult(data)
+            // Also compute the projected client-side SIP for comparison
+            setSipResult(calculateSIP(
+              parseFloat(sipAmount), parseInt(sipYears),
+              parseFloat(sipReturn), parseFloat(stepUpPercent)
+            ))
+          } else {
+            throw new Error('Realtime API failed')
+          }
+        } catch {
+          // Fallback to client-side
+          setRealtimeResult(null)
+          setSipResult(calculateSIP(
+            parseFloat(sipAmount), parseInt(sipYears),
+            parseFloat(sipReturn), parseFloat(stepUpPercent)
+          ))
+        }
+        setLoading(false)
+        return
+      }
+
+      // Clear realtime result if not in realtime mode
+      setRealtimeResult(null)
+
       // Try API first
       const params: Record<string, unknown> = { mode }
       if (mode === 'sip') {
@@ -289,7 +390,7 @@ export default function SIPPlanner() {
     } finally {
       setLoading(false)
     }
-  }, [mode, sipAmount, sipYears, sipReturn, stepUpPercent, stpLumpSum, stpTransferAmount, stpYears, stpSourceReturn, stpTargetReturn, stpFrequency, swpCorpus, swpWithdrawal, swpYears, swpReturn])
+  }, [mode, sipAmount, sipYears, sipReturn, stepUpPercent, stpLumpSum, stpTransferAmount, stpYears, stpSourceReturn, stpTargetReturn, stpFrequency, swpCorpus, swpWithdrawal, swpYears, swpReturn, realtimeMode, selectedFundId, planType])
 
   // SIP chart data
   const sipChartData = useMemo(() => {
@@ -311,6 +412,40 @@ export default function SIPPlanner() {
     }))
   }, [sipResult])
 
+  // Realtime NAV history chart data
+  const navHistoryChartData = useMemo(() => {
+    if (!realtimeResult?.navHistory) return []
+    // Sample every Nth point to keep chart readable (max ~60 points)
+    const history = realtimeResult.navHistory
+    const step = Math.max(1, Math.floor(history.length / 60))
+    return history.filter((_, i) => i % step === 0 || i === history.length - 1).map(h => ({
+      date: h.date.slice(0, 7), // YYYY-MM
+      NAV: Math.round(h.nav * 100) / 100,
+      Invested: h.invested,
+      Units: Math.round(h.units * 100) / 100,
+    }))
+  }, [realtimeResult])
+
+  // Realtime vs Projected comparison data
+  const realtimeComparisonData = useMemo(() => {
+    if (!realtimeResult || !sipResult) return []
+    const maxYears = Math.max(
+      realtimeResult.yearlyBreakdown.length,
+      sipResult.yearlyBreakdown.length
+    )
+    const data = []
+    for (let i = 0; i < maxYears; i++) {
+      const rt = realtimeResult.yearlyBreakdown[i]
+      const proj = sipResult.yearlyBreakdown[i]
+      data.push({
+        year: `Yr ${i + 1}`,
+        'Real Value': rt?.value ?? 0,
+        'Projected Value': proj?.value ?? 0,
+      })
+    }
+    return data
+  }, [realtimeResult, sipResult])
+
   // STP chart data
   const stpChartData = useMemo(() => {
     if (!stpResult) return []
@@ -331,6 +466,12 @@ export default function SIPPlanner() {
     }))
   }, [swpResult])
 
+  // Get selected fund details
+  const selectedFund = useMemo(() => {
+    if (!selectedFundId) return null
+    return funds.find(f => f.id === selectedFundId) ?? null
+  }, [selectedFundId, funds])
+
   return (
     <div className="space-y-6">
       {/* Mode Tabs */}
@@ -343,7 +484,7 @@ export default function SIPPlanner() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Tabs value={mode} onValueChange={(v) => { setMode(v as PlannerMode); setSipResult(null); setStpResult(null); setSwpResult(null) }}>
+          <Tabs value={mode} onValueChange={(v) => { setMode(v as PlannerMode); setSipResult(null); setStpResult(null); setSwpResult(null); setRealtimeResult(null) }}>
             <TabsList className="grid w-full max-w-md grid-cols-3">
               <TabsTrigger value="sip" className="gap-1.5">
                 <TrendingUp className="h-3.5 w-3.5" />
@@ -361,6 +502,133 @@ export default function SIPPlanner() {
 
             {/* ===== SIP Mode ===== */}
             <TabsContent value="sip" className="space-y-4 mt-4">
+              {/* Real-time mode toggle row */}
+              <div className="flex items-center gap-3 flex-wrap">
+                <Button
+                  variant={realtimeMode ? 'default' : 'outline'}
+                  size="sm"
+                  className={`gap-1.5 ${realtimeMode ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
+                  onClick={() => {
+                    setRealtimeMode(!realtimeMode)
+                    setRealtimeResult(null)
+                  }}
+                >
+                  <Zap className="h-3.5 w-3.5" />
+                  {realtimeMode ? 'Real-Time Mode ON' : 'Enable Real-Time'}
+                </Button>
+                {realtimeMode && (
+                  <Badge className="bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400 gap-1">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    LIVE
+                  </Badge>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-1.5 ml-auto"
+                  onClick={handleRefreshNav}
+                  disabled={refreshingNav}
+                >
+                  <RefreshCw className={`h-3.5 w-3.5 ${refreshingNav ? 'animate-spin' : ''}`} />
+                  Refresh NAV
+                </Button>
+              </div>
+
+              {/* Fund selector - shown when realtime mode is on */}
+              {realtimeMode && (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 p-3 rounded-lg border border-emerald-200 bg-emerald-50/30 dark:border-emerald-900 dark:bg-emerald-950/10">
+                  <div className="space-y-2">
+                    <Label className="text-xs flex items-center gap-1">
+                      <Database className="h-3 w-3" />
+                      Select Fund
+                    </Label>
+                    <Select value={selectedFundId} onValueChange={setSelectedFundId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={fundsLoading ? 'Loading funds...' : 'Choose a fund...'} />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-64">
+                        {funds.map(f => (
+                          <SelectItem key={f.id} value={f.id}>
+                            <span className="truncate max-w-[280px] block">{f.schemeName}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Plan Type</Label>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={planType === 'direct' ? 'default' : 'outline'}
+                        size="sm"
+                        className={`flex-1 ${planType === 'direct' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
+                        onClick={() => setPlanType('direct')}
+                      >
+                        Direct
+                      </Button>
+                      <Button
+                        variant={planType === 'regular' ? 'default' : 'outline'}
+                        size="sm"
+                        className={`flex-1 ${planType === 'regular' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
+                        onClick={() => setPlanType('regular')}
+                      >
+                        Regular
+                      </Button>
+                    </div>
+                  </div>
+                  {selectedFund && (
+                    <div className="space-y-2">
+                      <Label className="text-xs flex items-center gap-1">
+                        <Activity className="h-3 w-3" />
+                        Fund Returns
+                      </Label>
+                      <div className="flex gap-2 flex-wrap">
+                        {planType === 'direct' ? (
+                          <>
+                            {selectedFund.directReturn1y !== null && (
+                              <Badge variant="outline" className="text-[10px]">
+                                1Y: <span className={selectedFund.directReturn1y >= 0 ? 'text-emerald-600 ml-0.5' : 'text-red-600 ml-0.5'}>{selectedFund.directReturn1y.toFixed(1)}%</span>
+                              </Badge>
+                            )}
+                            {selectedFund.directReturn3y !== null && (
+                              <Badge variant="outline" className="text-[10px]">
+                                3Y: <span className={selectedFund.directReturn3y >= 0 ? 'text-emerald-600 ml-0.5' : 'text-red-600 ml-0.5'}>{selectedFund.directReturn3y.toFixed(1)}%</span>
+                              </Badge>
+                            )}
+                            {selectedFund.directReturn5y !== null && (
+                              <Badge variant="outline" className="text-[10px]">
+                                5Y: <span className={selectedFund.directReturn5y >= 0 ? 'text-emerald-600 ml-0.5' : 'text-red-600 ml-0.5'}>{selectedFund.directReturn5y.toFixed(1)}%</span>
+                              </Badge>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            {selectedFund.regularReturn1y !== null && (
+                              <Badge variant="outline" className="text-[10px]">
+                                1Y: <span className={selectedFund.regularReturn1y >= 0 ? 'text-emerald-600 ml-0.5' : 'text-red-600 ml-0.5'}>{selectedFund.regularReturn1y.toFixed(1)}%</span>
+                              </Badge>
+                            )}
+                            {selectedFund.regularReturn3y !== null && (
+                              <Badge variant="outline" className="text-[10px]">
+                                3Y: <span className={selectedFund.regularReturn3y >= 0 ? 'text-emerald-600 ml-0.5' : 'text-red-600 ml-0.5'}>{selectedFund.regularReturn3y.toFixed(1)}%</span>
+                              </Badge>
+                            )}
+                            {selectedFund.regularReturn5y !== null && (
+                              <Badge variant="outline" className="text-[10px]">
+                                5Y: <span className={selectedFund.regularReturn5y >= 0 ? 'text-emerald-600 ml-0.5' : 'text-red-600 ml-0.5'}>{selectedFund.regularReturn5y.toFixed(1)}%</span>
+                              </Badge>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <div className="space-y-2">
                   <Label className="text-xs">Monthly SIP (₹)</Label>
@@ -378,7 +646,12 @@ export default function SIPPlanner() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs">Expected Return (%)</Label>
+                  <Label className="text-xs flex items-center gap-1">
+                    Expected Return (%)
+                    {realtimeMode && selectedFund && (
+                      <Badge variant="outline" className="text-[9px] px-1 h-4 ml-1">Auto-filled</Badge>
+                    )}
+                  </Label>
                   <Input type="number" step="0.5" value={sipReturn} onChange={(e) => setSipReturn(e.target.value)} placeholder="12" />
                 </div>
                 <div className="space-y-2">
@@ -391,13 +664,21 @@ export default function SIPPlanner() {
                 <div className="flex items-end">
                   <Button onClick={handleCalculate} disabled={loading} className="w-full gap-2 bg-emerald-600 hover:bg-emerald-700 text-white">
                     {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
-                    Calculate
+                    {realtimeMode && selectedFundId ? 'Calculate Live' : 'Calculate'}
                   </Button>
                 </div>
               </div>
 
               <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
-                <p className="flex items-center gap-1.5"><Info className="h-3.5 w-3.5" /> Step-up SIP increases your monthly investment by {stepUpPercent}% every year. Default 10% — adjust based on expected salary growth.</p>
+                {realtimeMode ? (
+                  <p className="flex items-center gap-1.5">
+                    <Zap className="h-3.5 w-3.5 text-emerald-600" />
+                    Real-Time mode uses actual historical NAV data from MFAPI to calculate what your SIP would have really returned.
+                    {!selectedFundId && ' Select a fund above to get started.'}
+                  </p>
+                ) : (
+                  <p className="flex items-center gap-1.5"><Info className="h-3.5 w-3.5" /> Step-up SIP increases your monthly investment by {stepUpPercent}% every year. Default 10% — adjust based on expected salary growth.</p>
+                )}
               </div>
             </TabsContent>
 
@@ -497,8 +778,261 @@ export default function SIPPlanner() {
         </CardContent>
       </Card>
 
-      {/* ===== SIP Results ===== */}
-      {mode === 'sip' && sipResult && (
+      {/* ===== SIP Results (Real-Time) ===== */}
+      {mode === 'sip' && realtimeResult && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+          {/* Data source indicator */}
+          <Card className={`border-2 ${realtimeResult.source === 'realtime' ? 'border-emerald-300 bg-emerald-50/30 dark:border-emerald-800 dark:bg-emerald-950/10' : 'border-amber-300 bg-amber-50/30 dark:border-amber-800 dark:bg-amber-950/10'}`}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3 flex-wrap">
+                {realtimeResult.source === 'realtime' ? (
+                  <Badge className="bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400 gap-1">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    LIVE Data
+                  </Badge>
+                ) : (
+                  <Badge className="bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400 gap-1">
+                    <Database className="h-3 w-3" />
+                    Projected
+                  </Badge>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {realtimeResult.schemeName}
+                </span>
+                <Badge variant="outline" className="text-[10px] ml-auto">
+                  {realtimeResult.planType === 'direct' ? 'Direct' : 'Regular'} Plan
+                </Badge>
+                <Badge variant="outline" className="text-[10px]">
+                  {realtimeResult.category}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Key metrics - Real-time */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="border-teal-200 dark:border-teal-900">
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Wallet className="h-3 w-3" /> Total Invested</p>
+                <p className="text-3xl font-bold text-teal-600 dark:text-teal-400">{formatCurrency(realtimeResult.totalInvested)}</p>
+                <p className="text-xs text-muted-foreground mt-1">₹{realtimeResult.monthlySip.toLocaleString('en-IN')}/month for {realtimeResult.years} years</p>
+              </CardContent>
+            </Card>
+            <Card className="border-emerald-200 dark:border-emerald-900">
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Target className="h-3 w-3" /> Current Value</p>
+                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(realtimeResult.currentValue)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {realtimeResult.source === 'realtime' ? 'Based on actual NAV history' : 'Based on projected returns'}
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/20">
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><ChevronUp className="h-3 w-3" /> Absolute Return</p>
+                <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(realtimeResult.absoluteReturn)}</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                  {realtimeResult.returnPct.toFixed(2)}% total returns
+                </p>
+              </CardContent>
+            </Card>
+            <Card className="border-teal-200 bg-teal-50/30 dark:border-teal-900 dark:bg-teal-950/10">
+              <CardContent className="p-4">
+                <p className="text-xs text-muted-foreground flex items-center gap-1"><Activity className="h-3 w-3" /> Annualized Return (XIRR)</p>
+                <p className={`text-3xl font-bold ${realtimeResult.annualizedReturn >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                  {realtimeResult.annualizedReturn.toFixed(2)}%
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {realtimeResult.annualizedReturn >= parseFloat(sipReturn) ? 'Above' : 'Below'} projected {sipReturn}%
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* NAV History Chart */}
+          {navHistoryChartData.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base text-card-foreground flex items-center gap-2">
+                  <Activity className="h-4 w-4 text-emerald-600" />
+                  NAV History & Investment Growth
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={navHistoryChartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} className="stroke-border" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                      <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} />
+                      <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${v.toFixed(0)}`} />
+                      <Tooltip
+                        formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                        contentStyle={{
+                          backgroundColor: 'var(--card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '8px',
+                          color: 'var(--card-foreground)',
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px' }} iconSize={10} />
+                      <Line yAxisId="left" type="monotone" dataKey="Invested" stroke="#14b8a6" strokeWidth={2} dot={false} />
+                      <Line yAxisId="right" type="monotone" dataKey="NAV" stroke="#10b981" strokeWidth={1.5} strokeDasharray="4 4" dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Real vs Projected comparison chart */}
+          {realtimeComparisonData.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base text-card-foreground flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                  Real vs Projected Returns
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={realtimeComparisonData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" opacity={0.3} className="stroke-border" />
+                      <XAxis dataKey="year" tick={{ fontSize: 11 }} />
+                      <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${(v / 100000).toFixed(0)}L`} />
+                      <Tooltip
+                        formatter={(value: number, name: string) => [formatCurrency(value), name]}
+                        contentStyle={{
+                          backgroundColor: 'var(--card)',
+                          border: '1px solid var(--border)',
+                          borderRadius: '8px',
+                          color: 'var(--card-foreground)',
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px' }} iconSize={10} />
+                      <Line type="monotone" dataKey="Real Value" stroke="#10b981" strokeWidth={2.5} dot={{ fill: '#10b981', r: 3 }} />
+                      <Line type="monotone" dataKey="Projected Value" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 5" dot={{ fill: '#94a3b8', r: 2 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Real vs Projected comparison table */}
+          {realtimeResult.yearlyBreakdown.length > 0 && sipResult && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base text-card-foreground flex items-center gap-2">
+                  Real vs Projected Year-by-Year
+                  {realtimeResult.source === 'realtime' ? (
+                    <Badge className="bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400 text-[10px] gap-1">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                      </span>
+                      LIVE
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400 text-[10px]">Projected</Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-h-96 overflow-y-auto">
+                  <table className="w-full text-xs">
+                    <thead className="sticky top-0 bg-background">
+                      <tr className="border-b">
+                        <th className="py-2 px-2 text-left font-medium text-muted-foreground">Year</th>
+                        <th className="py-2 px-2 text-right font-medium text-muted-foreground">Invested</th>
+                        <th className="py-2 px-2 text-right font-medium text-emerald-600 dark:text-emerald-400">Real Value</th>
+                        <th className="py-2 px-2 text-right font-medium text-muted-foreground">Projected Value</th>
+                        <th className="py-2 px-2 text-right font-medium text-muted-foreground">Difference</th>
+                        <th className="py-2 px-2 text-right font-medium text-muted-foreground">Real Return %</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {realtimeResult.yearlyBreakdown.map((row, idx) => {
+                        const projected = sipResult.yearlyBreakdown[idx]
+                        const diff = row.value - (projected?.value ?? 0)
+                        return (
+                          <tr key={row.year} className="border-b last:border-0 hover:bg-muted/50">
+                            <td className="py-2 px-2 font-medium text-foreground">{row.year}</td>
+                            <td className="py-2 px-2 text-right text-teal-700 dark:text-teal-400">{formatCurrency(row.invested)}</td>
+                            <td className="py-2 px-2 text-right font-medium text-emerald-700 dark:text-emerald-400">{formatCurrency(row.value)}</td>
+                            <td className="py-2 px-2 text-right text-muted-foreground">{projected ? formatCurrency(projected.value) : '—'}</td>
+                            <td className={`py-2 px-2 text-right font-medium ${diff >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+                              {diff >= 0 ? '+' : ''}{formatCurrency(diff)}
+                            </td>
+                            <td className={`py-2 px-2 text-right ${row.returnPct >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                              {row.returnPct.toFixed(2)}%
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Summary comparison card */}
+          {sipResult && (
+            <Card className="border-emerald-200 dark:border-emerald-800">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                  <span className="text-sm font-medium text-foreground">Real-Time vs Projected Summary</span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                      {realtimeResult.source === 'realtime' ? (
+                        <Badge className="bg-emerald-500/10 text-emerald-700 ring-emerald-500/20 dark:text-emerald-400 text-[9px] gap-0.5 p-0.5 px-1">
+                          <span className="relative flex h-1.5 w-1.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                          </span>
+                          LIVE
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-amber-500/10 text-amber-700 ring-amber-500/20 dark:text-amber-400 text-[9px] p-0.5 px-1">Projected</Badge>
+                      )}
+                      Actual SIP Return
+                    </p>
+                    <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(realtimeResult.currentValue)}</p>
+                    <p className="text-xs text-muted-foreground">Annualized: <span className={realtimeResult.annualizedReturn >= 0 ? 'text-emerald-600' : 'text-red-600'}>{realtimeResult.annualizedReturn.toFixed(2)}%</span></p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      <Badge variant="outline" className="text-[9px] p-0.5 px-1 mr-1">Estimated</Badge>
+                      Projected SIP Return (at {sipReturn}%)
+                    </p>
+                    <p className="text-lg font-bold text-muted-foreground">{formatCurrency(sipResult.finalValue)}</p>
+                    <p className="text-xs text-muted-foreground">Step-up impact: +{formatCurrency(sipResult.stepUpExtraGain)}</p>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t">
+                  <p className="text-sm text-muted-foreground">
+                    Difference: <strong className={realtimeResult.currentValue - sipResult.finalValue >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}>
+                      {realtimeResult.currentValue - sipResult.finalValue >= 0 ? '+' : ''}{formatCurrency(realtimeResult.currentValue - sipResult.finalValue)}
+                    </strong>
+                    {' '}({((realtimeResult.currentValue - sipResult.finalValue) / sipResult.finalValue * 100).toFixed(1)}% vs projected)
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </motion.div>
+      )}
+
+      {/* ===== SIP Results (Standard/Projected) ===== */}
+      {mode === 'sip' && sipResult && !realtimeResult && (
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
           {/* Key metrics */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

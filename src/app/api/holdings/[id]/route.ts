@@ -7,11 +7,12 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
-    const sessionId = request.nextUrl.searchParams.get('sessionId')
+    const { searchParams } = new URL(request.url)
+    const sessionId = searchParams.get('sessionId')
 
     if (!sessionId) {
       return NextResponse.json(
-        { error: 'Session ID required' },
+        { error: 'sessionId query parameter is required' },
         { status: 400 }
       )
     }
@@ -30,7 +31,7 @@ export async function DELETE(
 
     if (holding.sessionId !== sessionId) {
       return NextResponse.json(
-        { error: 'Unauthorized' },
+        { error: 'Unauthorized: holding does not belong to this session' },
         { status: 403 }
       )
     }
@@ -40,14 +41,10 @@ export async function DELETE(
     })
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting holding:', error)
     return NextResponse.json(
-      { 
-        error: 'Internal Server Error', 
-        message: error.message,
-        path: request.nextUrl.pathname 
-      },
+      { error: 'Failed to delete holding' },
       { status: 500 }
     )
   }

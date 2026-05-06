@@ -139,16 +139,7 @@ export default function HeroSection() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <Button 
-                onClick={() => {
-                  setActiveTab('explore');
-                  const element = document.getElementById('mutual-funds-section');
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }
-                }} 
-                className="rounded-2xl px-8 h-14 text-base font-bold bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-600/20 group"
-              >
+              <Button onClick={() => setActiveTab('explore')} className="rounded-2xl px-8 h-14 text-base font-bold bg-emerald-600 hover:bg-emerald-700 shadow-xl shadow-emerald-600/20 group">
                 <Search className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                 Start Exploring
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -260,15 +251,7 @@ export default function HeroSection() {
             {features.map((feature, i) => (
               <motion.button
                 key={feature.label}
-                onClick={() => {
-                  setActiveTab(feature.tab);
-                  if (feature.tab === 'explore') {
-                    const element = document.getElementById('mutual-funds-section');
-                    if (element) {
-                      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                  }
-                }}
+                onClick={() => setActiveTab(feature.tab)}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8 + i * 0.05 }}

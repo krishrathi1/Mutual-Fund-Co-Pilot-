@@ -2,7 +2,7 @@
 
 import { useFundStore } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
-import { Calculator, TrendingUp, Info, Play, DollarSign } from 'lucide-react'
+import { Calculator, TrendingUp, Info, Play, DollarSign, RefreshCw, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,12 +10,16 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useEffect, useState, useMemo } from 'react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
   BarChart, Bar,
 } from 'recharts'
+
+// Category-based expected returns (defaults)
+const CATEGORY_RETURNS: Record<string, number> = { Equity: 12, ELSS: 12, Index: 11, Hybrid: 9, Debt: 7 }
 
 export default function SavingsCalculator() {
   const { funds, fetchFunds, savingsResult, savingsLoading, calculateSavings, savingsMode, setSavingsMode, monthlySip, setMonthlySip } = useFundStore()
@@ -26,6 +30,8 @@ export default function SavingsCalculator() {
   const [customDirect, setCustomDirect] = useState('')
   const [customRegular, setCustomRegular] = useState('')
   const [sipAmount, setSipAmount] = useState('10000')
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
   useEffect(() => {
     if (funds.length === 0) fetchFunds()
@@ -39,6 +45,32 @@ export default function SavingsCalculator() {
     return funds.find(f => f.id === effectiveFundId) || null
   }, [funds, effectiveFundId])
 
+  // Determine effective expected return: use actual 3y return if available, else category default
+  const effectiveExpectedReturn = useMemo(() => {
+    if (!selectedFund) return null
+    if (selectedFund.directReturn3y != null) return selectedFund.directReturn3y
+    return CATEGORY_RETURNS[selectedFund.category] || 10
+  }, [selectedFund])
+
+  const usingActualReturn = selectedFund != null && selectedFund.directReturn3y != null
+
+  const handleRefreshNav = async () => {
+    setRefreshing(true)
+    try {
+      await fetch('/api/funds/nav', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      await fetchFunds()
+      setLastUpdated(new Date().toLocaleString('en-IN'))
+    } catch {
+      // Silently handle refresh errors
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   const handleCalculate = () => {
     const params: Record<string, unknown> = {
       investedAmount: parseFloat(investedAmount) || 500000,
@@ -47,6 +79,10 @@ export default function SavingsCalculator() {
     if (effectiveFundId && effectiveFundId !== 'custom') params.fundId = effectiveFundId
     if (customDirect) params.directExpenseRatio = parseFloat(customDirect)
     if (customRegular) params.regularExpenseRatio = parseFloat(customRegular)
+    // Pass actual expected return if available
+    if (effectiveExpectedReturn != null && effectiveFundId !== 'custom') {
+      params.expectedReturn = effectiveExpectedReturn
+    }
     if (savingsMode === 'sip') {
       params.mode = 'sip'
       params.monthlySip = parseFloat(sipAmount) || 10000
@@ -62,13 +98,14 @@ export default function SavingsCalculator() {
         years: parseInt(years) || 20,
       }
       if (effectiveFundId) params.fundId = effectiveFundId
+      if (effectiveExpectedReturn != null) params.expectedReturn = effectiveExpectedReturn
       if (savingsMode === 'sip') {
         params.mode = 'sip'
         params.monthlySip = parseFloat(sipAmount) || 10000
       }
       calculateSavings(params as Parameters<typeof calculateSavings>[0])
     }
-  }, [effectiveFundId, calculateSavings, investedAmount, years, savingsResult, savingsMode, sipAmount])
+  }, [effectiveFundId, calculateSavings, investedAmount, years, savingsResult, savingsMode, sipAmount, effectiveExpectedReturn])
 
   const chartData = useMemo(() => {
     if (!savingsResult) return []
@@ -95,10 +132,22 @@ export default function SavingsCalculator() {
       {/* Calculator Inputs */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-card-foreground">
-            <Calculator className="h-5 w-5 text-emerald-600" />
-            Lifetime Savings Calculator
-          </CardTitle>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <CardTitle className="flex items-center gap-2 text-card-foreground">
+              <Calculator className="h-5 w-5 text-emerald-600" />
+              Lifetime Savings Calculator
+            </CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshNav}
+              disabled={refreshing}
+              className="gap-1.5 text-xs"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh NAV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Mode toggle */}
@@ -190,11 +239,64 @@ export default function SavingsCalculator() {
             </div>
           )}
 
-          {/* Show selected fund info */}
+          {/* Show selected fund info with real-time data */}
           {selectedFund && effectiveFundId !== 'custom' && (
-            <div className="rounded-lg bg-muted/50 p-3 text-xs text-foreground">
-              <p><strong>{selectedFund.schemeName}</strong> ({selectedFund.fundHouse})</p>
-              <p className="mt-1">Direct: {selectedFund.directExpenseRatio}% ER · Regular: {selectedFund.regularExpenseRatio}% ER · Difference: <strong className="text-emerald-600 dark:text-emerald-400">{(selectedFund.regularExpenseRatio - selectedFund.directExpenseRatio).toFixed(2)}%</strong></p>
+            <div className="rounded-lg bg-muted/50 p-3 text-xs text-foreground space-y-2">
+              <div className="flex items-center justify-between">
+                <p><strong>{selectedFund.schemeName}</strong> ({selectedFund.fundHouse})</p>
+                <Badge variant="outline" className="text-[9px]">{selectedFund.category}</Badge>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div>
+                  <span className="text-muted-foreground">Direct NAV:</span>
+                  <p className="font-medium">₹{selectedFund.directNav?.toFixed(2) ?? '—'}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Regular NAV:</span>
+                  <p className="font-medium">₹{selectedFund.regularNav?.toFixed(2) ?? '—'}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Direct ER:</span>
+                  <p className="font-medium">{selectedFund.directExpenseRatio}%</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Regular ER:</span>
+                  <p className="font-medium">{selectedFund.regularExpenseRatio}%</p>
+                </div>
+              </div>
+              <p>
+                ER Difference: <strong className="text-emerald-600 dark:text-emerald-400">{(selectedFund.regularExpenseRatio - selectedFund.directExpenseRatio).toFixed(2)}%</strong>
+              </p>
+              {/* Actual returns section */}
+              <Separator className="my-2" />
+              <div className="grid grid-cols-3 gap-2">
+                <div>
+                  <span className="text-muted-foreground">1Y Return:</span>
+                  <p className="font-medium">{formatPercent(selectedFund.directReturn1y)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">3Y Return:</span>
+                  <p className="font-medium">{formatPercent(selectedFund.directReturn3y)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">5Y Return:</span>
+                  <p className="font-medium">{formatPercent(selectedFund.directReturn5y)}</p>
+                </div>
+              </div>
+              <Badge variant={usingActualReturn ? 'default' : 'secondary'} className={`text-[10px] mt-1 ${usingActualReturn ? 'bg-emerald-600 text-white' : ''}`}>
+                {usingActualReturn
+                  ? `Using actual 3Y return: ${selectedFund.directReturn3y?.toFixed(1)}%`
+                  : `Using category estimate: ${CATEGORY_RETURNS[selectedFund.category] || 10}%`
+                }
+              </Badge>
+            </div>
+          )}
+
+          {/* Last Updated timestamp */}
+          {lastUpdated && (
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              NAV data last refreshed: {lastUpdated}
             </div>
           )}
         </CardContent>
@@ -363,6 +465,12 @@ export default function SavingsCalculator() {
                 <p className="text-emerald-700 dark:text-emerald-400 font-medium">
                   💡 Think of it this way: Every ₹1 lakh you invest through a Regular plan loses approximately ₹{Math.round(savingsResult.savings / (parseFloat(investedAmount) / 100000) / parseInt(years) * 100) / 100} per year to distributor commissions. Over {years} years, that compounds massively.
                 </p>
+                {selectedFund && (
+                  <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-2">
+                    📊 Calculation uses {usingActualReturn ? `actual 3Y return (${selectedFund.directReturn3y?.toFixed(1)}%)` : `category estimate (${CATEGORY_RETURNS[selectedFund.category] || 10}%)`} · Direct NAV: ₹{selectedFund.directNav?.toFixed(2)} · Regular NAV: ₹{selectedFund.regularNav?.toFixed(2)}
+                    {lastUpdated && ` · Refreshed: ${lastUpdated}`}
+                  </p>
+                )}
               </div>
             </div>
           </div>

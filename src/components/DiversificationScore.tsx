@@ -11,15 +11,6 @@ import {
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 
-const hasRemotePortfolioDb = process.env.NEXT_PUBLIC_USE_REMOTE_DB === 'true'
-
-function shouldUseLocalPortfolioStorage(): boolean {
-  if (typeof window === 'undefined' || hasRemotePortfolioDb) return false
-
-  const host = window.location.hostname
-  return host !== 'localhost' && host !== '127.0.0.1' && host !== ''
-}
-
 interface BreakdownItem {
   metric: string
   score: number
@@ -261,6 +252,7 @@ function LargeScoreGauge({ score, size = 220 }: { score: number; size?: number }
   const sx = cx + radius * Math.cos(scoreAngle)
   const sy = cy - radius * Math.sin(scoreAngle)
 
+  const largeArc = score > 50 ? 1 : 0
   const gaugeColor = getScoreColor(score)
 
   return (
@@ -276,7 +268,7 @@ function LargeScoreGauge({ score, size = 220 }: { score: number; size?: number }
       />
       {/* Score arc with animation */}
       <motion.path
-        d={`M ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${sx} ${sy}`}
+        d={`M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${sx} ${sy}`}
         fill="none"
         stroke={gaugeColor}
         strokeWidth={12}
@@ -369,12 +361,6 @@ export default function DiversificationScore() {
 
     setLoading(true)
     setError(null)
-    if (shouldUseLocalPortfolioStorage()) {
-      setDivData(computeDiversification(holdings))
-      setLoading(false)
-      return
-    }
-
     try {
       const res = await fetch('/api/portfolio/diversification', {
         method: 'POST',

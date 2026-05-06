@@ -2,7 +2,7 @@
 
 import { useFundStore } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
-import { ArrowDownToLine, ArrowRightLeft, Play, Info, Loader2, TrendingUp, TrendingDown, Wallet, Target, Check, ChevronsUpDown } from 'lucide-react'
+import { ArrowDownToLine, ArrowRightLeft, Play, Info, Loader2, TrendingUp, TrendingDown, Wallet, Target, RefreshCw, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -10,8 +10,6 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { useState, useEffect, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import {
@@ -27,6 +25,19 @@ interface STPYearlyBreakdown {
   targetReturn: number
 }
 
+interface STPFundResult {
+  id: string
+  schemeName: string
+  category: string
+  expectedReturn: number
+  categoryReturn?: number
+  actualReturn?: number | null
+  directNav?: number
+  regularNav?: number
+  directReturn1y?: number | null
+  directReturn3y?: number | null
+}
+
 interface STPResult {
   totalInvested: number
   sourceFundFinalValue: number
@@ -34,8 +45,8 @@ interface STPResult {
   totalReturns: number
   totalTransferred: number
   yearlyBreakdown: STPYearlyBreakdown[]
-  sourceFund: { id: string; schemeName: string; category: string; expectedReturn: number }
-  targetFund: { id: string; schemeName: string; category: string; expectedReturn: number }
+  sourceFund: STPFundResult
+  targetFund: STPFundResult
 }
 
 export default function STPCalculator() {
@@ -49,8 +60,8 @@ export default function STPCalculator() {
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<STPResult | null>(null)
   const [error, setError] = useState('')
-  const [sourceOpen, setSourceOpen] = useState(false)
-  const [targetOpen, setTargetOpen] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
   useEffect(() => {
     if (funds.length === 0) fetchFunds()
@@ -58,6 +69,46 @@ export default function STPCalculator() {
 
   const debtFunds = useMemo(() => funds.filter(f => f.category === 'Debt' || f.category === 'Hybrid'), [funds])
   const equityFunds = useMemo(() => funds.filter(f => f.category === 'Equity' || f.category === 'ELSS' || f.category === 'Index'), [funds])
+
+  // Find selected funds from store for real-time data
+  const sourceFund = useMemo(() => funds.find(f => f.id === sourceFundId), [funds, sourceFundId])
+  const targetFund = useMemo(() => funds.find(f => f.id === targetFundId), [funds, targetFundId])
+
+  // Category-based expected returns (defaults)
+  const CATEGORY_RETURNS: Record<string, number> = { Equity: 12, ELSS: 12, Index: 11, Hybrid: 9, Debt: 7 }
+
+  // Determine effective returns: use actual 3y return if available, else category default
+  const sourceEffectiveReturn = useMemo(() => {
+    if (!sourceFund) return null
+    if (sourceFund.directReturn3y != null) return sourceFund.directReturn3y
+    return CATEGORY_RETURNS[sourceFund.category] || 10
+  }, [sourceFund])
+
+  const targetEffectiveReturn = useMemo(() => {
+    if (!targetFund) return null
+    if (targetFund.directReturn3y != null) return targetFund.directReturn3y
+    return CATEGORY_RETURNS[targetFund.category] || 10
+  }, [targetFund])
+
+  const sourceUsingActual = sourceFund != null && sourceFund.directReturn3y != null
+  const targetUsingActual = targetFund != null && targetFund.directReturn3y != null
+
+  const handleRefreshNav = async () => {
+    setRefreshing(true)
+    try {
+      await fetch('/api/funds/nav', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      await fetchFunds()
+      setLastUpdated(new Date().toLocaleString('en-IN'))
+    } catch {
+      // Silently handle refresh errors
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   const handleCalculate = async () => {
     if (!sourceFundId || !targetFundId) {
@@ -71,16 +122,21 @@ export default function STPCalculator() {
     setLoading(true)
     setError('')
     try {
+      const payload: Record<string, unknown> = {
+        sourceFundId,
+        targetFundId,
+        lumpsumAmount: parseFloat(lumpsumAmount) || 1000000,
+        monthlyTransfer: parseFloat(monthlyTransfer) || 50000,
+        years: parseInt(years) || 5,
+      }
+      // Pass actual returns if available
+      if (sourceEffectiveReturn != null) payload.sourceReturn = sourceEffectiveReturn
+      if (targetEffectiveReturn != null) payload.targetReturn = targetEffectiveReturn
+
       const res = await fetch('/api/stp/calculator', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sourceFundId,
-          targetFundId,
-          lumpsumAmount: parseFloat(lumpsumAmount) || 1000000,
-          monthlyTransfer: parseFloat(monthlyTransfer) || 50000,
-          years: parseInt(years) || 5,
-        }),
+        body: JSON.stringify(payload),
       })
 
       if (!res.ok) {
@@ -119,119 +175,133 @@ export default function STPCalculator() {
       {/* Input Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-card-foreground">
-            <ArrowRightLeft className="h-5 w-5 text-emerald-600" />
-            STP Calculator
-            <Badge variant="outline" className="ml-2 text-[10px]">Systematic Transfer Plan</Badge>
-          </CardTitle>
-          <CardDescription>
-            Transfer from a low-risk source fund to a higher-return target fund in installments to reduce timing risk
-          </CardDescription>
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <CardTitle className="flex items-center gap-2 text-card-foreground">
+                <ArrowRightLeft className="h-5 w-5 text-emerald-600" />
+                STP Calculator
+                <Badge variant="outline" className="ml-2 text-[10px]">Systematic Transfer Plan</Badge>
+              </CardTitle>
+              <CardDescription>
+                Transfer from a low-risk source fund to a higher-return target fund in installments to reduce timing risk
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshNav}
+              disabled={refreshing}
+              className="gap-1.5 text-xs"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+              Refresh NAV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             {/* Source Fund */}
-            <div className="space-y-2 flex flex-col justify-end">
+            <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
                 <TrendingDown className="h-3.5 w-3.5 text-amber-600" />
                 Source Fund (Debt/Liquid)
               </Label>
-              <Popover open={sourceOpen} onOpenChange={setSourceOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={sourceOpen}
-                    className="justify-between text-xs font-normal"
-                  >
-                    {sourceFundId
-                      ? (() => {
-                          const name = funds.find((f) => f.id === sourceFundId)?.schemeName || ''
-                          return name.length > 40 ? name.substring(0, 40) + '...' : name
-                        })()
-                      : "Search source fund..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[300px] sm:w-[400px] p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Search funds..." className="h-9 text-xs" />
-                    <CommandList>
-                      <CommandEmpty>No fund found.</CommandEmpty>
-                      <CommandGroup>
-                        {(debtFunds.length > 0 ? debtFunds : funds).map((f) => (
-                          <CommandItem
-                            key={f.id}
-                            value={f.schemeName}
-                            onSelect={() => {
-                              setSourceFundId(f.id)
-                              setSourceOpen(false)
-                            }}
-                            className="text-xs cursor-pointer"
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 text-emerald-600 ${sourceFundId === f.id ? "opacity-100" : "opacity-0"}`}
-                            />
-                            {f.schemeName}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <Select value={sourceFundId} onValueChange={setSourceFundId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select source fund" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {debtFunds.length > 0 ? (
+                    debtFunds.map(f => (
+                      <SelectItem key={f.id} value={f.id}>
+                        <span className="text-xs">{f.schemeName}</span>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    funds.slice(0, 20).map(f => (
+                      <SelectItem key={f.id} value={f.id}>
+                        <span className="text-xs">{f.schemeName}</span>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {/* Source fund real-time info */}
+              {sourceFund && (
+                <div className="rounded-md bg-muted/50 p-2 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">NAV (Direct):</span>
+                    <span className="font-medium">₹{sourceFund.directNav?.toFixed(2) ?? '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Returns:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium">{formatPercent(sourceFund.directReturn3y)}</span>
+                      <Badge variant={sourceUsingActual ? 'default' : 'secondary'} className={`text-[9px] px-1 py-0 ${sourceUsingActual ? 'bg-emerald-600 text-white' : ''}`}>
+                        {sourceUsingActual ? 'Actual' : 'Estimate'}
+                      </Badge>
+                    </div>
+                  </div>
+                  {sourceFund.directReturn1y != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">1Y Return:</span>
+                      <span className="font-medium">{formatPercent(sourceFund.directReturn1y)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Target Fund */}
-            <div className="space-y-2 flex flex-col justify-end">
+            <div className="space-y-2">
               <Label className="flex items-center gap-1.5">
                 <TrendingUp className="h-3.5 w-3.5 text-emerald-600" />
                 Target Fund (Equity)
               </Label>
-              <Popover open={targetOpen} onOpenChange={setTargetOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={targetOpen}
-                    className="justify-between text-xs font-normal"
-                  >
-                    {targetFundId
-                      ? (() => {
-                          const name = funds.find((f) => f.id === targetFundId)?.schemeName || ''
-                          return name.length > 40 ? name.substring(0, 40) + '...' : name
-                        })()
-                      : "Search target fund..."}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[300px] sm:w-[400px] p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Search funds..." className="h-9 text-xs" />
-                    <CommandList>
-                      <CommandEmpty>No fund found.</CommandEmpty>
-                      <CommandGroup>
-                        {(equityFunds.length > 0 ? equityFunds : funds).map((f) => (
-                          <CommandItem
-                            key={f.id}
-                            value={f.schemeName}
-                            onSelect={() => {
-                              setTargetFundId(f.id)
-                              setTargetOpen(false)
-                            }}
-                            className="text-xs cursor-pointer"
-                          >
-                            <Check
-                              className={`mr-2 h-4 w-4 text-emerald-600 ${targetFundId === f.id ? "opacity-100" : "opacity-0"}`}
-                            />
-                            {f.schemeName}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <Select value={targetFundId} onValueChange={setTargetFundId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select target fund" />
+                </SelectTrigger>
+                <SelectContent className="max-h-60">
+                  {equityFunds.length > 0 ? (
+                    equityFunds.map(f => (
+                      <SelectItem key={f.id} value={f.id}>
+                        <span className="text-xs">{f.schemeName}</span>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    funds.slice(0, 20).map(f => (
+                      <SelectItem key={f.id} value={f.id}>
+                        <span className="text-xs">{f.schemeName}</span>
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              {/* Target fund real-time info */}
+              {targetFund && (
+                <div className="rounded-md bg-muted/50 p-2 text-xs space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">NAV (Direct):</span>
+                    <span className="font-medium">₹{targetFund.directNav?.toFixed(2) ?? '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Returns:</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-medium">{formatPercent(targetFund.directReturn3y)}</span>
+                      <Badge variant={targetUsingActual ? 'default' : 'secondary'} className={`text-[9px] px-1 py-0 ${targetUsingActual ? 'bg-emerald-600 text-white' : ''}`}>
+                        {targetUsingActual ? 'Actual' : 'Estimate'}
+                      </Badge>
+                    </div>
+                  </div>
+                  {targetFund.directReturn1y != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">1Y Return:</span>
+                      <span className="font-medium">{formatPercent(targetFund.directReturn1y)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -289,6 +359,14 @@ export default function STPCalculator() {
               </span>
             </div>
           )}
+
+          {/* Last Updated timestamp */}
+          {lastUpdated && (
+            <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
+              <Clock className="h-3 w-3" />
+              NAV data last refreshed: {lastUpdated}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -322,14 +400,24 @@ export default function STPCalculator() {
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground flex items-center gap-1"><TrendingDown className="h-3 w-3" /> Source Fund Final</p>
                 <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{formatCurrency(result.sourceFundFinalValue)}</p>
-                <p className="text-xs text-muted-foreground mt-1">{result.sourceFund.schemeName.slice(0, 30)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {result.sourceFund.schemeName.slice(0, 30)}
+                  {result.sourceFund.directNav != null && (
+                    <span className="ml-1 text-emerald-600">· NAV ₹{result.sourceFund.directNav.toFixed(2)}</span>
+                  )}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-emerald-200 dark:border-emerald-900">
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground flex items-center gap-1"><Target className="h-3 w-3" /> Target Fund Final</p>
                 <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(result.targetFundFinalValue)}</p>
-                <p className="text-xs text-muted-foreground mt-1">{result.targetFund.schemeName.slice(0, 30)}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {result.targetFund.schemeName.slice(0, 30)}
+                  {result.targetFund.directNav != null && (
+                    <span className="ml-1 text-emerald-600">· NAV ₹{result.targetFund.directNav.toFixed(2)}</span>
+                  )}
+                </p>
               </CardContent>
             </Card>
             <Card className="border-emerald-200 dark:border-emerald-900">
@@ -343,6 +431,16 @@ export default function STPCalculator() {
                 </p>
               </CardContent>
             </Card>
+          </div>
+
+          {/* Return Source Info */}
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="outline" className={`text-[10px] ${result.sourceFund.actualReturn != null ? 'border-emerald-500 text-emerald-700 dark:text-emerald-400' : 'border-amber-500 text-amber-700 dark:text-amber-400'}`}>
+              Source: {result.sourceFund.actualReturn != null ? `Using actual 3Y return (${result.sourceFund.actualReturn}%)` : `Using category estimate (${result.sourceFund.categoryReturn ?? result.sourceFund.expectedReturn}%)`}
+            </Badge>
+            <Badge variant="outline" className={`text-[10px] ${result.targetFund.actualReturn != null ? 'border-emerald-500 text-emerald-700 dark:text-emerald-400' : 'border-amber-500 text-amber-700 dark:text-amber-400'}`}>
+              Target: {result.targetFund.actualReturn != null ? `Using actual 3Y return (${result.targetFund.actualReturn}%)` : `Using category estimate (${result.targetFund.categoryReturn ?? result.targetFund.expectedReturn}%)`}
+            </Badge>
           </div>
 
           {/* Dual-Line Chart: Source declining + Target growing */}
@@ -475,6 +573,11 @@ export default function STPCalculator() {
                   Your total transferred amount is <strong>{formatCurrency(result.totalTransferred)}</strong>, generating total returns of <strong>{formatCurrency(result.totalReturns)}</strong>.
                   STP reduces the risk of investing a lumpsum at a market peak.
                 </p>
+                {lastUpdated && (
+                  <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-2">
+                    📊 NAV data as of {lastUpdated}
+                  </p>
+                )}
               </div>
             </div>
           </div>

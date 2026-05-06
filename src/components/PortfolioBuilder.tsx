@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog'
 import QuickImport from '@/components/QuickImport'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useEffect, useState, useCallback } from 'react'
@@ -44,26 +44,23 @@ export default function PortfolioBuilder() {
 
   // Fetch AI insights for regular holdings
   useEffect(() => {
-    holdings.forEach(h => {
-      if (h.planType === 'regular' && !aiInsights[h.fundId] && !aiInsightsLoading[h.fundId]) {
+    holdings?.forEach(h => {
+      if (h.planType === 'regular' && !aiInsights?.[h.fundId] && !aiInsightsLoading?.[h.fundId]) {
         fetchAiInsight(h.fundId, {
-          fundName: h.fund.schemeName,
-          schemeName: h.fund.schemeName,
-          directExpenseRatio: h.fund.directExpenseRatio,
-          regularExpenseRatio: h.fund.regularExpenseRatio,
-          directReturn1y: h.fund.directReturn1y || 0,
-          regularReturn1y: h.fund.regularReturn1y || 0,
-          category: h.fund.category,
-          subCategory: h.fund.subCategory,
-          currentAmount: h.currentAmount,
+          fundName: h.fund?.schemeName,
+          directExpenseRatio: h.fund?.directExpenseRatio,
+          regularExpenseRatio: h.fund?.regularExpenseRatio,
+          directReturn1y: h.fund?.directReturn1y,
+          regularReturn1y: h.fund?.regularReturn1y,
+          category: h.fund?.category,
         })
       }
     })
-  }, [holdings])
+  }, [holdings, aiInsights, aiInsightsLoading, fetchAiInsight])
 
   const handleAddHolding = useCallback(async () => {
     if (!selectedFundId || !investedAmount || !currentAmount) return
-    const fund = funds.find(f => f.id === selectedFundId)
+    const fund = funds?.find(f => f.id === selectedFundId)
     if (!fund) return
 
     const nav = planType === 'direct' ? fund.directNav : fund.regularNav
@@ -89,10 +86,10 @@ export default function PortfolioBuilder() {
     setActiveTab('compare')
   }, [setActiveTab])
 
-  const totalInvested = holdings.reduce((s, h) => s + h.investedAmount, 0)
-  const totalCurrent = holdings.reduce((s, h) => s + h.currentAmount, 0)
+  const totalInvested = holdings?.reduce((s, h) => s + h.investedAmount, 0) || 0
+  const totalCurrent = holdings?.reduce((s, h) => s + h.currentAmount, 0) || 0
   const totalGain = totalCurrent - totalInvested
-  const regularHoldings = holdings.filter(h => h.planType === 'regular')
+  const regularHoldings = holdings?.filter(h => h.planType === 'regular') || []
 
   return (
     <div className="space-y-6">
@@ -194,9 +191,6 @@ export default function PortfolioBuilder() {
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Add a Fund Holding</DialogTitle>
-                <DialogDescription>
-                  Enter your investment details to add this fund to your portfolio.
-                </DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
                 <div className="space-y-2">
@@ -206,7 +200,7 @@ export default function PortfolioBuilder() {
                       <SelectValue placeholder="Select a fund..." />
                     </SelectTrigger>
                     <SelectContent className="max-h-60">
-                      {funds.map(f => (
+                      {funds?.map(f => (
                         <SelectItem key={f.id} value={f.id}>
                           <span className="text-xs">{f.schemeName}</span>
                         </SelectItem>
@@ -383,7 +377,7 @@ export default function PortfolioBuilder() {
         <div>
           <h3 className="text-sm font-medium text-muted-foreground mb-3">Or quickly add popular funds to demo:</h3>
           <div className="flex flex-wrap gap-2">
-            {funds.slice(0, 8).map(fund => (
+            {funds?.slice(0, 8).map(fund => (
               <Button
                 key={fund.id}
                 size="sm"

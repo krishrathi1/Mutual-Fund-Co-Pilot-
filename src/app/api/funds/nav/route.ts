@@ -50,7 +50,7 @@ async function fetchAllNavs(): Promise<AmfiScheme[]> {
 
   try {
     const res = await fetch('https://api.mfapi.in/mf', {
-      next: { revalidate: 86400 }, // let Next.js cache for 24 h as well
+      cache: 'no-store', // We manage our own in-memory cache
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'FundVista/1.0',
@@ -88,7 +88,7 @@ async function fetchAllNavs(): Promise<AmfiScheme[]> {
 async function fetchSchemeNav(schemeCode: number): Promise<AmfiScheme | null> {
   try {
     const res = await fetch(`https://api.mfapi.in/mf/${schemeCode}`, {
-      next: { revalidate: 86400 },
+      cache: 'no-store', // We manage our own in-memory cache
       headers: {
         'Accept': 'application/json',
         'User-Agent': 'FundVista/1.0',

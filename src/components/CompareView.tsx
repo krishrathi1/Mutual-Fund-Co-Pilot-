@@ -39,33 +39,35 @@ export default function CompareView() {
 
   // Fetch AI insights for comparisons
   useEffect(() => {
-    comparisons.forEach(comp => {
-      if (!aiInsights[comp.fundId] && !aiInsightsLoading[comp.fundId]) {
+    comparisons?.forEach(comp => {
+      if (!aiInsights?.[comp.fundId] && !aiInsightsLoading?.[comp.fundId]) {
         fetchAiInsight(comp.fundId, {
           fundName: comp.schemeName,
           directExpenseRatio: comp.direct.expenseRatio,
           regularExpenseRatio: comp.regular.expenseRatio,
-          directReturn1y: comp.direct.return1y || 0,
-          regularReturn1y: comp.regular.return1y || 0,
+          directReturn1y: comp.direct.return1y,
+          regularReturn1y: comp.regular.return1y,
+          expenseDiff: comp.expenseDiff,
           category: comp.category,
           subCategory: comp.subCategory,
+          aumCrore: comp.aumCrore,
         })
       }
     })
-  }, [comparisons])
+  }, [comparisons, aiInsights, aiInsightsLoading, fetchAiInsight])
 
   const recommendations = analysis?.recommendations || []
 
   // ─── Radar chart data (only when 2+ funds) ─────────────────────────────
   const radarData = useMemo(() => {
-    if (comparisons.length < 2) return null
+    if (!comparisons || comparisons.length < 2) return null
 
     const dimensions = ['Expense Ratio', '1Y Return', '3Y Return', '5Y Return', 'Sharpe Ratio', 'AUM']
 
     // Find min/max for each dimension to normalize
     const ranges: Record<string, { min: number; max: number }> = {}
     for (const dim of dimensions) {
-      const vals = comparisons.map(c => getDimensionValue(c, dim)).filter(v => v !== null) as number[]
+      const vals = comparisons?.map(c => getDimensionValue(c, dim)).filter(v => v !== null) as number[] || []
       ranges[dim] = {
         min: Math.min(...vals),
         max: Math.max(...vals),
@@ -75,7 +77,7 @@ export default function CompareView() {
     // For expense ratio, lower is better → invert the normalization
     return dimensions.map(dim => {
       const entry: Record<string, string | number> = { dimension: dim }
-      comparisons.forEach((comp, i) => {
+      comparisons?.forEach((comp, i) => {
         const raw = getDimensionValue(comp, dim)
         const { min, max } = ranges[dim]
         const range = max - min || 1
@@ -94,7 +96,7 @@ export default function CompareView() {
 
   // ─── Diff bar chart data ───────────────────────────────────────────────
   const diffBarData = useMemo(() => {
-    if (comparisons.length === 0) return []
+    if (!comparisons || comparisons.length === 0) return []
     return comparisons.map(comp => ({
       name: comp.schemeName.length > 25 ? comp.schemeName.slice(0, 25) + '…' : comp.schemeName,
       'Direct Return': comp.direct.return1y ?? 0,
@@ -219,17 +221,17 @@ export default function CompareView() {
                             domain={[0, 100]}
                             tick={{ fontSize: 9, fill: 'var(--muted-foreground)' }}
                           />
-                          {comparisons.map((comp, i) => (
-                            <Radar
-                              key={comp.fundId}
-                              name={comp.schemeName.length > 30 ? comp.schemeName.slice(0, 30) + '…' : comp.schemeName}
-                              dataKey={comp.schemeName}
-                              stroke={FUND_COLORS[i % FUND_COLORS.length]}
-                              fill={FUND_COLORS[i % FUND_COLORS.length]}
-                              fillOpacity={0.12}
-                              strokeWidth={2}
-                            />
-                          ))}
+                            {comparisons?.map((comp, i) => (
+                              <Radar
+                                key={comp.fundId}
+                                name={comp.schemeName.length > 30 ? comp.schemeName.slice(0, 30) + '…' : comp.schemeName}
+                                dataKey={comp.schemeName}
+                                stroke={FUND_COLORS[i % FUND_COLORS.length]}
+                                fill={FUND_COLORS[i % FUND_COLORS.length]}
+                                fillOpacity={0.12}
+                                strokeWidth={2}
+                              />
+                            ))}
                           <Legend
                             wrapperStyle={{ fontSize: '11px' }}
                             iconSize={10}
@@ -304,7 +306,7 @@ export default function CompareView() {
               )}
 
               {/* ═══════ PER-FUND COMPARISON CARDS (existing) ═══════ */}
-              {comparisons.map((comp) => (
+              {comparisons?.map((comp) => (
                 <FundComparisonCard key={comp.fundId} comparison={comp} />
               ))}
 
@@ -447,8 +449,8 @@ export default function CompareView() {
                       </Badge>
                       <span className="text-sm text-muted-foreground">{recs.length} recommendation{recs.length !== 1 ? 's' : ''}</span>
                     </div>
-                    {recs.map((rec) => (
-                      <RecommendationCard key={rec.fundId} recommendation={rec} />
+                    {recs.map((rec, i) => (
+                      <RecommendationCard key={`${rec.fundId}-${i}`} recommendation={rec} />
                     ))}
                   </div>
                 )

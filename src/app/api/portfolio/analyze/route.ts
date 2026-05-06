@@ -146,17 +146,28 @@ export async function POST(request: NextRequest) {
       pct: Math.round((amount / currentValue) * 10000) / 100,
     }))
 
-    // === Recommendations ===
-    const recommendations = holdings
-      .filter((h) => h.planType === 'regular')
-      .map((holding) => {
+    // Group regular holdings by fundId to avoid duplicate recommendations
+    const regularHoldingsByFund = new Map<string, typeof holdings[0][]>()
+    for (const h of holdings) {
+      if (h.planType === 'regular') {
+        const list = regularHoldingsByFund.get(h.fundId) || []
+        list.push(h)
+        regularHoldingsByFund.set(h.fundId, list)
+      }
+    }
+
+    const recommendations = Array.from(regularHoldingsByFund.entries())
+      .map(([fundId, fundHoldings]) => {
+        const holding = fundHoldings[0] // Fund details are same for all
+        const totalAmount = fundHoldings.reduce((sum, h) => sum + h.currentAmount, 0)
+        
         const expenseDiffPct = holding.fund.regularExpenseRatio - holding.fund.directExpenseRatio
-        const expenseDiffBps = Math.round(expenseDiffPct * 100) // convert to bps
-        const annualSaving = (expenseDiffPct / 100) * holding.currentAmount
+        const expenseDiffBps = Math.round(expenseDiffPct * 100)
+        const annualSaving = (expenseDiffPct / 100) * totalAmount
         const expectedReturn = getExpectedReturn(holding.fund.category)
         const directRate = (expectedReturn - holding.fund.directExpenseRatio) / 100
         const regularRate = (expectedReturn - holding.fund.regularExpenseRatio) / 100
-        const tenYearSaving = holding.currentAmount * (Math.pow(1 + directRate, 10) - Math.pow(1 + regularRate, 10))
+        const tenYearSaving = totalAmount * (Math.pow(1 + directRate, 10) - Math.pow(1 + regularRate, 10))
 
         // Determine priority
         let priority: 'high' | 'medium' | 'low'
@@ -171,11 +182,11 @@ export async function POST(request: NextRequest) {
         // Generate plain language reason
         let reason = ''
         if (expenseDiffBps >= 100) {
-          reason = `Your regular plan charges ${expenseDiffPct.toFixed(2)}% more in expenses than the direct plan. On your current investment of ₹${Math.round(holding.currentAmount).toLocaleString('en-IN')}, that's ₹${Math.round(annualSaving).toLocaleString('en-IN')} every year that goes to your distributor instead of your wealth. Over 10 years, switching to direct could save you approximately ₹${Math.round(tenYearSaving).toLocaleString('en-IN')} through the power of compounding.`
+          reason = `Your regular plan charges ${expenseDiffPct.toFixed(2)}% more in expenses than the direct plan. On your total investment of ₹${Math.round(totalAmount).toLocaleString('en-IN')}, that's ₹${Math.round(annualSaving).toLocaleString('en-IN')} every year that goes to your distributor instead of your wealth. Over 10 years, switching to direct could save you approximately ₹${Math.round(tenYearSaving).toLocaleString('en-IN')} through the power of compounding.`
         } else if (expenseDiffBps >= 50) {
-          reason = `Switching from regular to direct plan would save you ${expenseDiffPct.toFixed(2)}% annually in expenses. While this seems small, it compounds to ₹${Math.round(tenYearSaving).toLocaleString('en-IN')} over 10 years on your ₹${Math.round(holding.currentAmount).toLocaleString('en-IN')} investment. Every rupee saved in expenses adds to your returns.`
+          reason = `Switching from regular to direct plan would save you ${expenseDiffPct.toFixed(2)}% annually in expenses. While this seems small, it compounds to ₹${Math.round(tenYearSaving).toLocaleString('en-IN')} over 10 years on your ₹${Math.round(totalAmount).toLocaleString('en-IN')} investment. Every rupee saved in expenses adds to your returns.`
         } else {
-          reason = `The direct plan of this fund has a ${expenseDiffPct.toFixed(2)}% lower expense ratio. On your current investment, this saves ₹${Math.round(annualSaving).toLocaleString('en-IN')} annually. While the saving is modest, it's still free money over time.`
+          reason = `The direct plan of this fund has a ${expenseDiffPct.toFixed(2)}% lower expense ratio. On your total investment of ₹${Math.round(totalAmount).toLocaleString('en-IN')}, this saves ₹${Math.round(annualSaving).toLocaleString('en-IN')} annually. While the saving is modest, it's still free money over time.`
         }
 
         // Tradeoffs
