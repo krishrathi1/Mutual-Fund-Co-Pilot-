@@ -2,7 +2,7 @@
 
 import { useFundStore, type XIRRResult, type HoldingData } from '@/lib/store'
 import { formatCurrency, formatPercent } from '@/lib/helpers'
-import { TrendingUp, Info, BarChart3, Target, BookOpen, RefreshCw, Zap, Clock, ArrowRight } from 'lucide-react'
+import { TrendingUp, Info, BarChart3, Target, BookOpen, RefreshCw, Zap, Clock, ArrowRight, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -16,7 +16,8 @@ import {
 } from 'recharts'
 
 // XIRR calculation using Newton-Raphson method
-function calculateXIRR(cashFlows: { amount: number; date: Date }[], maxIterations = 100, tolerance = 1e-8): number | null {
+// Robust XIRR calculation using Bisection + Newton-Raphson
+function calculateXIRR(cashFlows: { amount: number; date: Date }[]): number | null {
   if (cashFlows.length < 2) return null
 
   // Sort by date
@@ -25,36 +26,47 @@ function calculateXIRR(cashFlows: { amount: number; date: Date }[], maxIteration
 
   // Convert to year fractions
   const years = sorted.map((cf) => (cf.date.getTime() - d0.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+  const amounts = sorted.map(cf => cf.amount)
 
-  // Initial guess: 10%
-  let rate = 0.10
-
-  for (let iter = 0; iter < maxIterations; iter++) {
-    let fValue = 0
-    let fDerivative = 0
-
-    for (let i = 0; i < sorted.length; i++) {
-      const pvFactor = Math.pow(1 + rate, years[i])
-      fValue += sorted[i].amount / pvFactor
-      if (pvFactor !== 0) {
-        fDerivative -= (years[i] * sorted[i].amount) / (pvFactor * (1 + rate))
-      }
+  const xnpv = (rate: number) => {
+    let result = 0
+    for (let i = 0; i < amounts.length; i++) {
+      result += amounts[i] / Math.pow(1 + rate, years[i])
     }
+    return result
+  }
 
-    if (Math.abs(fDerivative) < 1e-12) break
-
-    const newRate = rate - fValue / fDerivative
-
-    if (Math.abs(newRate - rate) < tolerance) {
-      return newRate
+  const dxnpv = (rate: number) => {
+    let result = 0
+    for (let i = 0; i < amounts.length; i++) {
+      result -= (years[i] * amounts[i]) / Math.pow(1 + rate, years[i] + 1)
     }
+    return result
+  }
 
-    rate = newRate
+  // Initial guess
+  let rate = 0.1
+  
+  // Try Newton-Raphson first
+  for (let i = 0; i < 50; i++) {
+    const val = xnpv(rate)
+    const deriv = dxnpv(rate)
+    if (Math.abs(deriv) < 1e-12) break
+    const nextRate = rate - val / deriv
+    if (Math.abs(nextRate - rate) < 1e-8) return nextRate
+    rate = nextRate
+    if (rate > 100 || rate < -0.99) break // Diverged
+  }
 
-    // Prevent divergence
-    if (rate > 10 || rate < -0.99) {
-      rate = 0.10
-    }
+  // Fallback to Bisection
+  let low = -0.9999
+  let high = 100
+  for (let i = 0; i < 100; i++) {
+    const mid = (low + high) / 2
+    const val = xnpv(mid)
+    if (Math.abs(val) < 1e-7) return mid
+    if (val > 0) low = mid
+    else high = mid
   }
 
   return rate
@@ -631,6 +643,7 @@ export default function XIRRCalculator() {
                   <thead className="sticky top-0 bg-background">
                     <tr className="border-b">
                       <th className="py-2 px-3 text-left font-medium text-muted-foreground">Fund</th>
+                      <th className="py-2 px-3 text-right font-medium text-muted-foreground">Holding</th>
                       <th className="py-2 px-3 text-right font-medium text-muted-foreground">Invested</th>
                       <th className="py-2 px-3 text-right font-medium text-muted-foreground">Current</th>
                       <th className="py-2 px-3 text-right font-medium text-muted-foreground">XIRR</th>
@@ -649,19 +662,22 @@ export default function XIRRCalculator() {
                       return (
                         <tr key={h.fundId} className="border-b last:border-0 hover:bg-muted/50">
                           <td className="py-2 px-3 font-medium text-foreground truncate max-w-[200px]">{h.fundName}</td>
+                          <td className="py-2 px-3 text-right text-muted-foreground">
+                            {(() => {
+                              const holding = holdings.find(held => held.fundId === h.fundId)
+                              if (!holding?.purchaseDate) return '—'
+                              const days = Math.round((new Date().getTime() - new Date(holding.purchaseDate).getTime()) / (1000 * 60 * 60 * 24))
+                              return days < 365 ? `${days}d` : `${(days / 365.25).toFixed(1)}y`
+                            })()}
+                          </td>
                           <td className="py-2 px-3 text-right text-muted-foreground">{formatCurrency(h.invested)}</td>
                           <td className="py-2 px-3 text-right">
                             <div>
                               <span className="text-foreground">{formatCurrency(h.current)}</span>
-                              {liveHolding && liveHolding.current !== h.current && (
-                                <div className="flex items-center gap-1 text-[10px]">
-                                  <ArrowRight className="h-2.5 w-2.5 text-emerald-500" />
-                                  <span className="text-emerald-600 dark:text-emerald-400">{formatCurrency(liveHolding.current)}</span>
-                                </div>
-                              )}
                             </div>
                           </td>
-                          <td className={`py-2 px-3 text-right font-bold ${h.xirr >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                          <td className={`py-2 px-3 text-right font-bold flex items-center justify-end gap-1 ${h.xirr >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                            {h.xirr > 100 && <AlertTriangle className="h-3 w-3 text-amber-500" title="Unrealistically high due to short holding period" />}
                             {h.xirr >= 0 ? '+' : ''}{h.xirr.toFixed(2)}%
                           </td>
                           {xirrResult.liveXirrHoldings && xirrResult.liveXirrHoldings.length > 0 && (
