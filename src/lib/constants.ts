@@ -35,9 +35,7 @@ export const TABS: TabConfig[] = [
   { id: 'overlap', label: 'Overlap', icon: Waypoints, group: 'Analyze' },
   { id: 'sector', label: 'Sectors', icon: PieChart, group: 'Analyze' },
   { id: 'diversification', label: 'Diversity', icon: Network, group: 'Analyze' },
-  { id: 'correlation', label: 'Correlation', icon: GridIcon, group: 'Analyze' },
   { id: 'montecarlo', label: 'Monte Carlo', icon: Dice5, group: 'Analyze' },
-  { id: 'allocation', label: 'Allocation', icon: GridIcon, group: 'Analyze' },
   // Plan
   { id: 'savings', label: 'Savings', icon: Coins, group: 'Plan' },
   { id: 'sip', label: 'SIP', icon: Repeat, group: 'Plan' },

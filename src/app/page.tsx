@@ -24,6 +24,7 @@ import SIPPlanner from '@/components/SIPPlanner'
 import RebalancingView from '@/components/RebalancingView'
 import MarketDashboard from '@/components/MarketDashboard'
 import FundScreener from '@/components/FundScreener'
+import SWPCalculator from '@/components/SWPCalculator'
 import STPCalculator from '@/components/STPCalculator'
 import FundRankings from '@/components/FundRankings'
 import AMCAnalysis from '@/components/AMCAnalysis'
@@ -39,9 +40,7 @@ import RollingReturns from '@/components/RollingReturns'
 import CaptureRatio from '@/components/CaptureRatio'
 import CategoryPerformance from '@/components/CategoryPerformance'
 import FundSimilarity from '@/components/FundSimilarity'
-import CorrelationMatrix from '@/components/CorrelationMatrix'
 import MonteCarloSim from '@/components/MonteCarloSim'
-import AssetAllocation from '@/components/AssetAllocation'
 import SIPStepUp from '@/components/SIPStepUp'
 import CAGRCalculator from '@/components/CAGRCalculator'
 import FDvsMF from '@/components/FDvsMF'
@@ -92,9 +91,7 @@ export default function Home() {
             {activeTab === 'overlap' && <FundOverlap />}
             {activeTab === 'sector' && <SectorExposure />}
             {activeTab === 'diversification' && <DiversificationScore />}
-            {activeTab === 'correlation' && <CorrelationMatrix />}
             {activeTab === 'montecarlo' && <MonteCarloSim />}
-            {activeTab === 'allocation' && <AssetAllocation />}
             {/* Plan */}
             {activeTab === 'savings' && <SavingsCalculator />}
             {activeTab === 'sip' && <SIPPlanner />}
