@@ -127,50 +127,8 @@ export default function CaptureRatio() {
               </CardContent>
             </Card>
 
-            {/* Manager Skill */}
-            <Card className="relative overflow-hidden border-violet-500/20 bg-violet-50/30 dark:bg-violet-950/10">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-widest">Manager Skill (Alpha)</p>
-                  <Target className="h-4 w-4 text-violet-600" />
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <p className="text-4xl font-black text-violet-600">{formatPercent(result.alpha.alpha1y)}</p>
-                  <span className="text-[10px] font-bold text-muted-foreground">Extra Return</span>
-                </div>
-                <div className="mt-4">
-                   <Badge variant={result.alpha.alpha1y > 0 ? 'default' : 'destructive'} className="font-bold text-[10px] px-2 h-5">
-                    {result.alpha.alpha1y > 0 ? 'Adding Value' : 'Below Market'}
-                  </Badge>
-                </div>
-                <p className="text-[11px] font-medium text-violet-800/80 dark:text-violet-400/80 mt-3 leading-relaxed">
-                  {result.alpha.alpha1y > 0 
-                    ? `The manager added extra profit through smart stock selection.`
-                    : `The manager failed to beat a simple index fund.`}
-                </p>
-              </CardContent>
-            </Card>
           </div>
 
-          <Card className="border-indigo-500/20 bg-indigo-50/10">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-indigo-600">Expert Verdict</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-xl bg-white/50 dark:bg-black/20 p-4 border shadow-sm">
-                <div className="flex items-start gap-3">
-                  <div className="mt-1 h-2 w-2 rounded-full bg-indigo-500 animate-pulse shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-foreground leading-tight">{result.interpretation.overall}</p>
-                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
-                      This fund is measured against the <span className="font-bold text-foreground">{result.fund.benchmark}</span>. 
-                      An assessment of "{result.interpretation.overall}" means it is {result.interpretation.overall.toLowerCase().includes('aggressive') ? 'designed for maximum growth but has higher risks' : 'designed for stability and protects your money well during market drops'}.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       )}
 
