@@ -50,7 +50,6 @@ export const TABS: TabConfig[] = [
   { id: 'stress', label: 'Stress', icon: Zap, group: 'Optimize' },
   { id: 'alerts', label: 'Alerts', icon: Bell, group: 'Optimize' },
   { id: 'commission', label: 'Commission', icon: AlertTriangle, group: 'Optimize' },
-  { id: 'switchguide', label: 'Switch Guide', icon: SwitchIcon, group: 'Optimize' },
   { id: 'elsstax', label: 'ELSS Tax Saver', icon: ShieldCheck, group: 'Optimize' },
   { id: 'emergency', label: 'Emergency Fund', icon: ShieldAlert, group: 'Optimize' },
   // Tools

@@ -42,7 +42,6 @@ import MonteCarloSim from '@/components/MonteCarloSim'
 import FDvsMF from '@/components/FDvsMF'
 import InflationCalculator from '@/components/InflationCalculator'
 import CommissionDisclosure from '@/components/CommissionDisclosure'
-import FundSwitchGuide from '@/components/FundSwitchGuide'
 import ELSSTaxSaver from '@/components/ELSSTaxSaver'
 import EmergencyFund from '@/components/EmergencyFund'
 
@@ -101,7 +100,6 @@ export default function Home() {
             {activeTab === 'stress' && <StressTest />}
             {activeTab === 'alerts' && <PortfolioAlerts />}
             {activeTab === 'commission' && <CommissionDisclosure />}
-            {activeTab === 'switchguide' && <FundSwitchGuide />}
             {activeTab === 'elsstax' && <ELSSTaxSaver />}
             {activeTab === 'emergency' && <EmergencyFund />}
             {/* Tools */}

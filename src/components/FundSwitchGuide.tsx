@@ -10,10 +10,12 @@ import { useFundStore } from '@/lib/store'
 import { formatCurrency } from '@/lib/helpers'
 
 export default function FundSwitchGuide() {
-  const { funds } = useFundStore()
+  const { funds, fetchFunds, holdings, fetchHoldings } = useFundStore()
   const [selectedFundId, setSelectedFundId] = useState('')
   const [investmentAmount, setInvestmentAmount] = useState(500000)
   const [holdingYears, setHoldingYears] = useState(3)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [taxSlab, setTaxSlab] = useState('30')
   const [result, setResult] = useState<{
     fund: { schemeName: string; directIsin: string; regularIsin: string }
     regularPlan: { expenseRatio: number; nav: number; return1y: number | null }
@@ -25,15 +27,34 @@ export default function FundSwitchGuide() {
   } | null>(null)
 
   useEffect(() => {
+    fetchHoldings()
+    fetchFunds()
+  }, [])
+
+  const handleFundSelect = (id: string) => {
+    setSelectedFundId(id)
+    // If it's a holding, pre-fill details
+    const holding = holdings.find(h => h.fundId === id)
+    if (holding) {
+      setInvestmentAmount(Math.round(holding.currentAmount))
+      if (holding.purchaseDate) {
+        const years = (new Date().getTime() - new Date(holding.purchaseDate).getTime()) / (1000 * 60 * 60 * 24 * 365)
+        setHoldingYears(parseFloat(years.toFixed(1)))
+      }
+    }
+  }
+
+  useEffect(() => {
     if (!selectedFundId) return
-    fetch(`/api/funds/switch-guide?fundId=${selectedFundId}&amount=${investmentAmount}&holdingYears=${holdingYears}`)
-      .then(r => {
-        if (!r.ok) throw new Error('Failed to fetch')
-        return r.json()
-      })
+    fetch(`/api/funds/switch-guide?fundId=${selectedFundId}&amount=${investmentAmount}&holdingYears=${holdingYears}&slabRate=${taxSlab}`)
+      .then(r => r.json())
       .then(d => setResult(d))
       .catch(() => setResult(null))
-  }, [selectedFundId, investmentAmount, holdingYears])
+  }, [selectedFundId, investmentAmount, holdingYears, taxSlab])
+
+  const availableFunds = searchQuery 
+    ? funds.filter(f => f.schemeName.toLowerCase().includes(searchQuery.toLowerCase()))
+    : funds.slice(0, 50)
 
   return (
     <div className="space-y-6">
@@ -50,14 +71,63 @@ export default function FundSwitchGuide() {
       <Card>
         <CardContent className="pt-6 space-y-4">
           <div className="grid gap-4 sm:grid-cols-3">
-            <div><label className="text-sm font-medium">Select Fund</label>
-              <Select value={selectedFundId} onValueChange={setSelectedFundId}>
-                <SelectTrigger><SelectValue placeholder="Select fund..." /></SelectTrigger>
-                <SelectContent>{funds.map(f => <SelectItem key={f.id} value={f.id}>{f.schemeName}</SelectItem>)}</SelectContent>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Search & Select Fund</label>
+              <div className="space-y-2">
+                <Input 
+                  placeholder="Type to search funds..." 
+                  value={searchQuery} 
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8 text-xs"
+                />
+                <Select value={selectedFundId} onValueChange={handleFundSelect}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Select fund..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {holdings.length > 0 && !searchQuery && (
+                      <div className="px-2 py-1.5 text-xs font-bold text-muted-foreground bg-muted/50 rounded-sm mb-1 uppercase tracking-wider">Your Holdings</div>
+                    )}
+                    {holdings
+                      .filter(h => h.fund?.schemeName.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map(h => (
+                      <SelectItem key={h.fundId} value={h.fundId}>
+                        💼 {h.fund?.schemeName}
+                      </SelectItem>
+                    ))}
+                    {!searchQuery && (
+                      <div className="px-2 py-1.5 text-xs font-bold text-muted-foreground bg-muted/50 rounded-sm my-1 uppercase tracking-wider">All Funds</div>
+                    )}
+                    {availableFunds.map(f => (
+                      <SelectItem key={f.id} value={f.id}>
+                        {f.schemeName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Investment Amount (₹)</label>
+              <Input type="number" value={investmentAmount} onChange={e => setInvestmentAmount(Number(e.target.value))} className="h-10" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Approx. Holding Period (Yrs)</label>
+              <Input type="number" value={holdingYears} onChange={e => setHoldingYears(Number(e.target.value))} min={0.1} step={0.1} className="h-10" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Your Tax Slab (%)</label>
+              <Select value={taxSlab} onValueChange={setTaxSlab}>
+                <SelectTrigger className="h-10 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">0% (Nil)</SelectItem>
+                  <SelectItem value="5">5%</SelectItem>
+                  <SelectItem value="10">10%</SelectItem>
+                  <SelectItem value="20">20%</SelectItem>
+                  <SelectItem value="30">30%</SelectItem>
+                </SelectContent>
               </Select>
             </div>
-            <div><label className="text-sm font-medium">Investment Amount (₹)</label><Input type="number" value={investmentAmount} onChange={e => setInvestmentAmount(Number(e.target.value))} /></div>
-            <div><label className="text-sm font-medium">Holding Period (Years)</label><Input type="number" value={holdingYears} onChange={e => setHoldingYears(Number(e.target.value))} min={1} /></div>
           </div>
         </CardContent>
       </Card>

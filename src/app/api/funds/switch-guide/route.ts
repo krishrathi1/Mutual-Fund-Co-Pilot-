@@ -7,6 +7,7 @@ export async function GET(request: NextRequest) {
     const fundId = searchParams.get('fundId')
     const investmentAmount = parseFloat(searchParams.get('amount') || '500000')
     const holdingYears = parseFloat(searchParams.get('holdingYears') || '3')
+    const slabRate = parseFloat(searchParams.get('slabRate') || '30') / 100
 
     if (!fundId) return NextResponse.json({ error: 'fundId required' }, { status: 400 })
 
@@ -21,15 +22,39 @@ export async function GET(request: NextRequest) {
     const savingYears = 10
     const cumulativeSaving10y = Math.round(annualSaving * (Math.pow(1 + savingRate, savingYears) - 1) / savingRate)
 
-    // Tax impact of switching
-    const gain = investmentAmount * (fund.regularReturn1y || 10) / 100 * holdingYears
-    const isEquity = fund.category === 'Equity' || fund.category === 'ELSS'
-    const isLongTerm = holdingYears > 1 && isEquity
+    // Accurate Gain Calculation using Compounding
+    // CurrentValue = Initial * (1 + r)^n => Initial = CurrentValue / (1 + r)^n
+    // Gain = CurrentValue - Initial
+    const returnRate = (holdingYears >= 5 ? (fund.regularReturn5y || fund.regularReturn3y || fund.regularReturn1y || 12) : 
+                       (holdingYears >= 3 ? (fund.regularReturn3y || fund.regularReturn1y || 12) : 
+                       (fund.regularReturn1y || 10))) / 100
+    
+    const initialInvestment = investmentAmount / Math.pow(1 + returnRate, holdingYears)
+    const gain = Math.max(0, investmentAmount - initialInvestment)
+
+    const isEquity = fund.category.toLowerCase().includes('equity') || 
+                   fund.category.toLowerCase().includes('elss') ||
+                   fund.category.toLowerCase().includes('small cap') ||
+                   fund.category.toLowerCase().includes('mid cap') ||
+                   fund.category.toLowerCase().includes('large cap') ||
+                   fund.category.toLowerCase().includes('flexi cap')
+
+    const isLongTerm = isEquity ? holdingYears >= 1 : holdingYears >= 3
     const stcgRate = 0.20
     const ltcgRate = 0.125
     const ltcgExempt = 125000
-    const taxRate = isLongTerm ? ltcgRate : stcgRate
-    const taxOnSwitch = isLongTerm ? Math.max(0, gain - ltcgExempt) * ltcgRate : gain * stcgRate
+    
+    let taxOnSwitch = 0
+    if (isEquity) {
+      if (isLongTerm) {
+        taxOnSwitch = Math.max(0, gain - ltcgExempt) * ltcgRate
+      } else {
+        taxOnSwitch = gain * stcgRate
+      }
+    } else {
+      // Debt funds: always taxed at slab after April 2023
+      taxOnSwitch = gain * slabRate
+    }
 
     // Better exit load parsing
     const parseExitLoad = (exitLoadStr: string | null) => {
