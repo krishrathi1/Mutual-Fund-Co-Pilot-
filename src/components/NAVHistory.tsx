@@ -183,6 +183,8 @@ export default function NAVHistory() {
   const [error, setError] = useState<string | null>(null)
   const [dataSource, setDataSource] = useState<'amfi' | 'simulated'>('simulated')
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
+  const [investmentAmount, setInvestmentAmount] = useState<number>(100000)
+  const [viewMode, setViewMode] = useState<'nav' | 'value'>('nav')
   const fetchedRef = useRef(false)
 
   useEffect(() => {
@@ -281,11 +283,23 @@ export default function NAVHistory() {
   }, [selectedFundId, months, fetchFunds, fetchNavHistory])
 
   const chartData = useMemo(() => {
-    return navData.map(p => ({
-      ...p,
-      dateLabel: new Date(p.date).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
-    }))
-  }, [navData])
+    if (navData.length === 0) return []
+    
+    const startDirect = navData[0].directNav
+    const startRegular = navData[0].regularNav
+
+    return navData.map(p => {
+      const directValue = viewMode === 'value' ? (investmentAmount / startDirect) * p.directNav : p.directNav
+      const regularValue = viewMode === 'value' ? (investmentAmount / startRegular) * p.regularNav : p.regularNav
+      
+      return {
+        ...p,
+        displayDirect: Math.round(directValue * 100) / 100,
+        displayRegular: Math.round(regularValue * 100) / 100,
+        dateLabel: new Date(p.date).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
+      }
+    })
+  }, [navData, viewMode, investmentAmount])
 
   const metrics = useMemo(() => {
     if (navData.length === 0 || !selectedFund) return null
@@ -322,8 +336,11 @@ export default function NAVHistory() {
       periodLow,
       week52High,
       week52Low,
+      investmentGrowth: (investmentAmount / startDirect) * endDirect,
+      regularGrowth: (investmentAmount / startRegular) * endRegular,
+      savingsAmount: ((investmentAmount / startDirect) * endDirect) - ((investmentAmount / startRegular) * endRegular)
     }
-  }, [navData, selectedFund, months])
+  }, [navData, selectedFund, months, investmentAmount])
 
   return (
     <div className="space-y-6">
@@ -359,9 +376,10 @@ export default function NAVHistory() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             {/* Fund selector */}
-            <div className="flex-1">
+            <div className="flex-1 w-full">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">Selected Fund</label>
               <Select value={selectedFundId} onValueChange={setSelectedFundId}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a fund..." />
@@ -376,23 +394,58 @@ export default function NAVHistory() {
               </Select>
             </div>
 
-            {/* Time range selector */}
-            <div className="flex gap-1">
-              {(['1Y', '3Y', '5Y', 'Max'] as TimeRange[]).map(range => (
-                <Button
-                  key={range}
-                  size="sm"
-                  variant={timeRange === range ? 'default' : 'outline'}
-                  onClick={() => setTimeRange(range)}
-                  className={`text-xs px-3 ${timeRange === range ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
+            {/* Custom Amount */}
+            <div className="w-full sm:w-40">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">Investment (₹)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-xs font-bold">₹</span>
+                <input
+                  type="number"
+                  value={investmentAmount}
+                  onChange={(e) => setInvestmentAmount(Number(e.target.value))}
+                  className="w-full h-10 pl-7 pr-3 rounded-md border border-input bg-background text-sm focus:ring-1 focus:ring-emerald-500 outline-none"
+                  step="10000"
+                />
+              </div>
+            </div>
+
+            {/* View Mode */}
+            <div className="w-full sm:w-auto">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">View Mode</label>
+              <div className="flex p-1 bg-muted rounded-md h-10">
+                <button
+                  onClick={() => setViewMode('nav')}
+                  className={`flex-1 px-3 text-xs rounded transition-all ${viewMode === 'nav' ? 'bg-background shadow-sm font-bold text-emerald-600' : 'text-muted-foreground'}`}
                 >
-                  {range}
-                </Button>
-              ))}
+                  NAV
+                </button>
+                <button
+                  onClick={() => setViewMode('value')}
+                  className={`flex-1 px-3 text-xs rounded transition-all ${viewMode === 'value' ? 'bg-background shadow-sm font-bold text-emerald-600' : 'text-muted-foreground'}`}
+                >
+                  Value
+                </button>
+              </div>
+            </div>
+
+            {/* Time range selector */}
+            <div className="w-full sm:w-auto">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">Period</label>
+              <div className="flex gap-1 h-10">
+                {(['1Y', '3Y', '5Y', 'Max'] as TimeRange[]).map(range => (
+                  <button
+                    key={range}
+                    onClick={() => setTimeRange(range)}
+                    className={`px-3 text-xs rounded-md border transition-all ${timeRange === range ? 'bg-emerald-600 border-emerald-600 text-white font-bold' : 'bg-background border-input text-muted-foreground hover:bg-muted'}`}
+                  >
+                    {range}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between pt-2">
             {fundsLoading && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -459,19 +512,19 @@ export default function NAVHistory() {
                           <Tooltip content={<CustomTooltip dataSource={dataSource} />} />
                           <Area
                             type="monotone"
-                            dataKey="regularNav"
+                            dataKey="displayRegular"
                             stroke="#f97316"
                             strokeWidth={2}
                             fill="url(#regularGradient)"
-                            name="Regular NAV"
+                            name={viewMode === 'value' ? 'Regular Value' : 'Regular NAV'}
                           />
                           <Area
                             type="monotone"
-                            dataKey="directNav"
+                            dataKey="displayDirect"
                             stroke="#10b981"
                             strokeWidth={2}
                             fill="url(#directGradient)"
-                            name="Direct NAV"
+                            name={viewMode === 'value' ? 'Direct Value' : 'Direct NAV'}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -481,11 +534,11 @@ export default function NAVHistory() {
                     <div className="flex items-center justify-center gap-6 text-xs">
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                        <span className="text-muted-foreground">Direct NAV</span>
+                        <span className="text-muted-foreground">{viewMode === 'value' ? 'Direct Value' : 'Direct NAV'}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                        <span className="text-muted-foreground">Regular NAV</span>
+                        <span className="text-muted-foreground">{viewMode === 'value' ? 'Regular Value' : 'Regular NAV'}</span>
                       </div>
                       {dataSource === 'amfi' && (
                         <div className="flex items-center gap-1.5">
@@ -674,15 +727,13 @@ export default function NAVHistory() {
                     Direct Plan Advantage
                   </p>
                   <p className="text-sm text-emerald-700 dark:text-emerald-400 mt-1">
-                    Over {metrics.years.toFixed(0)} year{metrics.years !== 1 ? 's' : ''}, the Direct plan has generated{' '}
-                    <span className="font-bold">₹{Math.abs(metrics.totalGap).toFixed(2)}</span> more per unit than the Regular plan.
+                    Over {metrics.years.toFixed(0)} year{metrics.years !== 1 ? 's' : ''}, a <span className="font-bold">{formatCurrency(investmentAmount)}</span> investment would have grown to{' '}
+                    <span className="font-bold">{formatCurrency(metrics.investmentGrowth)}</span> in the Direct plan vs{' '}
+                    <span className="font-bold">{formatCurrency(metrics.regularGrowth)}</span> in the Regular plan.
                   </p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    On a ₹10 lakh investment ({(1000000 / metrics.endDirect).toFixed(0)} units), this translates to approximately{' '}
-                    <span className="font-semibold text-emerald-700 dark:text-emerald-400">
-                      {formatCurrency(Math.abs(metrics.totalGap) * (1000000 / metrics.endDirect))}
-                    </span>{' '}
-                    in additional value.
+                    That&apos;s an extra <span className="font-semibold text-emerald-700 dark:text-emerald-400">{formatCurrency(metrics.savingsAmount)}</span> in your pocket, 
+                    simply by choosing the Direct plan.
                   </p>
                 </div>
               </div>
