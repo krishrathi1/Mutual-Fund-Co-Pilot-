@@ -1,0 +1,481 @@
+ticket_id,user_id,created_ts,channel,language,priority,category,free_text,resolved
+TKT7773526,USR000362,2025-10-29 06:23:39,Email,en,P4,TDS,"Hello, mera naam Aarav Iyer hai. CANB ke account 1790015107 se Rs 10000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 9335661812.",True
+TKT9091878,USR000278,2025-11-10 06:01:41,Email,ta,P3,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 3197. PAN = TAXPR8813Z. Stuck at address verification. I live in Moradabad. Pincode 116988.,True
+TKT4104251,USR000351,2025-09-09 09:27:35,Web form,en,P4,VKYC,"Hello, mera naam Gaurav Iyengar hai. INDB ke account 5007224802 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 9198171412.",True
+TKT4343821,USR000916,2026-03-23 21:12:18,WhatsApp,mr,P3,Login,Refund request: Razorpay payment of Rs 10000 on order ORD1248848721. Status shows FAILED but money debited from RBL a/c 301051113695. UPI used.,True
+TKT2954976,USR000164,2025-10-01 01:49:28,In-app chat,gu,P4,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 1807. PAN = NKTPK2025O. Stuck at address verification. I live in Mysuru. Pincode 654973.,True
+TKT2766797,USR000243,2025-07-13 21:52:14,Call transcript,hi,P3,Login,I want to break my FD prematurely. FD ID is FD38802228. Bank: YESB. My nominee is my wife. Account: 828634581119 IFSC YESB0000650. Penalty kitni lagegi?,True
+TKT9283062,USR000139,2025-12-15 09:35:21,In-app chat,hi,P3,UPI,"Hi team, my name is Priya Das. I tried booking an FD of Rs 10000 with YESB (a/c 7544659338, IFSC YESB0000968) but got error PENNY_DROP_FAIL. PAN TPDPD6646W. Please help.",True
+TKT2380421,USR000623,2026-03-15 05:13:26,Call transcript,te,P4,UPI,"Mam, mera PAN FTKPO9441M hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT7273605,USR000002,2025-09-08 09:54:14,In-app chat,ta,P4,Booking,"Hello, mera naam Rohan Balasubramanian hai. INDB ke account 06524296237088 se Rs 25000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 6313556182.",True
+TKT8119900,USR000010,2025-09-13 20:14:49,Web form,gu,P2,VKYC,I want to break my FD prematurely. FD ID is FD55318094. Bank: BARB. My nominee is my wife. Account: 47365352709577 IFSC BARB0000322. Penalty kitni lagegi?,False
+TKT4525771,USR000211,2025-10-24 22:51:15,WhatsApp,en,P4,UPI,"Subject: VKYC failed 3 times.
+Name: Vidya Tiwari
+PAN: CPVPG3871Q
+DOB: 2008-04-08
+Reg phone: 6227409946
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT3564865,USR000226,2025-12-11 01:44:51,Email,en,P3,Booking,"Mam, mera PAN YDMPV8722W hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT4765383,USR000949,2025-07-04 08:22:59,Email,en,P3,Booking,"Hello, mera naam Asma Mehta hai. YESB ke account 31955209998432 se Rs 50000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 7480549825.",True
+TKT4457983,USR000493,2025-06-04 14:03:03,WhatsApp,hi,P2,Login,"Hi team, my name is Gaurav Murthy. I tried booking an FD of Rs 10000 with SBIN (a/c 72846853977484, IFSC SBIN0000155) but got error PENNY_DROP_FAIL. PAN ENEPH9974E. Please help.",False
+TKT2515745,USR000478,2025-10-15 09:59:49,Call transcript,en,P3,Booking,I want to break my FD prematurely. FD ID is FD74285490. Bank: RBL. My nominee is my wife. Account: 65533944232997 IFSC RATN0000503. Penalty kitni lagegi?,True
+TKT7444036,USR000209,2025-12-29 10:16:24,Web form,hi,P3,VKYC,"Hello, mera naam Swati Banerjee hai. IDFC ke account 5966963683 se Rs 10000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8949523652.",True
+TKT3828197,USR000286,2025-07-21 05:25:54,WhatsApp,en,P3,VKYC,"Subject: VKYC failed 3 times.
+Name: Sanjana Mukherjee
+PAN: QPBPU9161H
+DOB: 2007-12-04
+Reg phone: 9512712374
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT1105175,USR000773,2026-03-15 04:06:13,WhatsApp,ta,P3,Account closure,"Mam, mera PAN LACPV5214Q hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT1757842,USR000750,2025-12-03 16:36:14,WhatsApp,hi,P3,VKYC,"Hi team, my name is Dhruv Mehta. I tried booking an FD of Rs 100000 with KOTK (a/c 69914442492486, IFSC KKBK0000446) but got error PENNY_DROP_FAIL. PAN MAOPW0318U. Please help.",False
+TKT5382633,USR000018,2025-08-27 19:07:07,Call transcript,ml,P3,Refund,Refund request: Razorpay payment of Rs 50000 on order ORD4772547515. Status shows FAILED but money debited from RBL a/c 104561890254. UPI used.,True
+TKT4107984,USR000685,2025-10-19 12:23:14,Web form,ta,P3,Booking,I want to break my FD prematurely. FD ID is FD16117049. Bank: INDB. My nominee is my wife. Account: 433843366763 IFSC INDB0000707. Penalty kitni lagegi?,True
+TKT2953823,USR000431,2025-08-06 08:28:20,WhatsApp,te,P3,Refund,Refund request: Razorpay payment of Rs 100000 on order ORD7703175746. Status shows FAILED but money debited from CANB a/c 681152476954. UPI used.,True
+TKT4965637,USR000335,2026-03-04 15:43:45,Web form,hi,P4,Login,Refund request: Razorpay payment of Rs 500000 on order ORD8552082245. Status shows FAILED but money debited from KOTK a/c 844943615275. UPI used.,True
+TKT5443442,USR000943,2025-09-15 22:31:52,Email,hi,P4,PG-failure,Couldn't complete onboarding. Aadhaar last 4 = 0058. PAN = IXXPH1401I. Stuck at address verification. I live in Chennai. Pincode 163651.,True
+TKT1981626,USR000880,2026-03-18 08:21:53,Email,en,P1,UPI,"Hello, mera naam Priya Pillai hai. PUNB ke account 7879297423 se Rs 25000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 7646246137.",True
+TKT4240379,USR000029,2025-06-16 00:21:59,In-app chat,hi,P4,TDS,"Subject: VKYC failed 3 times.
+Name: Isha Gill
+PAN: YBUPV8543J
+DOB: 2003-09-12
+Reg phone: 6767624084
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT7869041,USR000107,2025-06-15 18:07:24,WhatsApp,en,P3,Account closure,"Hello, mera naam Ananth Mehta hai. INDB ke account 85410460751416 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8297198706.",True
+TKT5485184,USR000077,2026-01-13 11:08:48,Web form,hi,P3,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 0699. PAN = LDXPZ5432D. Stuck at address verification. I live in Meerut. Pincode 593388.,True
+TKT5560090,USR000955,2025-06-07 10:17:50,In-app chat,en,P4,Account closure,"Hi team, my name is Chetan Kamat. I tried booking an FD of Rs 100000 with BARB (a/c 650985187685, IFSC BARB0000269) but got error PENNY_DROP_FAIL. PAN GWLPR6874O. Please help.",True
+TKT7094149,USR000691,2025-12-11 15:41:52,WhatsApp,bn,P4,VKYC,"Hi team, my name is Aisha Yadav. I tried booking an FD of Rs 500000 with SBIN (a/c 7126313957, IFSC SBIN0000895) but got error PENNY_DROP_FAIL. PAN WNLPS1698C. Please help.",True
+TKT8925632,USR000869,2025-12-23 02:01:55,Call transcript,ml,P4,TDS,Couldn't complete onboarding. Aadhaar last 4 = 9511. PAN = SQBPD4418T. Stuck at address verification. I live in Kolkata. Pincode 798818.,False
+TKT1522831,USR000311,2025-11-11 18:00:22,WhatsApp,bn,P3,PG-failure,Refund request: Razorpay payment of Rs 10000 on order ORD4826609475. Status shows FAILED but money debited from YESB a/c 998352300051. UPI used.,True
+TKT6020238,USR000567,2025-06-17 05:54:51,WhatsApp,hi,P3,PG-failure,"Hi, naa peru Riya. Naa investment ki related ga ee message. AXIS bank lo Rs 25000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT1448447,USR000814,2025-08-04 22:55:51,Web form,en,P3,Login,I want to break my FD prematurely. FD ID is FD42785468. Bank: YESB. My nominee is my wife. Account: 43568640956495 IFSC YESB0000784. Penalty kitni lagegi?,True
+TKT8380041,USR000565,2026-02-10 20:27:30,WhatsApp,en,P3,Login,"Subject: VKYC failed 3 times.
+Name: Yash Reddy
+PAN: OZZPH9899Z
+DOB: 2004-12-18
+Reg phone: 8541843482
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT2194004,USR000788,2025-09-07 06:17:29,Web form,en,P4,Account closure,"Hi, naa peru Farhan. Naa investment ki related ga ee message. CANB bank lo Rs 500000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT2139212,USR000168,2025-11-18 03:27:05,Email,hi,P4,Login,"Hi team, my name is Pooja Pillai. I tried booking an FD of Rs 50000 with INDB (a/c 9335816357, IFSC INDB0000556) but got error PENNY_DROP_FAIL. PAN ARKPQ6900I. Please help.",True
+TKT3522199,USR000127,2025-10-17 15:10:12,In-app chat,en,P2,Account closure,"Hello, mera naam Jaya Pai hai. BARB ke account 31283957945019 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8393486229.",True
+TKT7286834,USR000650,2026-03-12 19:33:52,WhatsApp,hi,P4,Booking,Couldn't complete onboarding. Aadhaar last 4 = 7195. PAN = VPLPP1282H. Stuck at address verification. I live in Chennai. Pincode 577819.,True
+TKT7086819,USR000597,2026-01-07 18:27:19,WhatsApp,hi,P3,TDS,"Hello, mera naam Deepika Pandey hai. INDB ke account 09170010943699 se Rs 10000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 7560953842.",True
+TKT3306955,USR000595,2025-10-22 01:43:12,WhatsApp,en,P2,TDS,"Hi team, my name is Karthik Kamat. I tried booking an FD of Rs 10000 with ICIC (a/c 31555379092763, IFSC ICIC0000790) but got error PENNY_DROP_FAIL. PAN UISPG4441Y. Please help.",True
+TKT4767032,USR000616,2025-11-27 05:31:40,Call transcript,en,P4,TDS,Refund request: Razorpay payment of Rs 10000 on order ORD8387349599. Status shows FAILED but money debited from HDFC a/c 6153018372. UPI used.,True
+TKT7556235,USR000970,2025-06-08 22:38:25,Email,bn,P3,VKYC,I want to break my FD prematurely. FD ID is FD98144598. Bank: BARB. My nominee is my wife. Account: 45376477761991 IFSC BARB0000531. Penalty kitni lagegi?,True
+TKT1819687,USR000781,2026-03-18 19:07:06,Web form,mr,P3,Login,I want to break my FD prematurely. FD ID is FD57016284. Bank: IDFC. My nominee is my wife. Account: 1409236998 IFSC IDFB0000395. Penalty kitni lagegi?,False
+TKT8075156,USR000157,2025-07-19 02:26:59,Email,hi,P2,Account closure,"Hi, naa peru Aaradhya. Naa investment ki related ga ee message. KOTK bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT9534379,USR000966,2026-03-18 18:10:53,Call transcript,mr,P3,TDS,"Subject: VKYC failed 3 times.
+Name: Suresh Dubey
+PAN: IBEPA9481E
+DOB: 1959-03-04
+Reg phone: 8992642756
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT4915483,USR000546,2025-08-18 12:36:00,WhatsApp,en,P1,PG-failure,Couldn't complete onboarding. Aadhaar last 4 = 6848. PAN = LRIPI6557D. Stuck at address verification. I live in Hubli. Pincode 167559.,True
+TKT8006184,USR000507,2025-10-21 13:30:04,Call transcript,en,P4,VKYC,"Hi team, my name is Niketan Ali. I tried booking an FD of Rs 50000 with YESB (a/c 975271423742, IFSC YESB0000578) but got error PENNY_DROP_FAIL. PAN SBIPE4904G. Please help.",True
+TKT3914267,USR000138,2025-09-20 08:00:58,Email,hi,P3,VKYC,I want to break my FD prematurely. FD ID is FD98444515. Bank: PUNB. My nominee is my wife. Account: 7659741894 IFSC PUNB0000746. Penalty kitni lagegi?,True
+TKT7857168,USR000652,2025-07-29 12:49:27,In-app chat,hi,P3,UPI,I want to break my FD prematurely. FD ID is FD85078334. Bank: CANB. My nominee is my wife. Account: 692760397199 IFSC CNRB0000973. Penalty kitni lagegi?,True
+TKT6374414,USR000039,2025-12-30 23:19:21,Web form,en,P3,PG-failure,Refund request: Razorpay payment of Rs 500000 on order ORD6912124438. Status shows FAILED but money debited from ICIC a/c 59534692073767. UPI used.,False
+TKT1688058,USR000257,2025-09-10 14:16:58,Web form,kn,P3,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 3335. PAN = FVRPP3370F. Stuck at address verification. I live in Coimbatore. Pincode 474519.,True
+TKT2615528,USR000472,2025-10-07 03:07:15,Call transcript,en,P2,Account closure,"Mam, mera PAN NGKPG5313O hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT6553569,USR000834,2025-08-19 16:01:07,Call transcript,en,P4,Booking,"Hi team, my name is Chandran Chatterjee. I tried booking an FD of Rs 50000 with YESB (a/c 1457712049, IFSC YESB0000828) but got error PENNY_DROP_FAIL. PAN QZXPF9218Q. Please help.",True
+TKT6154835,USR000215,2026-03-10 00:56:28,WhatsApp,en,P3,Account closure,"Subject: VKYC failed 3 times.
+Name: Gauri Lakshman
+PAN: TAGPA9542Z
+DOB: 2002-11-01
+Reg phone: 7765121683
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT6454973,USR000098,2025-11-17 06:02:16,In-app chat,en,P2,PG-failure,"Subject: VKYC failed 3 times.
+Name: Bhavna Joshi
+PAN: VCWPX9205H
+DOB: 1965-01-14
+Reg phone: 7804336089
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT3421724,USR000295,2025-11-14 19:14:19,WhatsApp,ta,P3,PG-failure,Couldn't complete onboarding. Aadhaar last 4 = 4668. PAN = HCJPF6974E. Stuck at address verification. I live in Mumbai. Pincode 436203.,True
+TKT3743042,USR000133,2025-06-28 01:09:14,In-app chat,hi,P3,Booking,"Hi team, my name is Pooja Murthy. I tried booking an FD of Rs 10000 with HDFC (a/c 57145902330452, IFSC HDFC0000220) but got error PENNY_DROP_FAIL. PAN ICCPF2643V. Please help.",True
+TKT3861299,USR000137,2025-10-16 18:27:38,Call transcript,te,P4,Login,Couldn't complete onboarding. Aadhaar last 4 = 5114. PAN = CTTPA9462Y. Stuck at address verification. I live in Pune. Pincode 779883.,True
+TKT7662587,USR000831,2025-10-02 03:39:07,WhatsApp,en,P2,VKYC,Refund request: Razorpay payment of Rs 100000 on order ORD1711574331. Status shows FAILED but money debited from IDFC a/c 29675055375368. UPI used.,True
+TKT8455544,USR000022,2026-02-25 08:44:29,Email,en,P4,UPI,"Subject: VKYC failed 3 times.
+Name: Rahul Mukherjee
+PAN: IUGPA4634X
+DOB: 1978-08-10
+Reg phone: 7137077298
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",False
+TKT6558398,USR000978,2025-07-18 17:33:47,WhatsApp,en,P4,TDS,"Mam, mera PAN LMTPZ0908J hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT4275226,USR000140,2025-07-25 06:21:04,In-app chat,hi,P3,Account closure,"Hi team, my name is Lakshmi Bhat. I tried booking an FD of Rs 100000 with ICIC (a/c 8960115351, IFSC ICIC0000518) but got error PENNY_DROP_FAIL. PAN PRPPM5364P. Please help.",True
+TKT8472608,USR000885,2025-08-26 11:08:48,Call transcript,en,P3,PG-failure,"Hello, mera naam Asma Ghosh hai. CANB ke account 55559422146564 se Rs 50000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8278667093.",True
+TKT1343857,USR000238,2026-03-26 18:06:49,Email,en,P4,Refund,"Hi, naa peru Diya. Naa investment ki related ga ee message. HDFC bank lo Rs 25000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT2362560,USR000220,2025-07-05 14:21:21,In-app chat,hi,P3,TDS,"Hi, naa peru Arjun. Naa investment ki related ga ee message. CANB bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT3353947,USR000704,2025-10-01 23:03:50,Call transcript,bn,P4,TDS,"Hi team, my name is Aditya Banerjee. I tried booking an FD of Rs 25000 with SBIN (a/c 3566608414, IFSC SBIN0000029) but got error PENNY_DROP_FAIL. PAN SRAPX8013L. Please help.",False
+TKT6670659,USR000158,2025-11-12 04:55:10,Web form,en,P4,Account closure,"Mam, mera PAN ICMPB2284V hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT5900495,USR000155,2025-08-20 16:52:42,Call transcript,en,P2,TDS,I want to break my FD prematurely. FD ID is FD76178158. Bank: ICIC. My nominee is my wife. Account: 87773854034584 IFSC ICIC0000871. Penalty kitni lagegi?,True
+TKT4394638,USR000119,2025-07-12 12:30:52,Web form,ml,P1,TDS,Couldn't complete onboarding. Aadhaar last 4 = 0691. PAN = ZMRPJ5293F. Stuck at address verification. I live in Kannur. Pincode 686276.,True
+TKT2568012,USR000057,2026-03-26 12:05:12,In-app chat,mr,P3,Refund,"Hi team, my name is Pranav Sandhu. I tried booking an FD of Rs 100000 with RBL (a/c 4827053666, IFSC RATN0000791) but got error PENNY_DROP_FAIL. PAN XOQPB8584B. Please help.",True
+TKT8488269,USR000363,2025-08-19 05:17:44,WhatsApp,te,P4,VKYC,I want to break my FD prematurely. FD ID is FD77592177. Bank: INDB. My nominee is my wife. Account: 69812426892064 IFSC INDB0000982. Penalty kitni lagegi?,False
+TKT8515594,USR000420,2025-08-07 08:11:37,Email,mr,P4,PG-failure,"Hi team, my name is Aisha Subramanian. I tried booking an FD of Rs 10000 with SBIN (a/c 327735163087, IFSC SBIN0000066) but got error PENNY_DROP_FAIL. PAN GOPPV7628Q. Please help.",False
+TKT3422646,USR000792,2025-09-04 11:58:39,In-app chat,te,P3,Booking,"Hi, naa peru Bhavna. Naa investment ki related ga ee message. HDFC bank lo Rs 25000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT9371907,USR000535,2026-01-29 16:29:28,In-app chat,hi,P2,Account closure,I want to break my FD prematurely. FD ID is FD83530460. Bank: KOTK. My nominee is my wife. Account: 1641043841 IFSC KKBK0000805. Penalty kitni lagegi?,False
+TKT8118182,USR000884,2025-08-26 01:01:10,Email,en,P3,VKYC,I want to break my FD prematurely. FD ID is FD48438781. Bank: HDFC. My nominee is my wife. Account: 27463245200673 IFSC HDFC0000656. Penalty kitni lagegi?,True
+TKT1426716,USR000578,2025-07-21 06:16:47,Call transcript,bn,P3,Booking,Refund request: Razorpay payment of Rs 50000 on order ORD6988700595. Status shows FAILED but money debited from BARB a/c 798115599389. UPI used.,False
+TKT3481112,USR000328,2025-07-15 09:45:41,In-app chat,hi,P3,Booking,"Hi team, my name is Bhavna Kamat. I tried booking an FD of Rs 50000 with HDFC (a/c 8781180059, IFSC HDFC0000197) but got error PENNY_DROP_FAIL. PAN QMNPL1588V. Please help.",True
+TKT7557346,USR000031,2026-01-09 21:16:07,Email,en,P2,Login,Refund request: Razorpay payment of Rs 500000 on order ORD4181175441. Status shows FAILED but money debited from SBIN a/c 027931160790. UPI used.,True
+TKT8805602,USR000419,2025-12-08 03:47:45,WhatsApp,kn,P3,PG-failure,Couldn't complete onboarding. Aadhaar last 4 = 3060. PAN = DXPPS7189A. Stuck at address verification. I live in Gorakhpur. Pincode 708782.,True
+TKT6223794,USR000491,2025-09-15 07:23:51,Web form,ta,P2,Account closure,"Mam, mera PAN MNWPY1833C hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT6463345,USR000657,2025-09-19 21:05:00,Call transcript,hi,P4,Login,Couldn't complete onboarding. Aadhaar last 4 = 6552. PAN = FBGPY7705T. Stuck at address verification. I live in Mysuru. Pincode 656639.,True
+TKT9993540,USR000577,2025-07-04 03:39:43,Web form,bn,P4,Refund,"Hi team, my name is Murugan Bhat. I tried booking an FD of Rs 10000 with BARB (a/c 87850574563385, IFSC BARB0000340) but got error PENNY_DROP_FAIL. PAN MPCPG9618W. Please help.",True
+TKT3098505,USR000932,2025-11-05 07:34:34,Email,en,P2,Refund,Refund request: Razorpay payment of Rs 500000 on order ORD5595771455. Status shows FAILED but money debited from ICIC a/c 808954607808. UPI used.,False
+TKT8844692,USR000632,2025-11-19 05:46:34,Email,mr,P4,Account closure,Couldn't complete onboarding. Aadhaar last 4 = 6894. PAN = SWSPG3841K. Stuck at address verification. I live in Mumbai. Pincode 797294.,True
+TKT6343279,USR000550,2025-10-12 04:46:55,WhatsApp,en,P3,UPI,"Hi team, my name is Selvi Sandhu. I tried booking an FD of Rs 50000 with BARB (a/c 1465173048, IFSC BARB0000921) but got error PENNY_DROP_FAIL. PAN JHSPQ6107Q. Please help.",True
+TKT1118162,USR000665,2025-09-25 16:07:30,In-app chat,ta,P1,UPI,Refund request: Razorpay payment of Rs 50000 on order ORD1080488782. Status shows FAILED but money debited from RBL a/c 086029818745. UPI used.,True
+TKT5921226,USR000826,2025-10-03 05:27:10,Email,hi,P3,Refund,"Hi team, my name is Naina Yadav. I tried booking an FD of Rs 500000 with RBL (a/c 898141576413, IFSC RATN0000362) but got error PENNY_DROP_FAIL. PAN HIJPJ8968J. Please help.",False
+TKT9834690,USR000806,2026-02-14 16:43:26,Web form,hi,P1,Login,"Subject: VKYC failed 3 times.
+Name: Kavitha Rao
+PAN: IBVPG6390R
+DOB: 1987-05-21
+Reg phone: 7083989262
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT4751246,USR000304,2026-03-24 03:41:01,WhatsApp,bn,P4,Account closure,"Hi, naa peru Pooja. Naa investment ki related ga ee message. RBL bank lo Rs 50000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT5873827,USR000375,2025-07-28 11:31:08,In-app chat,hi,P4,VKYC,"Mam, mera PAN EWEPI6812C hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT1790891,USR000897,2025-09-19 04:55:59,WhatsApp,te,P3,PG-failure,"Hi team, my name is Krishna Jain. I tried booking an FD of Rs 50000 with ICIC (a/c 49667460941343, IFSC ICIC0000995) but got error PENNY_DROP_FAIL. PAN AURPV9693Z. Please help.",False
+TKT4821040,USR000733,2025-09-07 20:22:24,Email,hi,P3,Account closure,"Hi, naa peru Velan. Naa investment ki related ga ee message. CANB bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT7457517,USR000809,2025-06-12 23:09:39,Call transcript,ml,P3,Login,"Hi, naa peru Pranav. Naa investment ki related ga ee message. BARB bank lo Rs 50000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT6179524,USR000714,2025-10-26 00:55:13,In-app chat,hi,P4,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 6710. PAN = LFYPU2153I. Stuck at address verification. I live in Belgaum. Pincode 367982.,True
+TKT6867853,USR000732,2025-10-06 16:19:01,WhatsApp,te,P4,Refund,Couldn't complete onboarding. Aadhaar last 4 = 5128. PAN = PPQPK2710F. Stuck at address verification. I live in Anantapur. Pincode 303996.,False
+TKT7926208,USR000744,2025-06-07 14:34:48,WhatsApp,hi,P4,Login,Couldn't complete onboarding. Aadhaar last 4 = 3449. PAN = IVZPV0638P. Stuck at address verification. I live in Chandigarh. Pincode 169547.,False
+TKT7918116,USR000298,2025-06-02 01:06:30,In-app chat,en,P3,Account closure,"Subject: VKYC failed 3 times.
+Name: Farhan Ghosh
+PAN: UOZPT8422R
+DOB: 1967-12-19
+Reg phone: 8158174698
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT9825562,USR000920,2026-01-24 17:49:45,Email,hi,P1,PG-failure,"Hi, naa peru Nisha. Naa investment ki related ga ee message. KOTK bank lo Rs 100000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT4861926,USR000534,2025-11-27 20:10:36,WhatsApp,hi,P2,Login,"Hello, mera naam Isha Kulkarni hai. RBL ke account 769612409549 se Rs 10000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 6469392239.",False
+TKT2082337,USR000234,2025-11-20 02:16:19,Web form,kn,P4,Booking,I want to break my FD prematurely. FD ID is FD18020109. Bank: KOTK. My nominee is my wife. Account: 1476011360 IFSC KKBK0000118. Penalty kitni lagegi?,True
+TKT9214348,USR000522,2025-08-08 18:42:58,Email,en,P4,Login,Couldn't complete onboarding. Aadhaar last 4 = 2083. PAN = DCCPX2879G. Stuck at address verification. I live in Visakhapatnam. Pincode 705379.,False
+TKT1951967,USR000998,2025-10-10 09:35:35,Web form,hi,P3,UPI,Couldn't complete onboarding. Aadhaar last 4 = 4820. PAN = TNLPW7500Y. Stuck at address verification. I live in Ujjain. Pincode 721917.,True
+TKT1635691,USR000242,2025-06-02 07:33:53,In-app chat,en,P3,VKYC,Refund request: Razorpay payment of Rs 100000 on order ORD5919882591. Status shows FAILED but money debited from HDFC a/c 120530749974. UPI used.,True
+TKT4281422,USR000428,2025-06-13 02:47:34,Call transcript,te,P2,Refund,"Subject: VKYC failed 3 times.
+Name: Chetan Padmanabhan
+PAN: OYBPW9222Y
+DOB: 1976-06-12
+Reg phone: 6478593150
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",False
+TKT4022478,USR000385,2025-10-30 08:20:38,Call transcript,ml,P3,VKYC,Refund request: Razorpay payment of Rs 50000 on order ORD6418600430. Status shows FAILED but money debited from AXIS a/c 91822998599690. UPI used.,True
+TKT7075440,USR000715,2026-03-24 18:47:19,Web form,kn,P2,VKYC,I want to break my FD prematurely. FD ID is FD35814010. Bank: IDFC. My nominee is my wife. Account: 740021855522 IFSC IDFB0000640. Penalty kitni lagegi?,True
+TKT6753934,USR000104,2025-06-14 05:06:39,In-app chat,en,P3,Account closure,I want to break my FD prematurely. FD ID is FD24644616. Bank: KOTK. My nominee is my wife. Account: 47327724535688 IFSC KKBK0000271. Penalty kitni lagegi?,True
+TKT4577649,USR000296,2025-12-27 13:53:16,In-app chat,en,P3,Booking,"Hi team, my name is Karthik Shetty. I tried booking an FD of Rs 25000 with BARB (a/c 800972568440, IFSC BARB0000802) but got error PENNY_DROP_FAIL. PAN JMIPR5977D. Please help.",False
+TKT1693614,USR000870,2026-01-12 16:27:17,Email,kn,P3,Account closure,"Hello, mera naam Sanjana Patel hai. IDFC ke account 295250480058 se Rs 10000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 9348413972.",False
+TKT7524521,USR000645,2026-01-01 13:04:54,Web form,en,P2,Account closure,"Hello, mera naam Zara Ali hai. PUNB ke account 28576283900619 se Rs 50000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8559265638.",True
+TKT2710037,USR000900,2025-11-12 05:02:03,WhatsApp,en,P3,UPI,"Hi team, my name is Salma Subramanian. I tried booking an FD of Rs 25000 with KOTK (a/c 6729676680, IFSC KKBK0000258) but got error PENNY_DROP_FAIL. PAN ODPPG4388P. Please help.",True
+TKT4785185,USR000802,2025-09-04 05:17:49,Call transcript,hi,P3,Account closure,Refund request: Razorpay payment of Rs 25000 on order ORD2405341879. Status shows FAILED but money debited from BARB a/c 9337803883. UPI used.,True
+TKT5970306,USR000548,2025-08-08 03:06:13,In-app chat,en,P2,Refund,"Subject: VKYC failed 3 times.
+Name: Aaradhya Verma
+PAN: FHUPC8129F
+DOB: 1968-08-05
+Reg phone: 6238524666
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT9105350,USR000239,2025-12-14 04:02:55,In-app chat,en,P2,TDS,"Hello, mera naam Salma Gupta hai. RBL ke account 868589574195 se Rs 50000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8786549919.",True
+TKT8824206,USR000843,2026-03-04 21:21:51,Web form,hi,P1,Refund,"Hi, naa peru Siddharth. Naa investment ki related ga ee message. KOTK bank lo Rs 500000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT5152159,USR000496,2025-12-08 04:53:05,In-app chat,hi,P4,Booking,"Hello, mera naam Shanthi Venkatesh hai. CANB ke account 371688318911 se Rs 25000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8353508312.",True
+TKT7561430,USR000343,2025-10-19 23:51:54,In-app chat,ta,P3,Login,I want to break my FD prematurely. FD ID is FD74234203. Bank: YESB. My nominee is my wife. Account: 21644846319761 IFSC YESB0000850. Penalty kitni lagegi?,True
+TKT1622332,USR000162,2025-07-29 09:06:15,Call transcript,en,P3,Booking,Refund request: Razorpay payment of Rs 100000 on order ORD3340393495. Status shows FAILED but money debited from BARB a/c 7116632947. UPI used.,True
+TKT1271559,USR000583,2026-01-07 21:27:55,Web form,en,P4,UPI,"Subject: VKYC failed 3 times.
+Name: Ananya Rao
+PAN: PTIPI0287O
+DOB: 1997-07-03
+Reg phone: 7147482773
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT7953432,USR000861,2025-08-25 04:16:49,Call transcript,en,P3,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 6002. PAN = BQCPD3840K. Stuck at address verification. I live in Chennai. Pincode 460180.,True
+TKT8584586,USR000902,2026-01-04 08:17:28,Web form,bn,P3,Booking,"Hi, naa peru Aanya. Naa investment ki related ga ee message. IDFC bank lo Rs 500000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT2398334,USR000924,2025-09-25 21:07:17,Call transcript,en,P3,Refund,"Subject: VKYC failed 3 times.
+Name: Chetan Yadav
+PAN: TQTPN8029E
+DOB: 1964-11-26
+Reg phone: 8660589493
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT3131205,USR000576,2026-01-30 10:54:00,Web form,en,P3,VKYC,"Subject: VKYC failed 3 times.
+Name: Saanvi Singh
+PAN: QUDPJ1389X
+DOB: 1994-08-03
+Reg phone: 8942035910
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT4793513,USR000666,2026-01-25 21:22:33,WhatsApp,hi,P2,TDS,"Mam, mera PAN NRDPH6074O hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT1624370,USR000110,2025-06-23 11:03:55,Web form,bn,P3,Account closure,"Hi team, my name is Aaradhya Sharma. I tried booking an FD of Rs 10000 with AXIS (a/c 07957553829440, IFSC UTIB0000286) but got error PENNY_DROP_FAIL. PAN RZCPI6544L. Please help.",True
+TKT9216427,USR000377,2025-07-07 22:49:05,WhatsApp,mr,P3,PG-failure,"Hi, naa peru Nikhil. Naa investment ki related ga ee message. HDFC bank lo Rs 100000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT6475976,USR000865,2025-06-14 09:28:00,In-app chat,mr,P4,VKYC,"Hi team, my name is Aditya Chauhan. I tried booking an FD of Rs 500000 with CANB (a/c 049147394654, IFSC CNRB0000134) but got error PENNY_DROP_FAIL. PAN JMSPI1552A. Please help.",True
+TKT8493062,USR000371,2025-09-23 01:00:16,Call transcript,en,P3,UPI,Couldn't complete onboarding. Aadhaar last 4 = 9694. PAN = MINPP6630B. Stuck at address verification. I live in Bhopal. Pincode 424931.,False
+TKT7161669,USR000777,2025-12-21 01:21:53,Call transcript,kn,P2,Account closure,Couldn't complete onboarding. Aadhaar last 4 = 4375. PAN = UYZPM9618P. Stuck at address verification. I live in Patna. Pincode 830360.,True
+TKT2308401,USR000818,2025-12-24 10:55:02,Web form,hi,P3,VKYC,"Subject: VKYC failed 3 times.
+Name: Riya Krishnan
+PAN: KZGPO7795S
+DOB: 2007-02-10
+Reg phone: 6944009714
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT6836600,USR000401,2025-07-17 23:36:51,Call transcript,en,P4,VKYC,"Mam, mera PAN YXCPY3654J hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT2670887,USR000186,2025-12-17 18:02:49,Email,hi,P4,TDS,"Mam, mera PAN ZUWPJ6869M hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT2032267,USR000648,2025-10-31 17:14:56,Web form,en,P3,Account closure,"Hello, mera naam Jaya Pillai hai. PUNB ke account 1055320517 se Rs 50000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 7723155666.",True
+TKT4773039,USR000307,2026-02-01 13:56:44,Email,hi,P2,Login,"Hello, mera naam Meera Nair hai. INDB ke account 559282253499 se Rs 10000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 9379045858.",True
+TKT8925554,USR000315,2025-11-27 19:05:15,In-app chat,gu,P3,Account closure,"Hello, mera naam Rohan Das hai. BARB ke account 047145771132 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 7514682288.",True
+TKT1653950,USR000669,2025-11-04 23:14:20,Web form,hi,P3,TDS,Refund request: Razorpay payment of Rs 50000 on order ORD7568409014. Status shows FAILED but money debited from INDB a/c 744066562453. UPI used.,True
+TKT5665566,USR000442,2025-12-15 03:04:07,WhatsApp,en,P4,UPI,I want to break my FD prematurely. FD ID is FD79615871. Bank: KOTK. My nominee is my wife. Account: 8312992482 IFSC KKBK0000876. Penalty kitni lagegi?,False
+TKT2415839,USR000452,2025-11-18 04:38:33,Email,hi,P3,PG-failure,"Hi, naa peru Kavitha. Naa investment ki related ga ee message. HDFC bank lo Rs 100000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT8715094,USR000612,2025-11-20 03:08:17,WhatsApp,en,P3,Login,I want to break my FD prematurely. FD ID is FD23966384. Bank: PUNB. My nominee is my wife. Account: 56071804950285 IFSC PUNB0000890. Penalty kitni lagegi?,False
+TKT8483628,USR000864,2026-03-01 07:42:15,Web form,hi,P3,Booking,I want to break my FD prematurely. FD ID is FD16337812. Bank: SBIN. My nominee is my wife. Account: 465595868191 IFSC SBIN0000051. Penalty kitni lagegi?,True
+TKT7003807,USR000374,2026-02-20 13:16:07,WhatsApp,hi,P1,Refund,"Hi team, my name is Zara Mukherjee. I tried booking an FD of Rs 100000 with KOTK (a/c 32449667378633, IFSC KKBK0000565) but got error PENNY_DROP_FAIL. PAN PDCPO2066E. Please help.",True
+TKT5850270,USR000931,2025-07-21 11:14:34,WhatsApp,hi,P3,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 1183. PAN = IHWPJ8877T. Stuck at address verification. I live in Bareilly. Pincode 634809.,True
+TKT3548347,USR000079,2025-08-11 06:09:36,WhatsApp,en,P4,PG-failure,"Mam, mera PAN FNAPT3300Z hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT4502778,USR000271,2025-07-21 09:58:12,In-app chat,hi,P2,Account closure,Couldn't complete onboarding. Aadhaar last 4 = 5508. PAN = HOJPA9973Y. Stuck at address verification. I live in Pune. Pincode 385285.,True
+TKT9204867,USR000923,2025-08-11 09:31:59,WhatsApp,en,P3,Login,"Mam, mera PAN JSQPC9567I hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT4910003,USR000965,2025-09-22 14:40:47,Web form,ml,P2,PG-failure,Refund request: Razorpay payment of Rs 50000 on order ORD2858085801. Status shows FAILED but money debited from RBL a/c 0754890989. UPI used.,True
+TKT9720565,USR000221,2026-01-25 20:08:43,Email,ta,P1,PG-failure,Refund request: Razorpay payment of Rs 500000 on order ORD2407988273. Status shows FAILED but money debited from CANB a/c 277146450097. UPI used.,True
+TKT7679439,USR000402,2025-06-28 05:26:21,Email,gu,P4,Booking,"Hello, mera naam Pooja Tiwari hai. KOTK ke account 4273340804 se Rs 10000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 6293300520.",False
+TKT5024809,USR000589,2025-10-30 13:14:14,Email,ta,P4,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 1714. PAN = VGIPQ8804G. Stuck at address verification. I live in Meerut. Pincode 190058.,True
+TKT9475554,USR000726,2025-09-30 05:13:23,Web form,gu,P3,UPI,"Hi, naa peru Aisha. Naa investment ki related ga ee message. CANB bank lo Rs 50000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT1069966,USR000912,2025-12-25 09:06:54,Email,en,P2,UPI,"Mam, mera PAN YVOPI5313X hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT5220467,USR000837,2025-12-05 10:01:41,In-app chat,kn,P4,Refund,I want to break my FD prematurely. FD ID is FD70683150. Bank: RBL. My nominee is my wife. Account: 462127187908 IFSC RATN0000446. Penalty kitni lagegi?,True
+TKT4374746,USR000729,2026-02-18 01:29:59,WhatsApp,ta,P4,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 8863. PAN = PGRPP1622X. Stuck at address verification. I live in Bhubaneswar. Pincode 524313.,True
+TKT5328573,USR000743,2025-12-26 13:01:59,Web form,mr,P4,TDS,Refund request: Razorpay payment of Rs 50000 on order ORD8878233064. Status shows FAILED but money debited from IDFC a/c 789139725926. UPI used.,True
+TKT1815644,USR000853,2025-10-01 16:15:45,In-app chat,kn,P3,VKYC,"Subject: VKYC failed 3 times.
+Name: Gaurav Pandey
+PAN: TXGPF8898I
+DOB: 1996-04-13
+Reg phone: 6554041715
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT7734360,USR000760,2026-01-16 19:34:10,Email,en,P3,VKYC,"Subject: VKYC failed 3 times.
+Name: Om Lakshman
+PAN: ASLPJ3953H
+DOB: 1965-10-20
+Reg phone: 8313708744
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",False
+TKT2085022,USR000738,2026-01-01 17:24:53,In-app chat,ta,P4,VKYC,"Hi, naa peru Selvi. Naa investment ki related ga ee message. PUNB bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT5449884,USR000060,2025-09-23 09:35:43,WhatsApp,hi,P3,TDS,"Hi, naa peru Pranesh. Naa investment ki related ga ee message. BARB bank lo Rs 100000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT7201125,USR000983,2026-02-14 18:55:04,Web form,te,P3,PG-failure,"Hi, naa peru Sanjana. Naa investment ki related ga ee message. ICIC bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT4252468,USR000330,2025-08-27 14:33:37,Web form,hi,P3,Account closure,"Subject: VKYC failed 3 times.
+Name: Reza Mitra
+PAN: USNPB3081C
+DOB: 2006-09-03
+Reg phone: 9466788701
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT7733565,USR000981,2026-01-01 15:08:06,Web form,hi,P4,Booking,"Hi team, my name is Saanvi Choudhary. I tried booking an FD of Rs 50000 with PUNB (a/c 5053789773, IFSC PUNB0000182) but got error PENNY_DROP_FAIL. PAN LDNPD0160D. Please help.",True
+TKT6355076,USR000572,2025-07-13 22:50:17,Web form,hi,P3,TDS,"Hi, naa peru Bhavna. Naa investment ki related ga ee message. KOTK bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT1734782,USR000085,2026-01-05 19:51:02,Call transcript,en,P2,Booking,"Subject: VKYC failed 3 times.
+Name: Zara Gupta
+PAN: VHHPP1609H
+DOB: 1982-11-30
+Reg phone: 8502715612
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",False
+TKT8309204,USR000601,2025-08-23 14:33:39,Call transcript,en,P2,VKYC,"Hi, naa peru Imran. Naa investment ki related ga ee message. PUNB bank lo Rs 25000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT4295098,USR000555,2026-03-12 15:52:42,Call transcript,ta,P2,UPI,"Mam, mera PAN AYUPD7798B hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT6710015,USR000574,2025-09-10 06:13:41,In-app chat,en,P2,PG-failure,I want to break my FD prematurely. FD ID is FD20426882. Bank: BARB. My nominee is my wife. Account: 5290627522 IFSC BARB0000486. Penalty kitni lagegi?,True
+TKT5257860,USR000598,2026-02-23 03:59:11,WhatsApp,hi,P3,Refund,"Hello, mera naam Kabir Verma hai. HDFC ke account 9291603606 se Rs 25000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 7012810877.",True
+TKT8920652,USR000770,2025-12-12 02:09:09,Call transcript,hi,P3,Login,Couldn't complete onboarding. Aadhaar last 4 = 3339. PAN = DDAPF1414W. Stuck at address verification. I live in Pune. Pincode 636910.,True
+TKT7052584,USR000096,2025-06-25 02:30:31,In-app chat,en,P4,Login,"Hi team, my name is Krishna Choudhary. I tried booking an FD of Rs 25000 with ICIC (a/c 14509845915713, IFSC ICIC0000984) but got error PENNY_DROP_FAIL. PAN ITBPU9647D. Please help.",True
+TKT4979009,USR000538,2025-06-03 09:28:03,WhatsApp,en,P2,UPI,"Hello, mera naam Kavya Sandhu hai. SBIN ke account 5395275075 se Rs 100000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 6475593067.",True
+TKT6441964,USR000062,2025-09-24 03:28:56,Web form,hi,P3,TDS,"Hi team, my name is Lakshmi Mitra. I tried booking an FD of Rs 100000 with RBL (a/c 927808761321, IFSC RATN0000693) but got error PENNY_DROP_FAIL. PAN JYFPR2947V. Please help.",True
+TKT7071547,USR000521,2026-01-05 18:55:56,Email,kn,P4,Refund,"Hello, mera naam Riya Sharma hai. SBIN ke account 021079535696 se Rs 50000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8518245984.",True
+TKT1015842,USR000111,2026-03-12 20:16:40,In-app chat,hi,P3,Login,"Hi, naa peru Murugan. Naa investment ki related ga ee message. KOTK bank lo Rs 50000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT4438567,USR000280,2025-12-30 04:13:20,Call transcript,hi,P4,Refund,"Subject: VKYC failed 3 times.
+Name: Mihir Kaur
+PAN: YWVPJ7947P
+DOB: 1991-07-06
+Reg phone: 8771197288
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",False
+TKT7291417,USR000165,2025-08-03 10:41:01,WhatsApp,ta,P3,Login,"Hi team, my name is Tushar Shah. I tried booking an FD of Rs 10000 with IDFC (a/c 187275276446, IFSC IDFB0000662) but got error PENNY_DROP_FAIL. PAN SZTPF1060L. Please help.",True
+TKT6832082,USR000397,2026-01-13 12:47:26,WhatsApp,bn,P3,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 1249. PAN = RKPPL2194B. Stuck at address verification. I live in Chandigarh. Pincode 436346.,True
+TKT4081957,USR000758,2025-11-29 19:39:54,WhatsApp,te,P4,Login,I want to break my FD prematurely. FD ID is FD11978619. Bank: CANB. My nominee is my wife. Account: 81494956554423 IFSC CNRB0000422. Penalty kitni lagegi?,True
+TKT3488553,USR000336,2025-11-21 09:18:28,Email,te,P3,Account closure,Couldn't complete onboarding. Aadhaar last 4 = 7257. PAN = IXRPQ7074F. Stuck at address verification. I live in Guwahati. Pincode 134993.,True
+TKT6387547,USR000053,2025-10-12 09:24:45,WhatsApp,en,P1,UPI,Couldn't complete onboarding. Aadhaar last 4 = 5697. PAN = WXJPV8835E. Stuck at address verification. I live in Mumbai. Pincode 234395.,True
+TKT3500702,USR000393,2025-09-26 07:18:53,Email,kn,P4,Login,Refund request: Razorpay payment of Rs 50000 on order ORD3308805412. Status shows FAILED but money debited from INDB a/c 06281949537502. UPI used.,True
+TKT8117909,USR000074,2026-01-19 21:14:15,WhatsApp,hi,P3,Account closure,Refund request: Razorpay payment of Rs 100000 on order ORD7942736184. Status shows FAILED but money debited from RBL a/c 025364547197. UPI used.,True
+TKT5377422,USR000438,2025-07-02 20:09:28,Call transcript,hi,P1,Account closure,Refund request: Razorpay payment of Rs 100000 on order ORD2529271092. Status shows FAILED but money debited from CANB a/c 14703362066111. UPI used.,True
+TKT5526436,USR000954,2025-11-26 16:59:40,Call transcript,te,P3,PG-failure,"Hi team, my name is Sneha Dubey. I tried booking an FD of Rs 100000 with AXIS (a/c 2169362247, IFSC UTIB0000264) but got error PENNY_DROP_FAIL. PAN MXKPX9511D. Please help.",False
+TKT4343522,USR000646,2025-12-05 09:25:47,Call transcript,te,P3,UPI,"Hi, naa peru Gaurav. Naa investment ki related ga ee message. SBIN bank lo Rs 500000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT2277120,USR000283,2025-10-30 04:34:53,WhatsApp,en,P3,Account closure,"Mam, mera PAN THLPD4329U hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT4139186,USR000883,2025-06-29 21:38:45,In-app chat,hi,P1,TDS,"Hello, mera naam Ananth Kaur hai. HDFC ke account 6276512250 se Rs 50000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 9616366388.",False
+TKT6165541,USR000141,2026-01-17 12:06:33,Web form,hi,P4,TDS,"Hello, mera naam Diya Agarwal hai. SBIN ke account 564139819610 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 6848216998.",True
+TKT2468155,USR000113,2025-09-24 12:57:37,Web form,en,P3,TDS,"Mam, mera PAN JWEPI3885I hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT2305588,USR000974,2025-11-07 12:26:11,Web form,hi,P2,UPI,I want to break my FD prematurely. FD ID is FD27444577. Bank: BARB. My nominee is my wife. Account: 79050295411188 IFSC BARB0000480. Penalty kitni lagegi?,True
+TKT4033945,USR000919,2026-02-18 07:34:05,WhatsApp,hi,P3,Login,"Hello, mera naam Ananth Ghosh hai. SBIN ke account 55111336866019 se Rs 100000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 9202921323.",True
+TKT8554064,USR000617,2025-06-25 02:12:39,Web form,en,P3,VKYC,"Hi team, my name is Jaya Desai. I tried booking an FD of Rs 25000 with RBL (a/c 169969444014, IFSC RATN0000685) but got error PENNY_DROP_FAIL. PAN HJLPJ4015O. Please help.",True
+TKT6008603,USR000832,2026-01-12 03:45:47,Call transcript,en,P4,PG-failure,"Hi, naa peru Jaya. Naa investment ki related ga ee message. KOTK bank lo Rs 50000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT3065428,USR000250,2025-08-15 10:20:01,In-app chat,hi,P4,Account closure,Couldn't complete onboarding. Aadhaar last 4 = 5681. PAN = XRQPB1920K. Stuck at address verification. I live in Hubli. Pincode 617417.,False
+TKT1570055,USR000469,2025-09-20 20:53:09,Call transcript,ta,P4,PG-failure,"Subject: VKYC failed 3 times.
+Name: Lavanya Reddy
+PAN: FLLPS7044M
+DOB: 1997-06-17
+Reg phone: 9599585778
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",False
+TKT9357538,USR000656,2025-10-21 03:34:13,In-app chat,mr,P4,PG-failure,Refund request: Razorpay payment of Rs 50000 on order ORD7454058429. Status shows FAILED but money debited from IDFC a/c 71586898888917. UPI used.,True
+TKT7022326,USR000823,2025-10-17 08:09:59,Call transcript,kn,P2,VKYC,Couldn't complete onboarding. Aadhaar last 4 = 8457. PAN = XJNPW7344G. Stuck at address verification. I live in Pune. Pincode 486350.,False
+TKT1166055,USR000072,2025-06-27 20:17:39,Web form,mr,P3,UPI,Couldn't complete onboarding. Aadhaar last 4 = 2545. PAN = NDCPC8377G. Stuck at address verification. I live in Jhansi. Pincode 672445.,True
+TKT1635555,USR000845,2025-12-22 22:27:36,Web form,hi,P4,TDS,"Subject: VKYC failed 3 times.
+Name: Kabir Ghosh
+PAN: AQGPR7837R
+DOB: 2002-07-26
+Reg phone: 7532074747
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",False
+TKT7194270,USR000663,2026-02-10 14:46:42,Call transcript,hi,P3,Account closure,I want to break my FD prematurely. FD ID is FD33853261. Bank: CANB. My nominee is my wife. Account: 94343436074004 IFSC CNRB0000479. Penalty kitni lagegi?,True
+TKT6964179,USR000887,2025-08-31 10:03:08,WhatsApp,hi,P3,PG-failure,"Hi team, my name is Ravi Joshi. I tried booking an FD of Rs 25000 with KOTK (a/c 48628757742451, IFSC KKBK0000634) but got error PENNY_DROP_FAIL. PAN FNSPC3957K. Please help.",True
+TKT7516098,USR000064,2026-01-09 00:17:44,Email,en,P3,PG-failure,Refund request: Razorpay payment of Rs 500000 on order ORD2561287978. Status shows FAILED but money debited from YESB a/c 9755344761. UPI used.,True
+TKT6299720,USR000176,2025-10-23 02:36:31,In-app chat,gu,P4,VKYC,"Hi, naa peru Ananya. Naa investment ki related ga ee message. KOTK bank lo Rs 25000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT5050341,USR000737,2025-12-31 21:45:22,In-app chat,mr,P4,UPI,"Subject: VKYC failed 3 times.
+Name: Nisha Sharma
+PAN: OZTPE9179A
+DOB: 1990-06-01
+Reg phone: 7744411844
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT3410730,USR000005,2025-06-01 20:13:57,Web form,en,P3,Login,"Mam, mera PAN BQFPB5413C hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT7529580,USR000848,2025-09-12 20:20:17,WhatsApp,kn,P3,VKYC,Refund request: Razorpay payment of Rs 25000 on order ORD3885107750. Status shows FAILED but money debited from KOTK a/c 53935780070143. UPI used.,True
+TKT4027950,USR000630,2025-06-10 13:48:20,Web form,mr,P3,TDS,"Hi, naa peru Tanvi. Naa investment ki related ga ee message. BARB bank lo Rs 50000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT5517049,USR000412,2025-11-02 03:26:29,Web form,mr,P3,Booking,"Mam, mera PAN OKJPU8022Q hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT4564007,USR000056,2026-01-06 02:22:55,Web form,hi,P4,TDS,"Hi team, my name is Harsh Gill. I tried booking an FD of Rs 100000 with AXIS (a/c 934521295413, IFSC UTIB0000622) but got error PENNY_DROP_FAIL. PAN NJGPQ8147O. Please help.",True
+TKT2031275,USR000264,2026-02-03 20:51:43,Web form,ta,P3,Login,"Mam, mera PAN MSHPF5861Q hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT3465110,USR000394,2025-06-10 10:33:01,Web form,kn,P3,Login,I want to break my FD prematurely. FD ID is FD87737312. Bank: BARB. My nominee is my wife. Account: 961932817735 IFSC BARB0000306. Penalty kitni lagegi?,True
+TKT8671772,USR000655,2025-08-31 11:12:31,Call transcript,en,P3,TDS,"Hi team, my name is Naina Tiwari. I tried booking an FD of Rs 25000 with INDB (a/c 19824835706826, IFSC INDB0000985) but got error PENNY_DROP_FAIL. PAN QABPP5702G. Please help.",True
+TKT3499525,USR000803,2026-01-29 03:25:43,In-app chat,en,P4,Login,"Mam, mera PAN XAPPT3767J hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT4521178,USR000859,2025-11-27 00:20:38,Web form,bn,P3,Booking,Couldn't complete onboarding. Aadhaar last 4 = 8159. PAN = XLIPS6932H. Stuck at address verification. I live in Coimbatore. Pincode 338020.,False
+TKT1415794,USR000667,2025-11-07 09:53:27,Call transcript,ta,P1,Refund,"Hello, mera naam Karthik Krishnan hai. YESB ke account 522194405320 se Rs 50000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8278843944.",False
+TKT4143410,USR000365,2025-06-19 19:06:29,Call transcript,en,P3,Account closure,"Hi team, my name is Karthik Sen. I tried booking an FD of Rs 10000 with ICIC (a/c 0906009428, IFSC ICIC0000456) but got error PENNY_DROP_FAIL. PAN WQPPZ3206B. Please help.",True
+TKT4742529,USR000651,2025-08-29 10:13:44,Web form,mr,P2,TDS,"Hi, naa peru Lavanya. Naa investment ki related ga ee message. PUNB bank lo Rs 100000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT6121841,USR000761,2025-08-07 09:23:54,WhatsApp,kn,P3,VKYC,I want to break my FD prematurely. FD ID is FD49703217. Bank: BARB. My nominee is my wife. Account: 61199554098639 IFSC BARB0000992. Penalty kitni lagegi?,False
+TKT9434976,USR000592,2026-01-13 11:53:32,Web form,en,P3,UPI,"Hi team, my name is Karthik Kumar. I tried booking an FD of Rs 500000 with BARB (a/c 605824409571, IFSC BARB0000663) but got error PENNY_DROP_FAIL. PAN COBPJ1620H. Please help.",True
+TKT9929763,USR000971,2025-10-13 08:46:14,WhatsApp,en,P2,Booking,"Mam, mera PAN RNWPF1527D hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT8432005,USR000388,2026-03-25 02:29:46,In-app chat,en,P1,Login,Couldn't complete onboarding. Aadhaar last 4 = 2203. PAN = FHBPO3696T. Stuck at address verification. I live in Jaipur. Pincode 143020.,True
+TKT1431393,USR000345,2025-08-12 08:47:44,Email,hi,P3,VKYC,"Hi team, my name is Murugan Murthy. I tried booking an FD of Rs 50000 with INDB (a/c 03657943828196, IFSC INDB0000484) but got error PENNY_DROP_FAIL. PAN UUHPE5960Y. Please help.",True
+TKT4798587,USR000266,2025-12-18 14:40:28,Call transcript,en,P2,TDS,Couldn't complete onboarding. Aadhaar last 4 = 5891. PAN = QRFPZ2302A. Stuck at address verification. I live in Ahmedabad. Pincode 537847.,True
+TKT6756550,USR000284,2025-07-03 03:21:34,Call transcript,en,P4,PG-failure,"Hi, naa peru Gauri. Naa investment ki related ga ee message. IDFC bank lo Rs 500000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT7633890,USR000080,2025-12-12 15:36:58,Email,hi,P1,TDS,I want to break my FD prematurely. FD ID is FD17000145. Bank: AXIS. My nominee is my wife. Account: 25917291807684 IFSC UTIB0000434. Penalty kitni lagegi?,True
+TKT3816314,USR000756,2025-08-07 21:34:17,Call transcript,hi,P2,Login,"Hello, mera naam Krishna Khan hai. CANB ke account 9588926866 se Rs 10000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 9324515854.",True
+TKT9803136,USR000506,2026-03-09 14:41:55,In-app chat,mr,P3,Login,Couldn't complete onboarding. Aadhaar last 4 = 3621. PAN = IOLPN9587G. Stuck at address verification. I live in Thrissur. Pincode 501820.,True
+TKT9291874,USR000281,2025-06-07 17:41:25,Web form,mr,P3,Booking,"Subject: VKYC failed 3 times.
+Name: Imran Kamat
+PAN: KVLPI0895I
+DOB: 1976-01-30
+Reg phone: 8490595496
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT2082254,USR000877,2025-06-12 04:12:07,WhatsApp,ta,P2,Booking,Couldn't complete onboarding. Aadhaar last 4 = 1098. PAN = NBLPA9912J. Stuck at address verification. I live in Mysuru. Pincode 597437.,True
+TKT5897691,USR000907,2025-11-26 06:51:13,In-app chat,gu,P3,TDS,"Hi, naa peru Asma. Naa investment ki related ga ee message. IDFC bank lo Rs 25000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT4009429,USR000261,2025-12-08 04:06:02,WhatsApp,mr,P2,PG-failure,I want to break my FD prematurely. FD ID is FD41323745. Bank: IDFC. My nominee is my wife. Account: 056563349490 IFSC IDFB0000689. Penalty kitni lagegi?,True
+TKT7602438,USR000477,2025-09-14 06:06:35,Web form,hi,P3,Booking,Refund request: Razorpay payment of Rs 25000 on order ORD5218704157. Status shows FAILED but money debited from KOTK a/c 0232153241. UPI used.,True
+TKT7280691,USR000034,2025-06-05 02:28:59,In-app chat,bn,P3,Refund,Couldn't complete onboarding. Aadhaar last 4 = 5179. PAN = TLYPS5295U. Stuck at address verification. I live in Chennai. Pincode 268290.,False
+TKT4535869,USR000219,2025-12-13 17:21:18,WhatsApp,mr,P4,TDS,"Hi team, my name is Akash Jain. I tried booking an FD of Rs 100000 with KOTK (a/c 39689536973526, IFSC KKBK0000319) but got error PENNY_DROP_FAIL. PAN DSWPZ3687W. Please help.",True
+TKT8283480,USR000618,2025-11-16 14:44:47,Web form,en,P3,PG-failure,Refund request: Razorpay payment of Rs 25000 on order ORD8970898054. Status shows FAILED but money debited from IDFC a/c 1613183676. UPI used.,True
+TKT2364658,USR000049,2025-10-24 13:53:27,Email,hi,P3,TDS,"Mam, mera PAN DQPPH0831V hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT6464746,USR000405,2025-12-07 04:59:14,WhatsApp,en,P4,UPI,Couldn't complete onboarding. Aadhaar last 4 = 5648. PAN = CDYPL2805G. Stuck at address verification. I live in Dehradun. Pincode 530806.,True
+TKT1291938,USR000150,2025-09-06 09:36:25,Web form,en,P3,Account closure,I want to break my FD prematurely. FD ID is FD81690743. Bank: ICIC. My nominee is my wife. Account: 0106848762 IFSC ICIC0000444. Penalty kitni lagegi?,False
+TKT2588886,USR000344,2025-08-26 05:44:43,WhatsApp,en,P4,PG-failure,"Subject: VKYC failed 3 times.
+Name: Kavya Bose
+PAN: ZBLPN4032G
+DOB: 2000-07-11
+Reg phone: 8249602515
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT6991720,USR000876,2025-06-05 12:01:28,In-app chat,en,P2,Booking,"Subject: VKYC failed 3 times.
+Name: Isha Bansal
+PAN: VSNPN8914W
+DOB: 2002-12-05
+Reg phone: 9581408044
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT5705891,USR000866,2025-06-05 17:27:37,Call transcript,en,P4,Login,Refund request: Razorpay payment of Rs 50000 on order ORD9041062364. Status shows FAILED but money debited from HDFC a/c 02729514685514. UPI used.,True
+TKT3161527,USR000754,2025-08-04 07:28:01,Call transcript,en,P4,Login,"Mam, mera PAN GLSPV5468U hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT3834817,USR000170,2025-07-26 17:45:47,In-app chat,en,P2,UPI,Refund request: Razorpay payment of Rs 10000 on order ORD2788114395. Status shows FAILED but money debited from INDB a/c 626411284546. UPI used.,True
+TKT8121682,USR000703,2026-03-12 20:25:36,Email,bn,P2,TDS,"Hi team, my name is Krishna Menon. I tried booking an FD of Rs 25000 with CANB (a/c 48621334519531, IFSC CNRB0000013) but got error PENNY_DROP_FAIL. PAN UROPP9271Q. Please help.",True
+TKT2025210,USR000404,2025-11-28 20:46:14,WhatsApp,hi,P3,TDS,Refund request: Razorpay payment of Rs 100000 on order ORD8487645754. Status shows FAILED but money debited from CANB a/c 174148653508. UPI used.,True
+TKT5426505,USR000730,2026-03-13 08:33:32,WhatsApp,en,P2,PG-failure,"Mam, mera PAN TNRPG8697J hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT4948527,USR000798,2026-02-27 23:41:19,WhatsApp,en,P3,Login,"Mam, mera PAN RDRPU3768V hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT7408501,USR000692,2025-07-18 07:56:33,In-app chat,te,P4,Refund,"Subject: VKYC failed 3 times.
+Name: Yash Sandhu
+PAN: VHYPD8532D
+DOB: 1967-07-04
+Reg phone: 7250302748
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT5067801,USR000602,2025-10-03 04:18:52,Web form,bn,P4,Refund,"Subject: VKYC failed 3 times.
+Name: Nikhil Kamat
+PAN: UMJPP2720Y
+DOB: 1982-08-28
+Reg phone: 6303103305
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT1255105,USR000892,2025-09-18 14:51:22,Email,ta,P2,Login,Refund request: Razorpay payment of Rs 10000 on order ORD7314551357. Status shows FAILED but money debited from CANB a/c 6193263499. UPI used.,False
+TKT4139029,USR000727,2026-03-13 17:48:08,Call transcript,en,P2,PG-failure,Couldn't complete onboarding. Aadhaar last 4 = 9595. PAN = GGAPY0907J. Stuck at address verification. I live in Patna. Pincode 721956.,True
+TKT9455230,USR000214,2025-12-16 08:18:36,WhatsApp,mr,P3,UPI,"Hi, naa peru Vidya. Naa investment ki related ga ee message. RBL bank lo Rs 100000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT7314190,USR000323,2026-03-21 23:40:23,Email,bn,P3,Refund,"Hi team, my name is Priya Chauhan. I tried booking an FD of Rs 500000 with PUNB (a/c 667284343110, IFSC PUNB0000311) but got error PENNY_DROP_FAIL. PAN JNUPH5186J. Please help.",False
+TKT1139471,USR000349,2025-12-31 00:22:42,Call transcript,ta,P2,PG-failure,"Hello, mera naam Meera Sandhu hai. AXIS ke account 72625346288200 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 6780982662.",True
+TKT5519774,USR000637,2025-06-15 03:12:09,WhatsApp,kn,P3,VKYC,I want to break my FD prematurely. FD ID is FD14203567. Bank: KOTK. My nominee is my wife. Account: 966750183063 IFSC KKBK0000059. Penalty kitni lagegi?,False
+TKT9344017,USR000372,2025-09-09 21:52:26,Web form,hi,P3,Booking,I want to break my FD prematurely. FD ID is FD52309554. Bank: BARB. My nominee is my wife. Account: 283558107148 IFSC BARB0000248. Penalty kitni lagegi?,True
+TKT9348467,USR000586,2025-06-18 14:19:54,Call transcript,hi,P2,UPI,"Hi team, my name is Pranesh Agarwal. I tried booking an FD of Rs 500000 with ICIC (a/c 653567345554, IFSC ICIC0000336) but got error PENNY_DROP_FAIL. PAN RVTPO8424C. Please help.",True
+TKT3095393,USR000360,2025-10-26 21:44:12,Web form,en,P4,Login,Couldn't complete onboarding. Aadhaar last 4 = 9659. PAN = IIYPQ7991M. Stuck at address verification. I live in Salem. Pincode 839022.,True
+TKT7606287,USR000153,2025-11-18 04:22:33,Email,en,P3,UPI,Couldn't complete onboarding. Aadhaar last 4 = 7581. PAN = CWMPG9692P. Stuck at address verification. I live in Patna. Pincode 402731.,True
+TKT6228222,USR000309,2025-08-20 01:51:56,WhatsApp,hi,P3,Booking,"Hi, naa peru Sanjana. Naa investment ki related ga ee message. BARB bank lo Rs 50000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",False
+TKT2124786,USR000653,2025-08-17 12:32:05,Call transcript,en,P3,Refund,Couldn't complete onboarding. Aadhaar last 4 = 1871. PAN = EMNPA1433R. Stuck at address verification. I live in Chennai. Pincode 578031.,True
+TKT6142310,USR000749,2026-01-09 19:47:30,WhatsApp,hi,P3,Booking,"Hi, naa peru Kavya. Naa investment ki related ga ee message. INDB bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT2856028,USR000479,2025-07-05 05:51:48,WhatsApp,hi,P3,Login,"Hello, mera naam Pooja Sandhu hai. KOTK ke account 177258685901 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 9402305350.",False
+TKT5604526,USR000844,2025-06-07 20:51:01,Web form,hi,P1,TDS,"Hello, mera naam Rahul Murthy hai. BARB ke account 96963536571100 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 7165775327.",False
+TKT4614846,USR000172,2025-10-11 05:08:34,Web form,en,P3,Refund,I want to break my FD prematurely. FD ID is FD58352537. Bank: YESB. My nominee is my wife. Account: 25393818839392 IFSC YESB0000147. Penalty kitni lagegi?,True
+TKT3322618,USR000399,2026-01-03 19:26:42,In-app chat,en,P4,PG-failure,"Subject: VKYC failed 3 times.
+Name: Vikram Gupta
+PAN: VNEPS1782P
+DOB: 1961-02-04
+Reg phone: 8547754042
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT8634652,USR000953,2026-03-20 14:01:07,Email,ta,P3,Login,Couldn't complete onboarding. Aadhaar last 4 = 4160. PAN = VWHPA1523C. Stuck at address verification. I live in Bhopal. Pincode 759489.,False
+TKT5146240,USR000357,2025-11-06 03:01:45,Web form,ml,P3,Booking,"Hi team, my name is Lavanya Desai. I tried booking an FD of Rs 100000 with ICIC (a/c 2540293499, IFSC ICIC0000225) but got error PENNY_DROP_FAIL. PAN ULSPW6034U. Please help.",True
+TKT6119619,USR000287,2025-07-20 18:03:07,Web form,mr,P4,TDS,"Subject: VKYC failed 3 times.
+Name: Gauri Rao
+PAN: FAGPG1496Z
+DOB: 1958-11-09
+Reg phone: 8989724136
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT7845311,USR000249,2025-10-29 19:22:45,Call transcript,en,P3,VKYC,I want to break my FD prematurely. FD ID is FD22328105. Bank: CANB. My nominee is my wife. Account: 6651451280 IFSC CNRB0000809. Penalty kitni lagegi?,False
+TKT4920062,USR000621,2025-07-10 13:36:39,Call transcript,hi,P3,PG-failure,I want to break my FD prematurely. FD ID is FD74186883. Bank: ICIC. My nominee is my wife. Account: 621114730118 IFSC ICIC0000756. Penalty kitni lagegi?,True
+TKT8941836,USR000197,2025-06-14 07:51:46,Web form,te,P3,UPI,"Hello, mera naam Farhan Hegde hai. ICIC ke account 072560378639 se Rs 500000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 6208321798.",False
+TKT8965354,USR000497,2025-08-25 09:26:08,Email,en,P4,Refund,"Hi team, my name is Selvi Shah. I tried booking an FD of Rs 50000 with YESB (a/c 95480943000336, IFSC YESB0000166) but got error PENNY_DROP_FAIL. PAN HVOPT9748X. Please help.",True
+TKT3705746,USR000143,2025-12-22 03:32:51,In-app chat,en,P3,UPI,"Hi team, my name is Deepika Kamat. I tried booking an FD of Rs 100000 with INDB (a/c 26556270410726, IFSC INDB0000451) but got error PENNY_DROP_FAIL. PAN KYUPJ2744B. Please help.",True
+TKT4731503,USR000605,2026-01-11 00:32:27,Email,hi,P4,Account closure,"Hi team, my name is Dhruv Chauhan. I tried booking an FD of Rs 25000 with IDFC (a/c 2893210300, IFSC IDFB0000783) but got error PENNY_DROP_FAIL. PAN ZTBPT9866B. Please help.",True
+TKT9782839,USR000531,2025-11-21 12:19:07,In-app chat,en,P3,Account closure,"Hi, naa peru Nisha. Naa investment ki related ga ee message. YESB bank lo Rs 25000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT7296331,USR000433,2026-02-28 01:45:36,Call transcript,hi,P2,Booking,"Mam, mera PAN BAOPD6323E hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT5125292,USR000581,2025-08-21 04:09:20,Web form,hi,P2,UPI,"Subject: VKYC failed 3 times.
+Name: Isha Khan
+PAN: BNPPJ0080E
+DOB: 1981-11-04
+Reg phone: 7440605773
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",False
+TKT5251580,USR000591,2025-08-22 08:45:00,In-app chat,en,P3,Account closure,I want to break my FD prematurely. FD ID is FD34873110. Bank: PUNB. My nominee is my wife. Account: 35622439927873 IFSC PUNB0000200. Penalty kitni lagegi?,True
+TKT8253762,USR000856,2025-08-07 07:17:42,WhatsApp,hi,P3,PG-failure,"Mam, mera PAN VSRPS3065V hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT1072151,USR000780,2025-10-01 10:31:19,Email,gu,P3,Booking,I want to break my FD prematurely. FD ID is FD81964199. Bank: IDFC. My nominee is my wife. Account: 7882215434 IFSC IDFB0000806. Penalty kitni lagegi?,True
+TKT2711169,USR000025,2025-08-27 14:41:07,In-app chat,ml,P2,Account closure,"Subject: VKYC failed 3 times.
+Name: Vikram Venkatesh
+PAN: ORTPB9935X
+DOB: 1971-11-19
+Reg phone: 6636840133
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT4483626,USR000993,2026-01-06 12:50:34,Email,en,P3,PG-failure,"Hi, naa peru Ananya. Naa investment ki related ga ee message. AXIS bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT1124395,USR000873,2026-01-17 07:35:09,WhatsApp,en,P2,Booking,"Hello, mera naam Riya Kamat hai. CANB ke account 772073601359 se Rs 25000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8021662928.",False
+TKT3990617,USR000855,2025-09-12 14:03:28,WhatsApp,hi,P3,Refund,I want to break my FD prematurely. FD ID is FD93326760. Bank: BARB. My nominee is my wife. Account: 8195969674 IFSC BARB0000698. Penalty kitni lagegi?,True
+TKT3181297,USR000300,2025-10-29 08:30:24,Email,ml,P1,VKYC,"Subject: VKYC failed 3 times.
+Name: Trisha Verma
+PAN: ZJNPM9947D
+DOB: 1985-08-01
+Reg phone: 8899864971
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT3789555,USR000945,2025-06-04 08:39:47,In-app chat,en,P4,Account closure,Refund request: Razorpay payment of Rs 500000 on order ORD3993947160. Status shows FAILED but money debited from SBIN a/c 2629090904. UPI used.,True
+TKT6220210,USR000078,2025-07-29 11:20:58,In-app chat,mr,P3,Login,"Hello, mera naam Chandran Pillai hai. BARB ke account 99162890928738 se Rs 100000 ka FD book nahi ho raha. Kal se try kar raha hu. Phone 8636297263.",True
+TKT1015015,USR000961,2026-01-04 19:30:38,In-app chat,kn,P2,VKYC,"Hi, naa peru Nisha. Naa investment ki related ga ee message. SBIN bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT8952326,USR000337,2026-02-25 14:57:58,In-app chat,hi,P3,Booking,Refund request: Razorpay payment of Rs 50000 on order ORD9899793588. Status shows FAILED but money debited from YESB a/c 18119456628219. UPI used.,True
+TKT2228656,USR000740,2025-06-19 00:20:28,WhatsApp,kn,P2,UPI,"Hi team, my name is Shanthi Sharma. I tried booking an FD of Rs 10000 with ICIC (a/c 3754459067, IFSC ICIC0000970) but got error PENNY_DROP_FAIL. PAN JSYPY4833V. Please help.",True
+TKT4033849,USR000951,2025-12-22 06:48:50,WhatsApp,hi,P3,Refund,"Mam, mera PAN TMUPT6199M hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",False
+TKT4997680,USR000909,2025-10-26 05:05:20,In-app chat,hi,P3,PG-failure,"Subject: VKYC failed 3 times.
+Name: Aditya Mehta
+PAN: UIJPR4685I
+DOB: 1955-07-16
+Reg phone: 9395813660
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT5658192,USR000114,2025-09-29 19:51:16,Email,kn,P2,VKYC,I want to break my FD prematurely. FD ID is FD37367388. Bank: BARB. My nominee is my wife. Account: 07235834366565 IFSC BARB0000466. Penalty kitni lagegi?,True
+TKT8586952,USR000407,2026-02-05 17:22:34,Web form,en,P4,TDS,"Hi, naa peru Aaradhya. Naa investment ki related ga ee message. PUNB bank lo Rs 500000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True
+TKT7193856,USR000054,2025-12-15 08:13:47,Call transcript,en,P4,PG-failure,"Subject: VKYC failed 3 times.
+Name: Om Kulkarni
+PAN: OTUPE8255J
+DOB: 1969-06-11
+Reg phone: 6658916591
+Last attempt: yesterday 8 PM. Camera was on. App shows 'face mismatch'.",True
+TKT9644855,USR000554,2025-09-24 07:21:52,Call transcript,en,P4,Login,I want to break my FD prematurely. FD ID is FD72193063. Bank: CANB. My nominee is my wife. Account: 8676807148 IFSC CNRB0000009. Penalty kitni lagegi?,True
+TKT4341930,USR000766,2025-10-03 18:21:53,Call transcript,kn,P4,Account closure,I want to break my FD prematurely. FD ID is FD60924017. Bank: AXIS. My nominee is my wife. Account: 3248140641 IFSC UTIB0000755. Penalty kitni lagegi?,True
+TKT7474637,USR000936,2026-03-12 11:23:45,Web form,kn,P4,Login,"Mam, mera PAN OHFPS8702K hai aur mera FD pehle hi book hua tha. Lekin app me show nahi ho raha. Mujhe TDS certificate chahiye for FY24-25.",True
+TKT4534727,USR000288,2025-09-18 06:41:19,Web form,mr,P2,VKYC,"Hi, naa peru Dhruv. Naa investment ki related ga ee message. SBIN bank lo Rs 10000 FD vesa, but interest rate emi vasthundi clear ga cheppandi.",True

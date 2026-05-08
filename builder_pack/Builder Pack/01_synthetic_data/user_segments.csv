@@ -1,0 +1,1001 @@
+user_id,segment,churn_risk,ltv_decile,days_since_signup,last_active_days_ago
+USR000001,Churned,Critical,1,19,141
+USR000002,Casual Browser,High,9,201,80
+USR000003,Churned,Critical,2,43,128
+USR000004,Lost-Compliance,Low,7,138,79
+USR000005,Activation Risk,High,2,119,27
+USR000006,Casual Browser,High,4,214,80
+USR000007,Lost-Compliance,Low,6,232,89
+USR000008,Churned,Critical,1,434,176
+USR000009,Casual Browser,High,7,21,78
+USR000010,Casual Browser,High,3,20,80
+USR000011,Churned,Critical,1,4,172
+USR000012,Churned,Critical,1,123,109
+USR000013,Churned,Critical,3,3,137
+USR000014,Churned,Critical,1,4,166
+USR000015,Casual Browser,High,2,202,88
+USR000016,Churned,Critical,3,359,152
+USR000017,Casual Browser,High,8,440,75
+USR000018,Churned,Critical,4,297,113
+USR000019,Casual Browser,High,1,455,78
+USR000020,Churned,Critical,4,8,140
+USR000021,Churned,Critical,2,125,180
+USR000022,Churned,Critical,1,152,166
+USR000023,Churned,Critical,1,441,180
+USR000024,Casual Browser,High,10,258,50
+USR000025,Engaged Verified,Low,10,305,23
+USR000026,Churned,Critical,4,372,158
+USR000027,Churned,Critical,3,161,101
+USR000028,Casual Browser,High,3,483,13
+USR000029,Churned,Critical,4,186,116
+USR000030,Casual Browser,High,9,122,73
+USR000031,Casual Browser,High,7,411,83
+USR000032,Casual Browser,High,7,65,90
+USR000033,Churned,Critical,3,313,165
+USR000034,Engaged Verified,Low,1,3,10
+USR000035,Casual Browser,High,9,152,89
+USR000036,Churned,Critical,2,175,96
+USR000037,Casual Browser,High,7,346,41
+USR000038,Casual Browser,High,9,94,77
+USR000039,Churned,Critical,1,75,175
+USR000040,Casual Browser,High,7,70,75
+USR000041,Casual Browser,High,9,220,80
+USR000042,Engaged Verified,Low,3,370,6
+USR000043,Casual Browser,High,2,10,72
+USR000044,Casual Browser,High,5,387,36
+USR000045,Casual Browser,High,1,271,67
+USR000046,Casual Browser,High,8,176,76
+USR000047,Churned,Critical,2,95,120
+USR000048,Activation Risk,High,8,289,37
+USR000049,Churned,Critical,2,344,165
+USR000050,Casual Browser,High,1,201,49
+USR000051,Churned,Critical,4,181,179
+USR000052,Churned,Critical,1,195,108
+USR000053,Engaged Verified,Low,5,12,4
+USR000054,Churned,Critical,2,328,104
+USR000055,Casual Browser,High,10,26,48
+USR000056,Casual Browser,High,1,156,86
+USR000057,Activation Risk,High,4,209,4
+USR000058,Casual Browser,High,10,269,84
+USR000059,Casual Browser,High,1,324,69
+USR000060,Churned,Critical,2,485,99
+USR000061,Casual Browser,High,1,136,80
+USR000062,Churned,Critical,1,185,102
+USR000063,Lost-Compliance,Low,6,279,21
+USR000064,Churned,Critical,4,272,180
+USR000065,Churned,Critical,2,242,177
+USR000066,Churned,Critical,4,70,138
+USR000067,Lost-Compliance,Low,1,107,15
+USR000068,Churned,Critical,4,67,140
+USR000069,Engaged Verified,Low,1,226,2
+USR000070,Casual Browser,High,3,272,35
+USR000071,Casual Browser,High,5,457,55
+USR000072,Casual Browser,High,8,408,88
+USR000073,Churned,Critical,3,52,167
+USR000074,Churned,Critical,3,214,177
+USR000075,Casual Browser,High,8,352,51
+USR000076,Casual Browser,High,10,460,56
+USR000077,Churned,Critical,2,421,164
+USR000078,Churned,Critical,1,134,151
+USR000079,Churned,Critical,2,268,124
+USR000080,High-value Active,Low,3,89,0
+USR000081,Engaged Verified,Low,8,269,25
+USR000082,Churned,Critical,2,263,112
+USR000083,Churned,Critical,1,275,174
+USR000084,Casual Browser,High,6,249,70
+USR000085,Churned,Critical,2,92,145
+USR000086,Churned,Critical,2,229,174
+USR000087,Churned,Critical,2,79,153
+USR000088,Casual Browser,High,3,37,66
+USR000089,Churned,Critical,2,269,103
+USR000090,Casual Browser,High,10,377,33
+USR000091,Engaged Verified,Low,8,175,29
+USR000092,Casual Browser,High,3,331,29
+USR000093,Casual Browser,High,6,41,33
+USR000094,Churned,Critical,3,210,103
+USR000095,Engaged Verified,Low,1,300,11
+USR000096,Churned,Critical,1,295,155
+USR000097,Churned,Critical,3,296,171
+USR000098,Casual Browser,High,10,391,49
+USR000099,Churned,Critical,2,341,158
+USR000100,Activation Risk,High,9,274,52
+USR000101,Churned,Critical,3,267,169
+USR000102,Churned,Critical,4,14,140
+USR000103,Churned,Critical,3,95,141
+USR000104,Churned,Critical,3,400,144
+USR000105,Casual Browser,High,4,420,58
+USR000106,Churned,Critical,1,381,120
+USR000107,Churned,Critical,4,302,178
+USR000108,Churned,Critical,3,280,142
+USR000109,Churned,Critical,3,72,126
+USR000110,Engaged Verified,Low,10,234,29
+USR000111,Casual Browser,High,5,109,48
+USR000112,Churned,Critical,4,314,175
+USR000113,Casual Browser,High,9,53,37
+USR000114,Engaged Verified,Low,1,114,20
+USR000115,Churned,Critical,1,478,134
+USR000116,Churned,Critical,4,265,105
+USR000117,Casual Browser,High,10,456,74
+USR000118,Churned,Critical,2,33,97
+USR000119,Churned,Critical,3,138,152
+USR000120,Churned,Critical,4,185,141
+USR000121,Churned,Critical,2,222,151
+USR000122,Churned,Critical,4,437,147
+USR000123,Casual Browser,High,7,71,70
+USR000124,Casual Browser,High,10,168,78
+USR000125,Engaged Verified,Low,9,18,28
+USR000126,Churned,Critical,2,359,159
+USR000127,Lost-Compliance,Low,8,19,85
+USR000128,Casual Browser,High,6,141,35
+USR000129,Churned,Critical,3,308,122
+USR000130,Engaged Verified,Low,6,260,10
+USR000131,Churned,Critical,1,428,180
+USR000132,Activation Risk,High,5,451,1
+USR000133,Churned,Critical,3,280,178
+USR000134,Engaged Verified,Low,9,79,2
+USR000135,Activation Risk,High,4,415,7
+USR000136,Casual Browser,High,9,11,33
+USR000137,Casual Browser,High,8,80,62
+USR000138,Churned,Critical,3,6,157
+USR000139,Casual Browser,High,1,316,60
+USR000140,Casual Browser,High,1,12,88
+USR000141,Churned,Critical,4,422,164
+USR000142,Churned,Critical,4,169,171
+USR000143,Churned,Critical,1,182,151
+USR000144,Churned,Critical,1,269,114
+USR000145,Activation Risk,High,4,165,30
+USR000146,Casual Browser,High,2,215,55
+USR000147,Churned,Critical,4,1,93
+USR000148,Engaged Verified,Low,3,122,30
+USR000149,Casual Browser,High,2,63,54
+USR000150,High-value Active,Low,2,402,9
+USR000151,Churned,Critical,2,112,137
+USR000152,Casual Browser,High,6,200,34
+USR000153,Engaged Verified,Low,10,77,25
+USR000154,Casual Browser,High,9,320,14
+USR000155,Churned,Critical,1,260,172
+USR000156,Churned,Critical,3,151,140
+USR000157,Casual Browser,High,4,284,37
+USR000158,Churned,Critical,2,329,130
+USR000159,Casual Browser,High,4,201,35
+USR000160,Lost-Compliance,Low,2,116,66
+USR000161,Churned,Critical,3,66,143
+USR000162,Engaged Verified,Low,7,470,8
+USR000163,Lost-Compliance,Low,10,120,54
+USR000164,Churned,Critical,4,81,173
+USR000165,Lost-Compliance,Low,5,98,31
+USR000166,High-value Active,Low,1,265,8
+USR000167,Engaged Verified,Low,2,309,14
+USR000168,Churned,Critical,1,268,162
+USR000169,Churned,Critical,1,70,119
+USR000170,Casual Browser,High,5,359,71
+USR000171,Casual Browser,High,7,351,65
+USR000172,Churned,Critical,1,51,112
+USR000173,Casual Browser,High,2,140,81
+USR000174,Casual Browser,High,10,126,68
+USR000175,Churned,Critical,2,11,153
+USR000176,Churned,Critical,2,330,125
+USR000177,Lost-Compliance,Low,6,199,19
+USR000178,Casual Browser,High,3,296,65
+USR000179,Churned,Critical,1,126,126
+USR000180,Churned,Critical,4,121,171
+USR000181,Churned,Critical,2,268,137
+USR000182,Churned,Critical,2,208,165
+USR000183,Casual Browser,High,7,239,53
+USR000184,Casual Browser,High,1,406,52
+USR000185,Casual Browser,High,10,265,2
+USR000186,Casual Browser,High,4,216,32
+USR000187,Churned,Critical,1,90,146
+USR000188,Churned,Critical,4,431,116
+USR000189,Casual Browser,High,5,65,35
+USR000190,Churned,Critical,2,386,180
+USR000191,Engaged Verified,Low,7,9,30
+USR000192,Casual Browser,High,7,174,42
+USR000193,High-value Active,Low,4,137,0
+USR000194,Churned,Critical,2,28,155
+USR000195,Churned,Critical,1,143,126
+USR000196,Churned,Critical,4,94,112
+USR000197,Churned,Critical,1,436,152
+USR000198,Churned,Critical,3,317,121
+USR000199,Casual Browser,High,1,38,44
+USR000200,Churned,Critical,2,324,161
+USR000201,Engaged Verified,Low,4,448,21
+USR000202,Churned,Critical,1,182,139
+USR000203,Casual Browser,High,1,154,86
+USR000204,Casual Browser,High,2,294,59
+USR000205,Churned,Critical,4,344,116
+USR000206,Churned,Critical,1,136,118
+USR000207,Churned,Critical,4,135,162
+USR000208,Lost-Compliance,Low,2,430,27
+USR000209,Churned,Critical,3,192,130
+USR000210,Churned,Critical,3,135,155
+USR000211,Casual Browser,High,8,179,39
+USR000212,Churned,Critical,3,428,144
+USR000213,Churned,Critical,1,235,168
+USR000214,Churned,Critical,3,30,112
+USR000215,Churned,Critical,1,298,91
+USR000216,Lost-Compliance,Low,10,341,36
+USR000217,Churned,Critical,3,298,97
+USR000218,Casual Browser,High,1,416,37
+USR000219,Churned,Critical,1,424,148
+USR000220,Casual Browser,High,10,337,44
+USR000221,Churned,Critical,1,73,135
+USR000222,Casual Browser,High,1,224,90
+USR000223,Churned,Critical,3,330,111
+USR000224,Churned,Critical,4,404,99
+USR000225,Activation Risk,High,8,283,23
+USR000226,Churned,Critical,2,405,134
+USR000227,Churned,Critical,3,487,125
+USR000228,Engaged Verified,Low,3,151,30
+USR000229,Casual Browser,High,7,234,48
+USR000230,Churned,Critical,2,362,93
+USR000231,Churned,Critical,3,124,111
+USR000232,Churned,Critical,3,404,136
+USR000233,Churned,Critical,1,360,162
+USR000234,Churned,Critical,4,285,134
+USR000235,Churned,Critical,4,439,106
+USR000236,Casual Browser,High,4,153,67
+USR000237,Casual Browser,High,6,94,56
+USR000238,Churned,Critical,2,366,145
+USR000239,Churned,Critical,3,379,143
+USR000240,Churned,Critical,1,333,91
+USR000241,Casual Browser,High,4,317,33
+USR000242,Churned,Critical,1,52,104
+USR000243,Churned,Critical,2,458,154
+USR000244,Churned,Critical,2,464,109
+USR000245,Lost-Compliance,Low,9,164,24
+USR000246,Activation Risk,High,7,79,22
+USR000247,Churned,Critical,4,226,153
+USR000248,Engaged Verified,Low,2,129,20
+USR000249,Churned,Critical,1,240,105
+USR000250,Churned,Critical,4,444,141
+USR000251,Casual Browser,High,7,476,82
+USR000252,Churned,Critical,3,428,153
+USR000253,Casual Browser,High,7,467,35
+USR000254,Lost-Compliance,Low,1,244,67
+USR000255,Churned,Critical,2,334,147
+USR000256,Engaged Verified,Low,5,1,29
+USR000257,Activation Risk,High,10,401,19
+USR000258,Churned,Critical,2,481,105
+USR000259,Lost-Compliance,Low,4,416,38
+USR000260,Casual Browser,High,6,29,66
+USR000261,Churned,Critical,4,337,148
+USR000262,Churned,Critical,4,12,124
+USR000263,Engaged Verified,Low,8,75,7
+USR000264,Churned,Critical,3,399,129
+USR000265,Churned,Critical,1,261,163
+USR000266,Casual Browser,High,5,171,18
+USR000267,Engaged Verified,Low,10,152,15
+USR000268,Churned,Critical,1,210,112
+USR000269,Churned,Critical,3,130,91
+USR000270,Churned,Critical,4,448,156
+USR000271,Casual Browser,High,2,296,60
+USR000272,Casual Browser,High,8,359,70
+USR000273,Casual Browser,High,6,181,85
+USR000274,Casual Browser,High,4,225,68
+USR000275,Churned,Critical,2,416,161
+USR000276,Churned,Critical,2,116,150
+USR000277,Casual Browser,High,8,351,57
+USR000278,Casual Browser,High,10,447,71
+USR000279,Churned,Critical,4,457,156
+USR000280,Churned,Critical,3,244,125
+USR000281,Lost-Compliance,Low,3,445,85
+USR000282,Churned,Critical,4,122,106
+USR000283,Churned,Critical,1,373,122
+USR000284,Churned,Critical,3,274,96
+USR000285,Lost-Compliance,Low,9,125,2
+USR000286,Churned,Critical,4,348,144
+USR000287,Churned,Critical,1,62,135
+USR000288,Churned,Critical,4,234,155
+USR000289,Churned,Critical,2,405,150
+USR000290,Casual Browser,High,2,256,63
+USR000291,Casual Browser,High,8,76,73
+USR000292,Churned,Critical,1,258,177
+USR000293,Casual Browser,High,6,154,44
+USR000294,Casual Browser,High,2,180,60
+USR000295,High-value Active,Low,2,295,2
+USR000296,Churned,Critical,1,140,108
+USR000297,Churned,Critical,3,301,155
+USR000298,Churned,Critical,2,351,153
+USR000299,Churned,Critical,3,342,115
+USR000300,Churned,Critical,1,140,162
+USR000301,Churned,Critical,2,480,167
+USR000302,Activation Risk,High,5,251,18
+USR000303,Churned,Critical,3,454,125
+USR000304,Casual Browser,High,6,416,66
+USR000305,Churned,Critical,3,112,170
+USR000306,Churned,Critical,4,432,121
+USR000307,Churned,Critical,4,408,110
+USR000308,Casual Browser,High,4,335,90
+USR000309,Casual Browser,High,2,26,63
+USR000310,Lost-Compliance,Low,4,263,54
+USR000311,Casual Browser,High,8,252,48
+USR000312,Casual Browser,High,2,416,46
+USR000313,Churned,Critical,4,384,125
+USR000314,Casual Browser,High,5,460,53
+USR000315,Churned,Critical,1,254,137
+USR000316,Activation Risk,High,10,39,33
+USR000317,Churned,Critical,1,258,171
+USR000318,Casual Browser,High,7,220,40
+USR000319,Casual Browser,High,7,291,63
+USR000320,Churned,Critical,3,43,124
+USR000321,Churned,Critical,3,150,154
+USR000322,Churned,Critical,3,90,117
+USR000323,Churned,Critical,1,205,143
+USR000324,High-value Active,Low,9,340,5
+USR000325,Churned,Critical,3,267,111
+USR000326,Churned,Critical,4,179,91
+USR000327,Engaged Verified,Low,1,481,15
+USR000328,Casual Browser,High,4,436,46
+USR000329,Casual Browser,High,5,262,74
+USR000330,Activation Risk,High,1,441,47
+USR000331,Casual Browser,High,2,280,48
+USR000332,Engaged Verified,Low,2,101,17
+USR000333,Casual Browser,High,8,418,81
+USR000334,Casual Browser,High,7,41,36
+USR000335,Churned,Critical,1,86,164
+USR000336,Engaged Verified,Low,8,43,24
+USR000337,Churned,Critical,1,296,122
+USR000338,Churned,Critical,4,133,114
+USR000339,Casual Browser,High,2,79,62
+USR000340,Activation Risk,High,4,117,15
+USR000341,Churned,Critical,1,100,114
+USR000342,Casual Browser,High,2,479,81
+USR000343,Churned,Critical,1,485,161
+USR000344,Casual Browser,High,3,251,80
+USR000345,Churned,Critical,4,233,96
+USR000346,Churned,Critical,2,299,160
+USR000347,Churned,Critical,2,463,142
+USR000348,Casual Browser,High,2,300,40
+USR000349,Casual Browser,High,9,123,83
+USR000350,Engaged Verified,Low,2,14,3
+USR000351,Churned,Critical,4,159,144
+USR000352,Activation Risk,High,3,50,10
+USR000353,Engaged Verified,Low,1,139,27
+USR000354,Churned,Critical,2,336,150
+USR000355,Churned,Critical,3,54,157
+USR000356,Churned,Critical,4,377,174
+USR000357,Churned,Critical,4,396,114
+USR000358,Casual Browser,High,6,426,37
+USR000359,Churned,Critical,4,476,143
+USR000360,Lost-Compliance,Low,5,202,78
+USR000361,Churned,Critical,1,75,100
+USR000362,Casual Browser,High,1,319,70
+USR000363,Churned,Critical,1,440,104
+USR000364,Engaged Verified,Low,10,315,5
+USR000365,Casual Browser,High,2,332,17
+USR000366,Churned,Critical,3,180,146
+USR000367,Churned,Critical,3,432,105
+USR000368,High-value Active,Low,3,229,10
+USR000369,Churned,Critical,4,126,162
+USR000370,Casual Browser,High,1,301,66
+USR000371,Churned,Critical,4,172,169
+USR000372,Churned,Critical,2,475,93
+USR000373,Churned,Critical,3,335,180
+USR000374,Casual Browser,High,2,80,47
+USR000375,Casual Browser,High,2,69,51
+USR000376,Activation Risk,High,7,489,10
+USR000377,Churned,Critical,3,279,109
+USR000378,Churned,Critical,2,409,176
+USR000379,Churned,Critical,3,60,133
+USR000380,Casual Browser,High,3,55,29
+USR000381,Churned,Critical,3,356,143
+USR000382,Lost-Compliance,Low,2,176,31
+USR000383,Churned,Critical,1,226,113
+USR000384,Churned,Critical,3,292,122
+USR000385,Casual Browser,High,8,317,49
+USR000386,Casual Browser,High,6,422,54
+USR000387,Churned,Critical,3,106,178
+USR000388,Churned,Critical,4,413,111
+USR000389,Activation Risk,High,7,194,34
+USR000390,Engaged Verified,Low,3,319,2
+USR000391,Churned,Critical,3,69,128
+USR000392,Churned,Critical,2,385,154
+USR000393,Activation Risk,High,3,175,43
+USR000394,Churned,Critical,2,251,105
+USR000395,Casual Browser,High,1,122,31
+USR000396,Churned,Critical,4,426,134
+USR000397,Casual Browser,High,5,181,37
+USR000398,Engaged Verified,Low,3,446,6
+USR000399,Churned,Critical,1,468,165
+USR000400,Churned,Critical,1,224,137
+USR000401,Churned,Critical,4,152,92
+USR000402,Churned,Critical,3,78,146
+USR000403,Churned,Critical,4,349,161
+USR000404,Churned,Critical,1,202,154
+USR000405,Engaged Verified,Low,4,394,19
+USR000406,Churned,Critical,3,212,125
+USR000407,Casual Browser,High,2,61,57
+USR000408,Churned,Critical,3,83,154
+USR000409,Churned,Critical,2,459,169
+USR000410,Churned,Critical,2,428,138
+USR000411,Casual Browser,High,5,8,42
+USR000412,Casual Browser,High,7,224,85
+USR000413,Churned,Critical,4,429,134
+USR000414,Casual Browser,High,6,61,45
+USR000415,Churned,Critical,2,223,98
+USR000416,Casual Browser,High,2,225,67
+USR000417,Engaged Verified,Low,8,124,30
+USR000418,Churned,Critical,3,254,126
+USR000419,Activation Risk,High,7,226,38
+USR000420,Churned,Critical,3,371,165
+USR000421,Casual Browser,High,6,117,53
+USR000422,Churned,Critical,2,445,142
+USR000423,Casual Browser,High,4,334,33
+USR000424,Casual Browser,High,2,128,8
+USR000425,Activation Risk,High,7,350,23
+USR000426,Casual Browser,High,5,202,89
+USR000427,Engaged Verified,Low,10,322,6
+USR000428,Churned,Critical,3,221,163
+USR000429,Churned,Critical,1,271,169
+USR000430,Casual Browser,High,7,16,66
+USR000431,Churned,Critical,1,275,129
+USR000432,Churned,Critical,3,17,163
+USR000433,Churned,Critical,3,421,101
+USR000434,Casual Browser,High,2,307,71
+USR000435,Casual Browser,High,2,62,47
+USR000436,Engaged Verified,Low,4,275,15
+USR000437,Casual Browser,High,8,484,79
+USR000438,Churned,Critical,1,40,168
+USR000439,Churned,Critical,2,55,108
+USR000440,Casual Browser,High,5,252,37
+USR000441,Churned,Critical,4,166,98
+USR000442,Churned,Critical,2,174,180
+USR000443,Casual Browser,High,2,402,52
+USR000444,Churned,Critical,1,186,142
+USR000445,Casual Browser,High,8,490,71
+USR000446,Casual Browser,High,9,271,51
+USR000447,Churned,Critical,1,337,141
+USR000448,Activation Risk,High,8,191,13
+USR000449,Lost-Compliance,Low,9,205,71
+USR000450,Churned,Critical,4,375,112
+USR000451,Lost-Compliance,Low,10,249,79
+USR000452,Lost-Compliance,Low,6,15,49
+USR000453,Activation Risk,High,8,150,26
+USR000454,Churned,Critical,4,51,179
+USR000455,Lost-Compliance,Low,1,173,77
+USR000456,Churned,Critical,1,288,140
+USR000457,Churned,Critical,2,397,160
+USR000458,Churned,Critical,1,213,144
+USR000459,Activation Risk,High,5,27,31
+USR000460,Casual Browser,High,2,299,39
+USR000461,High-value Active,Low,6,128,2
+USR000462,Churned,Critical,3,192,137
+USR000463,Casual Browser,High,5,106,10
+USR000464,Casual Browser,High,8,207,68
+USR000465,Churned,Critical,3,5,176
+USR000466,Engaged Verified,Low,8,28,20
+USR000467,Casual Browser,High,4,193,40
+USR000468,Churned,Critical,2,359,174
+USR000469,Churned,Critical,3,20,174
+USR000470,Casual Browser,High,4,300,90
+USR000471,Casual Browser,High,6,441,31
+USR000472,Churned,Critical,4,151,161
+USR000473,Activation Risk,High,4,37,56
+USR000474,Activation Risk,High,7,308,15
+USR000475,Lost-Compliance,Low,10,158,7
+USR000476,Casual Browser,High,8,127,35
+USR000477,Casual Browser,High,1,202,35
+USR000478,Churned,Critical,1,335,101
+USR000479,Churned,Critical,4,138,122
+USR000480,Activation Risk,High,9,207,20
+USR000481,Churned,Critical,3,475,166
+USR000482,High-value Active,Low,3,372,4
+USR000483,Lost-Compliance,Low,6,74,60
+USR000484,Churned,Critical,2,164,137
+USR000485,Activation Risk,High,2,21,12
+USR000486,Churned,Critical,4,358,165
+USR000487,Casual Browser,High,6,172,46
+USR000488,Casual Browser,High,1,149,39
+USR000489,Churned,Critical,3,217,102
+USR000490,Casual Browser,High,1,268,45
+USR000491,Casual Browser,High,10,460,50
+USR000492,Casual Browser,High,4,109,86
+USR000493,Churned,Critical,4,121,148
+USR000494,Churned,Critical,1,262,157
+USR000495,Casual Browser,High,2,453,49
+USR000496,High-value Active,Low,2,183,4
+USR000497,Churned,Critical,3,483,91
+USR000498,Churned,Critical,4,16,95
+USR000499,Casual Browser,High,9,66,35
+USR000500,Casual Browser,High,10,432,83
+USR000501,High-value Active,Low,8,30,9
+USR000502,Casual Browser,High,5,90,25
+USR000503,Churned,Critical,1,375,136
+USR000504,Churned,Critical,3,110,137
+USR000505,Casual Browser,High,3,22,2
+USR000506,Churned,Critical,1,219,146
+USR000507,Casual Browser,High,6,171,82
+USR000508,Churned,Critical,3,360,180
+USR000509,Churned,Critical,1,17,105
+USR000510,Lost-Compliance,Low,10,104,69
+USR000511,Churned,Critical,3,18,167
+USR000512,Casual Browser,High,8,110,65
+USR000513,High-value Active,Low,10,1,7
+USR000514,Lost-Compliance,Low,3,211,17
+USR000515,Engaged Verified,Low,9,171,24
+USR000516,Churned,Critical,1,427,97
+USR000517,Churned,Critical,3,431,135
+USR000518,Engaged Verified,Low,8,3,23
+USR000519,Churned,Critical,2,329,154
+USR000520,Churned,Critical,4,157,114
+USR000521,Engaged Verified,Low,7,48,29
+USR000522,Casual Browser,High,9,335,36
+USR000523,Churned,Critical,1,14,102
+USR000524,Lost-Compliance,Low,7,87,64
+USR000525,Casual Browser,High,4,441,11
+USR000526,Engaged Verified,Low,10,21,29
+USR000527,Churned,Critical,2,490,119
+USR000528,Churned,Critical,3,405,171
+USR000529,Churned,Critical,1,293,122
+USR000530,Casual Browser,High,7,134,62
+USR000531,Activation Risk,High,2,317,39
+USR000532,Casual Browser,High,2,375,47
+USR000533,Churned,Critical,3,137,154
+USR000534,Churned,Critical,3,462,128
+USR000535,Churned,Critical,1,341,139
+USR000536,Churned,Critical,4,471,175
+USR000537,Churned,Critical,2,376,179
+USR000538,Churned,Critical,4,238,105
+USR000539,Lost-Compliance,Low,9,461,57
+USR000540,Churned,Critical,1,321,100
+USR000541,Engaged Verified,Low,9,287,26
+USR000542,Lost-Compliance,Low,9,363,39
+USR000543,Casual Browser,High,1,113,82
+USR000544,Casual Browser,High,7,102,46
+USR000545,Casual Browser,High,9,216,34
+USR000546,Churned,Critical,2,47,105
+USR000547,Churned,Critical,1,317,140
+USR000548,Churned,Critical,1,252,132
+USR000549,Engaged Verified,Low,3,289,21
+USR000550,Churned,Critical,1,305,109
+USR000551,Engaged Verified,Low,8,323,11
+USR000552,Churned,Critical,3,8,148
+USR000553,Lost-Compliance,Low,10,370,77
+USR000554,Churned,Critical,2,353,173
+USR000555,Activation Risk,High,9,60,7
+USR000556,Churned,Critical,2,187,166
+USR000557,Casual Browser,High,3,100,78
+USR000558,Churned,Critical,2,194,124
+USR000559,Churned,Critical,2,254,115
+USR000560,Churned,Critical,1,46,144
+USR000561,Churned,Critical,2,358,158
+USR000562,Casual Browser,High,6,245,80
+USR000563,Casual Browser,High,7,1,32
+USR000564,Engaged Verified,Low,8,364,29
+USR000565,Activation Risk,High,8,414,40
+USR000566,Churned,Critical,2,121,161
+USR000567,Casual Browser,High,6,144,35
+USR000568,Casual Browser,High,1,470,61
+USR000569,Lost-Compliance,Low,4,125,11
+USR000570,Casual Browser,High,9,140,31
+USR000571,Churned,Critical,3,464,112
+USR000572,Casual Browser,High,7,126,67
+USR000573,Casual Browser,High,2,327,41
+USR000574,Churned,Critical,4,223,155
+USR000575,Churned,Critical,2,474,102
+USR000576,Casual Browser,High,8,366,48
+USR000577,Casual Browser,High,2,268,32
+USR000578,Churned,Critical,3,135,131
+USR000579,Churned,Critical,1,490,113
+USR000580,Churned,Critical,2,89,135
+USR000581,Casual Browser,High,5,468,85
+USR000582,Casual Browser,High,3,145,86
+USR000583,Casual Browser,High,8,140,40
+USR000584,Churned,Critical,4,83,119
+USR000585,Churned,Critical,2,37,119
+USR000586,Engaged Verified,Low,3,141,20
+USR000587,Churned,Critical,2,92,142
+USR000588,Casual Browser,High,6,470,81
+USR000589,Activation Risk,High,8,94,19
+USR000590,Churned,Critical,2,131,169
+USR000591,Churned,Critical,4,159,160
+USR000592,Casual Browser,High,5,97,38
+USR000593,Churned,Critical,2,275,107
+USR000594,Casual Browser,High,2,103,46
+USR000595,Churned,Critical,3,444,178
+USR000596,Churned,Critical,2,484,140
+USR000597,Casual Browser,High,1,112,74
+USR000598,Casual Browser,High,10,360,53
+USR000599,Casual Browser,High,5,48,70
+USR000600,Churned,Critical,2,204,176
+USR000601,Casual Browser,High,1,452,90
+USR000602,Churned,Critical,4,62,148
+USR000603,Casual Browser,High,10,292,89
+USR000604,Churned,Critical,2,486,148
+USR000605,Activation Risk,High,8,11,25
+USR000606,Churned,Critical,3,180,111
+USR000607,Casual Browser,High,2,156,79
+USR000608,High-value Active,Low,6,478,2
+USR000609,Casual Browser,High,9,418,46
+USR000610,Lost-Compliance,Low,8,220,1
+USR000611,Churned,Critical,1,378,127
+USR000612,Churned,Critical,3,467,107
+USR000613,Activation Risk,High,3,30,54
+USR000614,Lost-Compliance,Low,6,216,35
+USR000615,Churned,Critical,1,429,150
+USR000616,Churned,Critical,3,184,115
+USR000617,Churned,Critical,2,410,179
+USR000618,Churned,Critical,3,345,155
+USR000619,Churned,Critical,2,150,99
+USR000620,Churned,Critical,1,280,145
+USR000621,Churned,Critical,3,315,145
+USR000622,Casual Browser,High,6,421,38
+USR000623,Lost-Compliance,Low,9,65,48
+USR000624,Casual Browser,High,8,161,79
+USR000625,Churned,Critical,4,199,98
+USR000626,Churned,Critical,2,215,108
+USR000627,Churned,Critical,4,100,142
+USR000628,Churned,Critical,3,443,109
+USR000629,Casual Browser,High,3,131,5
+USR000630,Engaged Verified,Low,8,308,22
+USR000631,Churned,Critical,2,447,96
+USR000632,Churned,Critical,4,333,136
+USR000633,Casual Browser,High,10,34,65
+USR000634,Casual Browser,High,6,246,32
+USR000635,Churned,Critical,4,491,148
+USR000636,Churned,Critical,2,312,136
+USR000637,Churned,Critical,2,480,164
+USR000638,Churned,Critical,1,144,126
+USR000639,Churned,Critical,4,413,169
+USR000640,Churned,Critical,1,22,154
+USR000641,Lost-Compliance,Low,3,140,59
+USR000642,Churned,Critical,2,326,122
+USR000643,Churned,Critical,1,14,146
+USR000644,Casual Browser,High,4,302,62
+USR000645,Churned,Critical,3,283,149
+USR000646,Casual Browser,High,2,265,88
+USR000647,Churned,Critical,1,339,137
+USR000648,Churned,Critical,1,61,137
+USR000649,Churned,Critical,2,435,149
+USR000650,Churned,Critical,2,10,93
+USR000651,Churned,Critical,1,288,107
+USR000652,Churned,Critical,1,462,153
+USR000653,Activation Risk,High,1,15,27
+USR000654,Activation Risk,High,8,204,22
+USR000655,Casual Browser,High,6,94,57
+USR000656,Churned,Critical,2,429,101
+USR000657,Casual Browser,High,6,166,48
+USR000658,Casual Browser,High,1,371,78
+USR000659,Churned,Critical,2,458,119
+USR000660,Churned,Critical,3,458,138
+USR000661,Churned,Critical,4,174,141
+USR000662,Churned,Critical,3,227,110
+USR000663,Churned,Critical,3,136,94
+USR000664,Churned,Critical,1,87,105
+USR000665,Casual Browser,High,3,279,49
+USR000666,Churned,Critical,2,26,154
+USR000667,Casual Browser,High,3,190,8
+USR000668,Casual Browser,High,3,115,78
+USR000669,Casual Browser,High,3,483,34
+USR000670,Casual Browser,High,4,358,77
+USR000671,Churned,Critical,2,313,159
+USR000672,Casual Browser,High,1,391,16
+USR000673,High-value Active,Low,9,78,2
+USR000674,Lost-Compliance,Low,8,297,23
+USR000675,Churned,Critical,2,82,162
+USR000676,Casual Browser,High,9,209,46
+USR000677,Casual Browser,High,6,465,32
+USR000678,Engaged Verified,Low,8,77,12
+USR000679,Engaged Verified,Low,1,30,28
+USR000680,Churned,Critical,3,241,117
+USR000681,Churned,Critical,2,460,101
+USR000682,Casual Browser,High,10,455,85
+USR000683,Casual Browser,High,2,305,43
+USR000684,Activation Risk,High,4,300,39
+USR000685,Churned,Critical,4,51,144
+USR000686,Churned,Critical,1,316,162
+USR000687,Engaged Verified,Low,9,338,26
+USR000688,Churned,Critical,3,87,147
+USR000689,Engaged Verified,Low,9,373,27
+USR000690,Churned,Critical,4,204,99
+USR000691,Casual Browser,High,9,77,78
+USR000692,Churned,Critical,2,32,127
+USR000693,Churned,Critical,4,276,176
+USR000694,Casual Browser,High,10,374,86
+USR000695,Activation Risk,High,3,86,2
+USR000696,Churned,Critical,1,166,123
+USR000697,Casual Browser,High,4,487,57
+USR000698,Churned,Critical,1,408,116
+USR000699,Churned,Critical,4,486,97
+USR000700,Churned,Critical,2,153,104
+USR000701,Casual Browser,High,3,296,67
+USR000702,Casual Browser,High,7,122,33
+USR000703,Engaged Verified,Low,1,232,1
+USR000704,Churned,Critical,1,143,114
+USR000705,Churned,Critical,2,437,127
+USR000706,Casual Browser,High,8,161,72
+USR000707,Churned,Critical,1,166,161
+USR000708,Churned,Critical,3,310,122
+USR000709,High-value Active,Low,2,88,2
+USR000710,Churned,Critical,2,483,180
+USR000711,Churned,Critical,1,383,171
+USR000712,Casual Browser,High,8,287,63
+USR000713,Lost-Compliance,Low,9,377,79
+USR000714,Casual Browser,High,5,343,80
+USR000715,Churned,Critical,3,207,104
+USR000716,Engaged Verified,Low,10,121,7
+USR000717,Casual Browser,High,9,364,22
+USR000718,Churned,Critical,2,151,95
+USR000719,Casual Browser,High,9,240,71
+USR000720,Casual Browser,High,1,114,67
+USR000721,Churned,Critical,2,415,139
+USR000722,Churned,Critical,4,120,143
+USR000723,Churned,Critical,3,78,99
+USR000724,Casual Browser,High,8,77,59
+USR000725,Engaged Verified,Low,4,365,27
+USR000726,Churned,Critical,1,375,170
+USR000727,Casual Browser,High,2,414,50
+USR000728,Casual Browser,High,4,13,67
+USR000729,Churned,Critical,2,279,149
+USR000730,Casual Browser,High,8,11,81
+USR000731,Casual Browser,High,1,116,45
+USR000732,Churned,Critical,3,273,154
+USR000733,Casual Browser,High,10,217,44
+USR000734,Casual Browser,High,5,305,74
+USR000735,Activation Risk,High,7,362,17
+USR000736,Churned,Critical,2,413,135
+USR000737,Engaged Verified,Low,5,194,7
+USR000738,Casual Browser,High,6,366,34
+USR000739,Churned,Critical,3,26,136
+USR000740,Churned,Critical,3,335,119
+USR000741,Churned,Critical,1,109,146
+USR000742,Churned,Critical,4,178,167
+USR000743,Churned,Critical,4,181,146
+USR000744,High-value Active,Low,1,235,3
+USR000745,Casual Browser,High,1,470,38
+USR000746,Casual Browser,High,6,206,63
+USR000747,Churned,Critical,2,203,175
+USR000748,Casual Browser,High,6,166,18
+USR000749,Engaged Verified,Low,6,226,6
+USR000750,Churned,Critical,2,94,111
+USR000751,Churned,Critical,2,250,147
+USR000752,Churned,Critical,3,471,166
+USR000753,Churned,Critical,1,202,175
+USR000754,Churned,Critical,1,471,174
+USR000755,Churned,Critical,1,83,102
+USR000756,Churned,Critical,2,309,105
+USR000757,Casual Browser,High,10,215,78
+USR000758,Casual Browser,High,4,371,29
+USR000759,Lost-Compliance,Low,9,286,33
+USR000760,Activation Risk,High,6,484,47
+USR000761,Churned,Critical,1,235,177
+USR000762,Casual Browser,High,3,477,38
+USR000763,Churned,Critical,3,379,171
+USR000764,Casual Browser,High,8,486,71
+USR000765,Casual Browser,High,8,8,57
+USR000766,Churned,Critical,2,304,168
+USR000767,Churned,Critical,3,103,166
+USR000768,Casual Browser,High,9,132,51
+USR000769,Churned,Critical,4,234,121
+USR000770,Engaged Verified,Low,6,307,29
+USR000771,Casual Browser,High,4,37,69
+USR000772,Churned,Critical,4,386,102
+USR000773,Churned,Critical,1,209,166
+USR000774,Casual Browser,High,6,368,8
+USR000775,Engaged Verified,Low,7,132,17
+USR000776,Casual Browser,High,5,330,86
+USR000777,Casual Browser,High,2,87,66
+USR000778,Churned,Critical,3,107,178
+USR000779,Engaged Verified,Low,4,207,26
+USR000780,Activation Risk,High,4,385,35
+USR000781,Casual Browser,High,1,336,77
+USR000782,Casual Browser,High,8,281,37
+USR000783,Casual Browser,High,1,36,60
+USR000784,Casual Browser,High,7,105,47
+USR000785,Casual Browser,High,7,83,53
+USR000786,Engaged Verified,Low,7,385,8
+USR000787,Casual Browser,High,8,119,36
+USR000788,Churned,Critical,1,230,148
+USR000789,Churned,Critical,4,311,102
+USR000790,Churned,Critical,2,255,180
+USR000791,Churned,Critical,2,348,110
+USR000792,Engaged Verified,Low,2,315,22
+USR000793,Casual Browser,High,2,44,64
+USR000794,Churned,Critical,1,312,104
+USR000795,Churned,Critical,4,53,138
+USR000796,Lost-Compliance,Low,2,21,25
+USR000797,Churned,Critical,1,293,94
+USR000798,Activation Risk,High,10,233,26
+USR000799,Casual Browser,High,6,352,83
+USR000800,Churned,Critical,3,394,160
+USR000801,Churned,Critical,2,224,102
+USR000802,Casual Browser,High,1,306,14
+USR000803,Casual Browser,High,10,243,67
+USR000804,Casual Browser,High,4,46,32
+USR000805,Engaged Verified,Low,8,23,11
+USR000806,Casual Browser,High,4,19,36
+USR000807,Churned,Critical,1,63,131
+USR000808,Churned,Critical,2,333,127
+USR000809,Churned,Critical,3,122,164
+USR000810,Churned,Critical,1,362,135
+USR000811,Churned,Critical,2,379,142
+USR000812,Lost-Compliance,Low,8,295,64
+USR000813,Churned,Critical,4,33,92
+USR000814,Casual Browser,High,10,6,49
+USR000815,Casual Browser,High,2,160,69
+USR000816,Churned,Critical,4,491,98
+USR000817,Churned,Critical,1,91,147
+USR000818,Churned,Critical,2,25,164
+USR000819,Lost-Compliance,Low,8,13,2
+USR000820,Casual Browser,High,10,246,14
+USR000821,Engaged Verified,Low,4,65,9
+USR000822,Churned,Critical,1,451,136
+USR000823,Casual Browser,High,7,395,35
+USR000824,Activation Risk,High,2,59,7
+USR000825,Activation Risk,High,9,41,32
+USR000826,Churned,Critical,2,94,114
+USR000827,Churned,Critical,1,85,168
+USR000828,Churned,Critical,1,197,132
+USR000829,Casual Browser,High,5,177,76
+USR000830,Casual Browser,High,6,69,69
+USR000831,Lost-Compliance,Low,9,216,35
+USR000832,Churned,Critical,2,256,143
+USR000833,Churned,Critical,1,168,146
+USR000834,Churned,Critical,4,240,93
+USR000835,Churned,Critical,2,420,140
+USR000836,Churned,Critical,1,146,161
+USR000837,Casual Browser,High,7,46,84
+USR000838,Churned,Critical,2,121,106
+USR000839,Churned,Critical,3,163,138
+USR000840,Casual Browser,High,8,81,90
+USR000841,Engaged Verified,Low,5,49,30
+USR000842,Engaged Verified,Low,3,40,26
+USR000843,Churned,Critical,3,309,119
+USR000844,Casual Browser,High,7,273,31
+USR000845,Churned,Critical,3,428,142
+USR000846,Casual Browser,High,8,328,63
+USR000847,Casual Browser,High,4,124,76
+USR000848,Casual Browser,High,3,14,41
+USR000849,Churned,Critical,3,84,146
+USR000850,Casual Browser,High,6,485,87
+USR000851,Churned,Critical,1,346,105
+USR000852,Lost-Compliance,Low,7,331,38
+USR000853,Churned,Critical,3,75,98
+USR000854,Casual Browser,High,3,421,46
+USR000855,Casual Browser,High,10,114,70
+USR000856,Churned,Critical,1,154,156
+USR000857,Engaged Verified,Low,6,109,25
+USR000858,Engaged Verified,Low,4,227,16
+USR000859,Casual Browser,High,7,75,24
+USR000860,Lost-Compliance,Low,8,332,65
+USR000861,Churned,Critical,1,92,133
+USR000862,Churned,Critical,2,140,148
+USR000863,Casual Browser,High,1,166,90
+USR000864,Casual Browser,High,8,144,70
+USR000865,High-value Active,Low,3,234,3
+USR000866,Engaged Verified,Low,1,54,26
+USR000867,Casual Browser,High,10,454,66
+USR000868,Churned,Critical,3,419,179
+USR000869,Churned,Critical,4,476,126
+USR000870,Churned,Critical,1,112,93
+USR000871,Activation Risk,High,4,307,26
+USR000872,Churned,Critical,3,393,126
+USR000873,Churned,Critical,3,80,154
+USR000874,Casual Browser,High,1,485,0
+USR000875,Casual Browser,High,9,67,26
+USR000876,Casual Browser,High,2,384,83
+USR000877,Churned,Critical,4,489,147
+USR000878,Churned,Critical,3,29,108
+USR000879,Casual Browser,High,5,148,37
+USR000880,Engaged Verified,Low,6,244,18
+USR000881,Churned,Critical,4,228,137
+USR000882,Churned,Critical,3,44,91
+USR000883,Churned,Critical,4,192,134
+USR000884,Churned,Critical,1,287,121
+USR000885,Churned,Critical,4,144,134
+USR000886,Activation Risk,High,5,290,19
+USR000887,Lost-Compliance,Low,5,108,28
+USR000888,Casual Browser,High,3,153,25
+USR000889,Churned,Critical,1,331,152
+USR000890,Churned,Critical,3,425,125
+USR000891,Casual Browser,High,5,361,56
+USR000892,Casual Browser,High,1,147,45
+USR000893,Churned,Critical,3,20,139
+USR000894,Churned,Critical,1,310,171
+USR000895,Casual Browser,High,6,227,35
+USR000896,Activation Risk,High,6,148,39
+USR000897,Engaged Verified,Low,7,16,1
+USR000898,Casual Browser,High,8,463,69
+USR000899,Casual Browser,High,5,1,82
+USR000900,Churned,Critical,1,381,93
+USR000901,Churned,Critical,2,328,147
+USR000902,High-value Active,Low,1,59,11
+USR000903,Casual Browser,High,2,314,42
+USR000904,Casual Browser,High,7,147,50
+USR000905,Casual Browser,High,8,29,42
+USR000906,Churned,Critical,3,311,112
+USR000907,Engaged Verified,Low,10,472,24
+USR000908,Churned,Critical,2,120,120
+USR000909,Casual Browser,High,1,11,40
+USR000910,Casual Browser,High,1,356,67
+USR000911,Churned,Critical,1,54,118
+USR000912,Churned,Critical,2,114,99
+USR000913,Casual Browser,High,5,164,44
+USR000914,Lost-Compliance,Low,2,310,43
+USR000915,Churned,Critical,3,73,145
+USR000916,Churned,Critical,1,460,155
+USR000917,Casual Browser,High,6,240,43
+USR000918,Churned,Critical,1,129,172
+USR000919,Churned,Critical,4,366,173
+USR000920,Churned,Critical,4,258,91
+USR000921,Engaged Verified,Low,1,418,4
+USR000922,Casual Browser,High,10,386,28
+USR000923,Engaged Verified,Low,2,361,2
+USR000924,Engaged Verified,Low,5,426,22
+USR000925,Lost-Compliance,Low,5,109,64
+USR000926,Churned,Critical,4,68,155
+USR000927,Churned,Critical,3,142,134
+USR000928,Casual Browser,High,5,136,52
+USR000929,Churned,Critical,3,384,108
+USR000930,Churned,Critical,1,66,161
+USR000931,Casual Browser,High,1,314,42
+USR000932,Activation Risk,High,1,110,48
+USR000933,Churned,Critical,1,272,113
+USR000934,Casual Browser,High,5,157,61
+USR000935,Casual Browser,High,1,226,81
+USR000936,Casual Browser,High,1,484,42
+USR000937,Churned,Critical,3,343,167
+USR000938,Activation Risk,High,7,44,39
+USR000939,Casual Browser,High,5,401,76
+USR000940,Engaged Verified,Low,6,115,17
+USR000941,Casual Browser,High,5,354,37
+USR000942,Churned,Critical,4,106,100
+USR000943,Churned,Critical,4,273,128
+USR000944,Churned,Critical,2,55,99
+USR000945,Casual Browser,High,5,306,78
+USR000946,Lost-Compliance,Low,9,423,71
+USR000947,Lost-Compliance,Low,8,269,64
+USR000948,Churned,Critical,3,74,155
+USR000949,Churned,Critical,2,117,91
+USR000950,Casual Browser,High,6,250,64
+USR000951,Activation Risk,High,7,309,33
+USR000952,Casual Browser,High,1,178,53
+USR000953,Churned,Critical,3,305,99
+USR000954,Churned,Critical,2,232,116
+USR000955,Churned,Critical,3,284,135
+USR000956,Casual Browser,High,7,468,31
+USR000957,Churned,Critical,4,64,143
+USR000958,Churned,Critical,2,253,122
+USR000959,Churned,Critical,3,276,123
+USR000960,Casual Browser,High,8,345,83
+USR000961,Churned,Critical,4,330,112
+USR000962,Churned,Critical,1,306,149
+USR000963,Lost-Compliance,Low,2,145,0
+USR000964,Casual Browser,High,4,127,87
+USR000965,Churned,Critical,1,433,175
+USR000966,Churned,Critical,4,17,172
+USR000967,Activation Risk,High,10,366,9
+USR000968,Lost-Compliance,Low,6,71,8
+USR000969,Churned,Critical,1,271,109
+USR000970,Casual Browser,High,2,425,32
+USR000971,Churned,Critical,1,31,177
+USR000972,Casual Browser,High,3,343,83
+USR000973,Casual Browser,High,2,476,65
+USR000974,Churned,Critical,4,131,158
+USR000975,Churned,Critical,3,360,122
+USR000976,Churned,Critical,2,325,97
+USR000977,High-value Active,Low,6,286,4
+USR000978,Engaged Verified,Low,1,256,15
+USR000979,Churned,Critical,1,403,165
+USR000980,Churned,Critical,3,28,104
+USR000981,Churned,Critical,3,436,164
+USR000982,Casual Browser,High,10,164,73
+USR000983,Churned,Critical,1,222,115
+USR000984,Churned,Critical,3,300,171
+USR000985,Churned,Critical,2,86,94
+USR000986,Casual Browser,High,2,236,83
+USR000987,Churned,Critical,3,61,113
+USR000988,Churned,Critical,1,218,99
+USR000989,Churned,Critical,4,468,121
+USR000990,Churned,Critical,1,307,161
+USR000991,Lost-Compliance,Low,8,425,5
+USR000992,Engaged Verified,Low,5,365,9
+USR000993,Engaged Verified,Low,2,210,13
+USR000994,Engaged Verified,Low,7,443,9
+USR000995,Churned,Critical,3,183,140
+USR000996,Engaged Verified,Low,8,307,2
+USR000997,Casual Browser,High,8,412,32
+USR000998,Churned,Critical,4,159,112
+USR000999,Churned,Critical,2,45,128
+USR001000,Casual Browser,High,2,182,86

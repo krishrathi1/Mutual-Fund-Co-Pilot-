@@ -294,6 +294,9 @@ interface FundStore {
   fetchGoals: () => Promise<void>
   addGoal: (goal: Omit<GoalData, 'id' | 'allocation' | 'monthlySip' | 'recommendedFunds' | 'createdAt'>) => Promise<void>
   removeGoal: (id: string) => Promise<void>
+  
+  // Demo Mode
+  loadDemoPortfolio: () => Promise<void>
 }
 
 // Generate a session ID
@@ -600,6 +603,17 @@ export const useFundStore = create<FundStore>((set, get) => ({
   removeGoal: async (id) => {
     const { sessionId } = get()
     await fetch(`/api/goals/${id}?sessionId=${sessionId}`, { method: 'DELETE' })
+    await get().fetchGoals()
+  },
+  
+  loadDemoPortfolio: async () => {
+    const demoId = 'demo-user-session'
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('fundvista-session', demoId)
+    }
+    set({ sessionId: demoId })
+    await get().fetchHoldings()
+    await get().fetchWatchlist()
     await get().fetchGoals()
   },
 }))

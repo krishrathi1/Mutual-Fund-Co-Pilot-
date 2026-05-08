@@ -260,6 +260,18 @@ export default function PortfolioBuilder() {
             <FileUp className="h-4 w-4" />
             Quick Import
           </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-2 border-amber-300 text-amber-700 hover:bg-amber-50 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-950/30"
+            onClick={async () => {
+              await useFundStore.getState().loadDemoPortfolio()
+              toast.success('Demo portfolio loaded')
+            }}
+          >
+            <Sparkles className="h-4 w-4" />
+            Demo Data
+          </Button>
         </div>
       </div>
 

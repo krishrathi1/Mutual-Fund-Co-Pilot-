@@ -1,10 +1,58 @@
-# FundVista - Mutual Fund Co-Pilot
+# FundVista: The Mutual Fund Co-Pilot 🚀
 
-FundVista is a full-stack mutual fund research, portfolio analysis, planning, and optimization platform for Indian retail investors. It helps users understand mutual funds in simple language, compare Direct and Regular plans, calculate hidden commission cost, analyze portfolio health, and plan long-term financial goals.
+> **Submission for Hack to the Future Hackathon (May 2026)**
+> *Transforming how 40 million Indian investors optimize their mutual fund wealth.*
 
-The core idea is simple:
+---
 
-> A small expense ratio difference can become a large wealth difference over many years. FundVista turns that hidden cost into clear rupee-based insights.
+## 📝 Founder's Report (The "Technical Bet")
+
+### 01. The Problem
+The Indian mutual fund industry has seen explosive growth (40M+ SIP accounts), yet a massive "performance leakage" persists. Millions of retail investors are unknowingly stuck in **Regular Plans**, paying 0.5%–1.5% annually in hidden distributor commissions. Over 20 years, this translates to a loss of ₹20L–₹50L for a typical middle-class portfolio. Existing platforms either ignore this (to protect commissions) or provide "dumb" migration tools that don't account for exit loads, STCG/LTCG taxes, or the psychological friction of switching.
+
+### 02. The Solution
+**FundVista** is an AI-first co-pilot designed to plug this leakage. It doesn't just list funds; it audits your entire portfolio to identify "switch opportunities" where the long-term compounding benefits of Direct plans outweigh the immediate tax/exit load costs. The core flow is: **Portfolio Audit ➜ Optimization Roadmap ➜ AI Advisory**. By quantifying "Lifetime Savings" (up to retirement), we turn a dry financial decision into a high-stakes wealth-building milestone.
+
+### 03. The Approach (Our Technical Bet)
+We bet on **"Augmented Analysis"** rather than just raw LLM chat. Our engine combines a precision financial calculator (built on Budget 2024 tax rules) with a **RAG-powered AI Advisor**. While the calculator handles the "hard" math of CAGR and XIRR, the AI uses a retrieval system to fetch real-time fund data (expense ratios, AUM, riskometers) from our local SQLite/Prisma database to provide context-aware advice. This hybrid approach ensures 100% mathematical accuracy while maintaining the conversational ease of a human advisor.
+
+### 04. Next Steps
+Given another month, we would implement **"Zero-Friction Migration"**: a one-click execution engine using the Account Aggregator (AA) framework to fetch CAS (Consolidated Account Statements) and initiate switches via BSE Star MF/NSE NMF II APIs. We would also expand the AI Co-pilot into an "Agentic Auditor" that proactively alerts users when a fund's manager changes or when a category's benchmark outperformance drops below a threshold for three consecutive quarters.
+
+---
+
+## 🏗️ System Architecture
+
+FundVista is built as a high-performance, local-first web application.
+
+- **Frontend**: Next.js 15 (App Router) with Tailwind CSS and Framer Motion for a premium, "fintech-pro" aesthetic.
+- **Backend**: Next.js API Routes (Serverless) handling complex financial logic (Tax, Exit Load, Savings).
+- **Database**: SQLite with Prisma ORM for lightning-fast local data retrieval and persistence.
+- **AI Engine**: Z-AI SDK with a custom RAG (Retrieval-Augmented Generation) layer that fetches fund-specific context before generating advice.
+- **State Management**: Zustand for cross-component synchronization of portfolio and analysis state.
+
+---
+
+## 🌟 Core Features
+
+### 1. Portfolio Optimizer (The "Switch" Engine)
+Identifies Regular plans and calculates the exact "Break-even Month" for switching to Direct plans, accounting for:
+- **Budget 2024 Tax Rules**: STCG (20%) and LTCG (12.5% above ₹1.25L).
+- **Exit Load Logic**: Dynamic calculation based on purchase date and fund-specific load structures.
+- **Compounding Delta**: Visualization of the 20-30 year wealth gap between plans.
+
+### 2. RAG AI Co-pilot
+A persistent sidebar assistant that knows your portfolio. It can:
+- **Retrieve Fund Data**: "Tell me about my ICICI Bluechip holding."
+- **Explain Strategies**: "Why is a Mid-Cap fund riskier than a Large-Cap?"
+- **Tax Advisory**: "How much LTCG will I pay if I sell today?"
+- **Fallback Resilience**: Operates in "Rule-based mode" if LLM services are unreachable, ensuring the demo never breaks.
+
+### 3. Advanced Analytics Suite
+- **Fund Heatmap**: Visualizing category-wise performance.
+- **Portfolio Overlap**: Detecting over-diversification (holding the same stocks across multiple funds).
+- **Stress Testing**: Simulating 2008-style or 2020-style crashes on the current portfolio.
+- **XIRR & CAGR**: Precise performance tracking beyond simple absolute returns.
 
 ## Table of Contents
 

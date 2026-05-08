@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ZAI from 'z-ai-web-dev-sdk'
+import { db } from '@/lib/db'
 
-// AI Co-pilot Chat - Multi-turn conversation about mutual funds
+// AI Co-pilot Chat - Multi-turn conversation about mutual funds with basic RAG
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
@@ -28,62 +29,92 @@ function cleanupOldConversations() {
   }
 }
 
-const SYSTEM_PROMPT = `You are an expert Indian mutual fund advisor built into FundVista, a mutual fund analysis platform. Your role is to help Indian retail investors make informed decisions about mutual fund investments.
+const SYSTEM_PROMPT = `You are an expert Indian mutual fund advisor built into FundVista, a SEBI-compliant mutual fund analysis platform. Your role is to help Indian retail investors make informed decisions about mutual fund investments.
 
-Key areas you can help with:
-1. **Direct vs Regular plans**: Explain why Direct plans are better for self-directed investors (lower expense ratios, higher returns over time). Provide concrete savings calculations.
-2. **Cost analysis**: Help users understand total expense ratios, exit loads, and their long-term impact on returns.
-3. **Fund selection**: Guide users on choosing funds based on their risk profile, investment horizon, and financial goals.
-4. **Tax implications**: Explain STCG (Short Term Capital Gains) and LTCG (Long Term Capital Gains) tax rules for Indian mutual funds (Budget 2024 rules: Equity STCG 20%, LTCG 12.5% above ₹1.25L exemption; Debt at slab rate).
-5. **Portfolio construction**: Help build diversified portfolios across equity, debt, and hybrid categories.
-6. **SIP vs Lumpsum**: Discuss the pros and cons of each approach.
-7. **Goal-based investing**: Retirement, children's education, house purchase, etc.
-8. **Risk assessment**: Explain riskometers, diversification, concentration risk.
+Rules you must always follow (Compliance & Quality):
+1. **Vernacular Match**: Respond in the SAME LANGUAGE as the user. If they code-mix (e.g., Hinglish like "mujhe Large Cap funds ke baare mein batao"), match that register exactly.
+2. **NEVER recommend a specific fund** as "best" or "should buy". Instead, describe trade-offs, category fits, and criteria.
+3. **Budget 2024 Tax Rules**: Always use current rules (Equity STCG 20%, LTCG 12.5% > ₹1.25L; Debt at slab).
+4. **Disclosures**: Always mention that mutual fund investments are subject to market risks.
+5. **Direct vs Regular**: Explain the 0.5%–1.5% compounding advantage of Direct plans clearly.
+6. **Data-Driven**: Use the [FUND DATA CONTEXT] provided below to give precise, cited answers. If a fund's data is in context, cite it like [Source: FundVista Database].
+7. **No Hallucinations**: If you don't have specific data for a fund not in context, say "I don't have the live data for this fund in my database right now, but I can tell you about the category."
+8. **No PII**: Never ask for or store full PAN, Aadhaar, or bank details.
 
-Important guidelines:
-- Always use Indian Rupee (₹) for amounts
-- Reference Indian market context (SEBI, AMFI, Nifty, Sensex)
-- Be concise but thorough (2-4 paragraphs typically)
-- If asked about specific fund recommendations, suggest categories and criteria rather than specific funds
-- Always mention that mutual fund investments are subject to market risks
-- For tax questions, remind users to consult a tax professional for their specific situation
-- Do not provide specific stock tips or guaranteed return promises
-- If the user asks something outside your domain, politely redirect to mutual fund topics
+Key Knowledge Areas:
+- Direct vs Regular plan optimization (The core value prop)
+- Tax implications (STCG/LTCG/Budget 2024)
+- Portfolio construction & Risk profiling
+- Exit loads & Break-even analysis
 
-Remember: You're helping real people make financial decisions. Be responsible, clear, and honest about risks.`
+Tone: Professional, honest, and helpful. Avoid pressure language.`
+
+async function getRetrievedData(message: string) {
+  const lowerMsg = message.toLowerCase()
+  
+  // Basic keyword extraction for fund search
+  const keywords = lowerMsg.split(' ').filter(w => w.length > 3 && !['what', 'how', 'tell', 'about', 'fund', 'mutual', 'mein', 'batao', 'kaise'].includes(w))
+  
+  if (keywords.length === 0) return null
+
+  try {
+    // Search for funds matching keywords
+    const funds = await db.fund.findMany({
+      where: {
+        OR: [
+          { schemeName: { contains: keywords[0] } },
+          { fundHouse: { contains: keywords[0] } },
+          { category: { contains: keywords[0] } }
+        ]
+      },
+      take: 5
+    })
+
+    if (funds.length === 0) return null
+
+    const context = funds.map(f => `
+Fund: ${f.schemeName}
+Category: ${f.category} (${f.subCategory})
+Direct Expense: ${f.directExpenseRatio}% | Regular Expense: ${f.regularExpenseRatio}%
+1Y Return: ${f.directReturn1y}% | 3Y Return: ${f.directReturn3y}% | 5Y Return: ${f.directReturn5y}%
+AUM: ₹${f.aumCrore} Crore
+Risk: ${f.riskometer}
+`).join('\n---\n')
+
+    return `\n\n[FUND DATA CONTEXT]\n${context}\n[/FUND DATA CONTEXT]`
+  } catch (err) {
+    console.error('Retrieval error:', err)
+    return null
+  }
+}
 
 function generateFallbackResponse(message: string): string {
   const lowerMsg = message.toLowerCase()
 
-  if (lowerMsg.includes('direct') && lowerMsg.includes('regular')) {
-    return `Direct plans have lower expense ratios than Regular plans because they don't include distributor commissions. For example, if a Regular plan charges 1.5% and the Direct plan charges 0.75%, that 0.75% difference compounds significantly over time. On a ₹10 lakh investment over 20 years at 12% returns, switching from Regular to Direct could save you approximately ₹6-8 lakhs. The underlying portfolio is identical — the only difference is the commission. Use FundVista's Savings Calculator to see exact numbers for your holdings.`
+  // Support for Hinglish in fallback detection
+  const isDirectReq = lowerMsg.includes('direct') || lowerMsg.includes('regular') || lowerMsg.includes('switch')
+  const isTaxReq = lowerMsg.includes('tax') || lowerMsg.includes('stcg') || lowerMsg.includes('ltcg') || lowerMsg.includes('income')
+  const isSipReq = lowerMsg.includes('sip') || lowerMsg.includes('systematic') || lowerMsg.includes('investment')
+  
+  if (isDirectReq) {
+    return `Direct plans have lower expense ratios (typically 0.5%–1% lower) than Regular plans because they don't include distributor commissions. Over 20 years, this small difference can increase your wealth by 20-30% due to compounding. On a ₹10L investment, switching could save you ₹6-8L. The underlying stocks are exactly the same. Use our Switch Guide to check exit loads before moving. *Mutual fund investments are subject to market risks.*`
   }
 
-  if (lowerMsg.includes('tax') || lowerMsg.includes('stcg') || lowerMsg.includes('ltcg')) {
-    return `For Indian mutual funds (Budget 2024 rules): **Equity funds** — STCG (held < 1 year) is taxed at 20% on gains, LTCG (held > 1 year) at 12.5% on gains above ₹1.25 lakh annual exemption. **Debt funds** — All gains (short or long term) are added to your income and taxed at your slab rate (no indexation benefit for purchases after April 2023). **Hybrid funds** with ≥65% equity are taxed like equity funds. Use FundVista's Tax Calculator for precise calculations on your portfolio.`
+  if (isTaxReq) {
+    return `As per Budget 2024: Equity mutual funds (held > 1 year) are taxed at 12.5% for gains above ₹1.25L. STCG (held < 1 year) is 20%. Debt funds are taxed at your income slab rate. Always consult a tax professional for specific filing. *Mutual fund investments are subject to market risks.*`
   }
 
-  if (lowerMsg.includes('sip') || lowerMsg.includes('systematic')) {
-    return `SIP (Systematic Investment Plan) is an excellent way to invest in mutual funds. Benefits include: 1) Rupee cost averaging — you buy more units when markets are low and fewer when high, 2) Disciplined investing — automatic monthly investments, 3) No need to time the market, 4) Power of compounding over long periods. For most retail investors, SIP is preferred over lumpsum as it reduces timing risk. FundVista's Savings Calculator can show you projected SIP returns over different time horizons.`
+  if (isSipReq) {
+    return `SIP (Systematic Investment Plan) uses Rupee Cost Averaging to lower your average purchase price over time. It's generally safer than Lumpsum for retail investors as it removes the need to "time the market." You can start with as little as ₹500 in many funds. *Mutual fund investments are subject to market risks.*`
   }
 
-  if (lowerMsg.includes('risk') || lowerMsg.includes('safe')) {
-    return `Mutual fund risk varies by category: **Low risk** — Liquid/Overnight funds, **Low to Moderate** — Short Duration Debt funds, **Moderate** — Hybrid/Balanced Advantage funds, **Moderately High** — Large Cap Equity funds, **High** — Mid Cap funds, **Very High** — Small Cap and Sectoral funds. SEBI-mandated riskometers on each fund help you assess risk. Diversification across categories reduces overall portfolio risk. Use FundVista's Portfolio Analyzer to check your risk profile and diversification score.`
-  }
+  return `I'm your FundVista AI Co-pilot! I can help you with:
+- **Direct vs Regular**: Seeing how much hidden commission you're paying.
+- **Tax Rules**: Understanding the new Budget 2024 STCG/LTCG rates.
+- **Fund Analysis**: Breaking down risk, expense ratios, and performance.
+- **Switching**: Guiding you through exit loads and taxes.
 
-  if (lowerMsg.includes('elss') || lowerMsg.includes('tax sav')) {
-    return `ELSS (Equity Linked Savings Scheme) funds offer dual benefits: 1) Tax deduction under Section 80C up to ₹1.5 lakh per year, 2) Equity market returns. Key points: 3-year lock-in period (shortest among 80C options), returns are taxed as equity funds (LTCG at 12.5% above ₹1.25L exemption after 3 years), and you can invest via SIP. Popular ELSS categories include tax saver funds from major fund houses. Always choose Direct plans for lower expense ratios.`
-  }
-
-  return `I'm here to help with Indian mutual fund questions! I can assist with:
-- **Direct vs Regular** plan comparisons and savings calculations
-- **Tax implications** (STCG/LTCG rules post Budget 2024)
-- **Fund selection** based on your risk profile and goals
-- **SIP vs Lumpsum** investment strategies
-- **Portfolio diversification** and risk assessment
-- **Goal-based investing** (retirement, education, etc.)
-
-Could you share more details about what you'd like to know? For example, "Should I switch from Regular to Direct?" or "How are my equity fund gains taxed?"`
+Aap mujhse kuch bhi pooch sakte hain, jaise "What are the tax rules for equity funds?" ya "Should I switch to direct plans?"`
 }
 
 export async function POST(request: NextRequest) {
@@ -102,23 +133,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Clean up old conversations
     cleanupOldConversations()
+
+    // Get retrieved data (RAG)
+    const retrievedContext = await getRetrievedData(message)
+    const dynamicSystemPrompt = SYSTEM_PROMPT + (retrievedContext || '')
 
     // Get or create conversation history
     let conversation = conversationStore.get(sessionId)
     if (!conversation) {
       conversation = {
-        messages: [{ role: 'system', content: SYSTEM_PROMPT }],
+        messages: [{ role: 'system', content: dynamicSystemPrompt }],
         lastActivity: Date.now(),
       }
       conversationStore.set(sessionId, conversation)
+    } else {
+      // Update system prompt with fresh context
+      conversation.messages[0] = { role: 'system', content: dynamicSystemPrompt }
     }
 
-    // If history is provided, use it to update the conversation
+    // If history is provided, update
     if (history && Array.isArray(history) && history.length > 0) {
       conversation.messages = [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: dynamicSystemPrompt },
         ...history.slice(-(MAX_MESSAGES - 1)),
       ]
     }
@@ -127,15 +164,14 @@ export async function POST(request: NextRequest) {
     conversation.messages.push({ role: 'user', content: message })
     conversation.lastActivity = Date.now()
 
-    // Trim to max messages (keep system prompt)
+    // Trim
     if (conversation.messages.length > MAX_MESSAGES + 1) {
       conversation.messages = [
-        conversation.messages[0], // Keep system prompt
+        conversation.messages[0],
         ...conversation.messages.slice(-(MAX_MESSAGES)),
       ]
     }
 
-    // Try LLM call
     let response: string
     try {
       const zai = await ZAI.create()
@@ -148,8 +184,6 @@ export async function POST(request: NextRequest) {
 
       if (assistantMessage) {
         response = assistantMessage
-
-        // Add to conversation history
         conversation.messages.push({ role: 'assistant', content: response })
         conversation.lastActivity = Date.now()
       } else {
@@ -160,7 +194,6 @@ export async function POST(request: NextRequest) {
       response = generateFallbackResponse(message)
     }
 
-    // Generate message ID
     const messageId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
 
     return NextResponse.json({
