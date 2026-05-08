@@ -22,14 +22,13 @@ import {
 const CATEGORY_RETURNS: Record<string, number> = { Equity: 12, ELSS: 12, Index: 11, Hybrid: 9, Debt: 7 }
 
 export default function SavingsCalculator() {
-  const { funds, fetchFunds, savingsResult, savingsLoading, calculateSavings, savingsMode, setSavingsMode, monthlySip, setMonthlySip } = useFundStore()
+  const { funds, fetchFunds, savingsResult, savingsLoading, calculateSavings } = useFundStore()
 
   const [selectedFundId, setSelectedFundId] = useState('')
   const [investedAmount, setInvestedAmount] = useState('500000')
   const [years, setYears] = useState('20')
   const [customDirect, setCustomDirect] = useState('')
   const [customRegular, setCustomRegular] = useState('')
-  const [sipAmount, setSipAmount] = useState('10000')
   const [refreshing, setRefreshing] = useState(false)
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
 
@@ -83,10 +82,6 @@ export default function SavingsCalculator() {
     if (effectiveExpectedReturn != null && effectiveFundId !== 'custom') {
       params.expectedReturn = effectiveExpectedReturn
     }
-    if (savingsMode === 'sip') {
-      params.mode = 'sip'
-      params.monthlySip = parseFloat(sipAmount) || 10000
-    }
     calculateSavings(params as Parameters<typeof calculateSavings>[0])
   }
 
@@ -99,13 +94,9 @@ export default function SavingsCalculator() {
       }
       if (effectiveFundId) params.fundId = effectiveFundId
       if (effectiveExpectedReturn != null) params.expectedReturn = effectiveExpectedReturn
-      if (savingsMode === 'sip') {
-        params.mode = 'sip'
-        params.monthlySip = parseFloat(sipAmount) || 10000
-      }
       calculateSavings(params as Parameters<typeof calculateSavings>[0])
     }
-  }, [effectiveFundId, calculateSavings, investedAmount, years, savingsResult, savingsMode, sipAmount, effectiveExpectedReturn])
+  }, [effectiveFundId, calculateSavings, investedAmount, years, savingsResult, effectiveExpectedReturn])
 
   const chartData = useMemo(() => {
     if (!savingsResult) return []
@@ -150,22 +141,6 @@ export default function SavingsCalculator() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Mode toggle */}
-          <div>
-            <Label className="mb-2 block">Investment Mode</Label>
-            <Tabs value={savingsMode} onValueChange={(v) => setSavingsMode(v as 'lumpsum' | 'sip')}>
-              <TabsList className="grid w-full max-w-xs grid-cols-2">
-                <TabsTrigger value="lumpsum" className="gap-1.5">
-                  <DollarSign className="h-3.5 w-3.5" />
-                  Lumpsum
-                </TabsTrigger>
-                <TabsTrigger value="sip" className="gap-1.5">
-                  <TrendingUp className="h-3.5 w-3.5" />
-                  SIP
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div className="space-y-2">
@@ -193,17 +168,6 @@ export default function SavingsCalculator() {
                 placeholder="500000"
               />
             </div>
-            {savingsMode === 'sip' && (
-              <div className="space-y-2">
-                <Label>Monthly SIP Amount (₹)</Label>
-                <Input
-                  type="number"
-                  value={sipAmount}
-                  onChange={(e) => setSipAmount(e.target.value)}
-                  placeholder="10000"
-                />
-              </div>
-            )}
             <div className="space-y-2">
               <Label>Investment Horizon (years)</Label>
               <Select value={years} onValueChange={setYears}>
@@ -338,7 +302,7 @@ export default function SavingsCalculator() {
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2 text-card-foreground">
                 <TrendingUp className="h-4 w-4 text-emerald-600" />
-                Wealth Growth: Direct vs Regular ({savingsMode === 'sip' ? 'SIP Mode' : 'Lumpsum'})
+                Wealth Growth: Direct vs Regular
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -447,7 +411,7 @@ export default function SavingsCalculator() {
                   <strong>What this means in plain English:</strong>
                 </p>
                 <p>
-                  If you invest <strong>{formatCurrency(parseFloat(investedAmount))}</strong>{savingsMode === 'sip' ? ` plus ₹${parseInt(sipAmount).toLocaleString('en-IN')}/month SIP` : ''} in a mutual fund and hold it for <strong>{years} years</strong>,
+                  If you invest <strong>{formatCurrency(parseFloat(investedAmount))}</strong> in a mutual fund and hold it for <strong>{years} years</strong>,
                   choosing the Direct plan instead of the Regular plan would give you <strong>{formatCurrency(savingsResult.savings)}</strong> more wealth.
                 </p>
                 <p>
