@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogDescription } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
 import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import FundDetail from '@/components/FundDetail'
@@ -39,27 +41,52 @@ export default function ExploreFunds() {
   const [addingFund, setAddingFund] = useState<string | null>(null)
   const [detailFund, setDetailFund] = useState<FundData | null>(null)
   const [detailOpen, setDetailOpen] = useState(false)
+  
+  // Add to Portfolio Dialog State
+  const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [selectedFundForAdd, setSelectedFundForAdd] = useState<FundData | null>(null)
+  const [planType, setPlanType] = useState<'direct' | 'regular'>('regular')
+  const [investedAmount, setInvestedAmount] = useState('')
+  const [currentAmount, setCurrentAmount] = useState('')
 
   useEffect(() => {
     fetchFunds()
   }, [searchQuery, categoryFilter, subCategoryFilter, sortBy])
 
-  const handleAddToPortfolio = useCallback(async (fund: FundData) => {
-    setAddingFund(fund.id)
+  const handleAddToPortfolio = useCallback((fund: FundData) => {
+    setSelectedFundForAdd(fund)
+    setInvestedAmount((fund.minInvestment * 10).toString())
+    setCurrentAmount((fund.minInvestment * 11).toString())
+    setPlanType('regular') // Usually people coming from regular plans
+    setAddDialogOpen(true)
+  }, [])
+
+  const confirmAddHolding = useCallback(async () => {
+    if (!selectedFundForAdd || !investedAmount || !currentAmount) return
+    
+    setAddingFund(selectedFundForAdd.id)
     try {
+      const invested = parseFloat(investedAmount)
+      const current = parseFloat(currentAmount)
+      const nav = planType === 'direct' ? selectedFundForAdd.directNav : selectedFundForAdd.regularNav
+
       await addHolding({
-        fundId: fund.id,
-        planType: 'regular',
-        investedAmount: fund.minInvestment * 10,
-        currentAmount: fund.minInvestment * 12,
-        units: (fund.minInvestment * 12) / fund.regularNav,
-        purchaseDate: '2023-01-15',
+        fundId: selectedFundForAdd.id,
+        planType: planType,
+        investedAmount: invested,
+        currentAmount: current,
+        units: current / nav,
+        purchaseDate: new Date().toISOString().split('T')[0],
       })
-      toast.success(`${fund.schemeName} added to portfolio`)
+      
+      setAddDialogOpen(false)
+      toast.success(`${selectedFundForAdd.schemeName} added to portfolio`)
+    } catch (err) {
+      toast.error('Failed to add fund')
     } finally {
       setAddingFund(null)
     }
-  }, [addHolding])
+  }, [addHolding, selectedFundForAdd, investedAmount, currentAmount, planType])
 
   const handleCompare = useCallback(() => {
     fetchComparisons()
@@ -249,6 +276,64 @@ export default function ExploreFunds() {
           onOpenChange={setDetailOpen}
         />
       )}
+
+      {/* Add to Portfolio Dialog */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add to Portfolio</DialogTitle>
+            <DialogDescription>
+              Enter your investment details for <strong>{selectedFundForAdd?.schemeName}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Plan Type</Label>
+              <Select value={planType} onValueChange={(v) => setPlanType(v as 'direct' | 'regular')}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="regular">Regular (Commission included)</SelectItem>
+                  <SelectItem value="direct">Direct (No commission)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Invested Amount (₹)</Label>
+                <Input
+                  type="number"
+                  placeholder="e.g. 100000"
+                  value={investedAmount}
+                  onChange={(e) => setInvestedAmount(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Current Value (₹)</Label>
+                <Input
+                  type="number"
+                  placeholder="e.g. 115000"
+                  value={currentAmount}
+                  onChange={(e) => setCurrentAmount(e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button 
+              onClick={confirmAddHolding} 
+              disabled={!investedAmount || !currentAmount || addingFund !== null} 
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {addingFund ? 'Adding...' : 'Add to Portfolio'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
