@@ -246,21 +246,13 @@ export default function SavingsCalculator() {
                 <p><strong>{selectedFund.schemeName}</strong> ({selectedFund.fundHouse})</p>
                 <Badge variant="outline" className="text-[9px]">{selectedFund.category}</Badge>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <span className="text-muted-foreground">Direct NAV:</span>
-                  <p className="font-medium">₹{selectedFund.directNav?.toFixed(2) ?? '—'}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Regular NAV:</span>
-                  <p className="font-medium">₹{selectedFund.regularNav?.toFixed(2) ?? '—'}</p>
-                </div>
-                <div>
-                  <span className="text-muted-foreground">Direct ER:</span>
+                  <span className="text-muted-foreground text-[10px]">Direct ER:</span>
                   <p className="font-medium">{selectedFund.directExpenseRatio}%</p>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">Regular ER:</span>
+                  <span className="text-muted-foreground text-[10px]">Regular ER:</span>
                   <p className="font-medium">{selectedFund.regularExpenseRatio}%</p>
                 </div>
               </div>
@@ -467,7 +459,7 @@ export default function SavingsCalculator() {
                 </p>
                 {selectedFund && (
                   <p className="text-emerald-700 dark:text-emerald-400 text-xs mt-2">
-                    📊 Calculation uses {usingActualReturn ? `actual 3Y return (${selectedFund.directReturn3y?.toFixed(1)}%)` : `category estimate (${CATEGORY_RETURNS[selectedFund.category] || 10}%)`} · Direct NAV: ₹{selectedFund.directNav?.toFixed(2)} · Regular NAV: ₹{selectedFund.regularNav?.toFixed(2)}
+                    📊 Calculation uses {usingActualReturn ? `actual 3Y return (${selectedFund.directReturn3y?.toFixed(1)}%)` : `category estimate (${CATEGORY_RETURNS[selectedFund.category] || 10}%)`}
                     {lastUpdated && ` · Refreshed: ${lastUpdated}`}
                   </p>
                 )}
