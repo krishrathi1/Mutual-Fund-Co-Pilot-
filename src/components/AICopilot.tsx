@@ -35,6 +35,7 @@ export default function AICopilot() {
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const hasShownGreetingRef = useRef(false)
 
   const dynamicSuggestions = (() => {
     if (holdings.length === 0) return [
@@ -70,7 +71,7 @@ export default function AICopilot() {
 
   // Personalized Greeting
   useEffect(() => {
-    if (isOpen && messages.length === 0 && holdings.length > 0) {
+    if (isOpen && messages.length === 0 && holdings.length > 0 && !hasShownGreetingRef.current) {
       const regularCount = holdings.filter(h => h.planType === 'regular').length
       const greeting = `Hello! I see you have **${holdings.length} funds** in your portfolio. 
       
@@ -80,14 +81,17 @@ ${regularCount > 0
       
 I'm ready to dive into your specific holdings—just ask!`
       
-      setMessages([{
+      hasShownGreetingRef.current = true
+      queueMicrotask(() => {
+        setMessages((prev) => prev.length === 0 ? [{
         id: 'greeting',
         role: 'assistant',
         content: greeting,
         timestamp: new Date()
-      }])
+        }] : prev)
+      })
     }
-  }, [isOpen, holdings])
+  }, [isOpen, messages.length, holdings])
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || isLoading) return
@@ -276,13 +280,21 @@ I'm ready to dive into your specific holdings—just ask!`
                           ? 'bg-emerald-600 text-white rounded-tr-none' 
                           : 'bg-card border border-border text-foreground rounded-tl-none shadow-sm'
                       }`}>
-                        <div className="markdown-content prose-sm prose-emerald dark:prose-invert">
-                          <ReactMarkdown>
-                            {msg.content}
-                          </ReactMarkdown>
-                        </div>
+                        {msg.role === 'assistant' && !msg.content ? (
+                          <div className="flex gap-1.5 py-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </div>
+                        ) : (
+                          <div className="markdown-content prose-sm prose-emerald dark:prose-invert">
+                            <ReactMarkdown>
+                              {msg.content}
+                            </ReactMarkdown>
+                          </div>
+                        )}
                       </div>
-                      {msg.role === 'assistant' && (
+                      {msg.role === 'assistant' && msg.content && (
                         <button
                           onClick={() => handleCopy(msg.content, msg.id)}
                           className="absolute -right-8 top-0 p-1.5 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-emerald-600"
@@ -294,7 +306,7 @@ I'm ready to dive into your specific holdings—just ask!`
                   </div>
                 ))
               )}
-              {isLoading && (messages.length === 0 || messages[messages.length - 1]?.role !== 'assistant' || !messages[messages.length - 1]?.content) && (
+              {isLoading && (messages.length === 0 || messages[messages.length - 1]?.role !== 'assistant') && (
                 <div className="flex gap-3">
                   <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center animate-pulse">
                     <Bot className="h-5 w-5 text-white" />
