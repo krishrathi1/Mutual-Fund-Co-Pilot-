@@ -38,10 +38,7 @@ export const TABS: TabConfig[] = [
   { id: 'montecarlo', label: 'Monte Carlo', icon: Dice5, group: 'Analyze' },
   // Plan
   { id: 'savings', label: 'Savings', icon: Coins, group: 'Plan' },
-  { id: 'sip', label: 'SIP', icon: Repeat, group: 'Plan' },
-  { id: 'sipstepup', label: 'SIP Step-Up', icon: Zap, group: 'Plan' },
-  { id: 'swp', label: 'SWP', icon: Wallet, group: 'Plan' },
-  { id: 'stp', label: 'STP', icon: ArrowRightLeft, group: 'Plan' },
+  { id: 'sip', label: 'SIP Planner', icon: Repeat, group: 'Plan' },
   { id: 'goals', label: 'Goals', icon: Crosshair, group: 'Plan' },
   { id: 'risk', label: 'Risk', icon: Gauge, group: 'Plan' },
   { id: 'cagr', label: 'CAGR', icon: Calculator, group: 'Plan' },

@@ -24,8 +24,6 @@ import SIPPlanner from '@/components/SIPPlanner'
 import RebalancingView from '@/components/RebalancingView'
 import MarketDashboard from '@/components/MarketDashboard'
 import FundScreener from '@/components/FundScreener'
-import SWPCalculator from '@/components/SWPCalculator'
-import STPCalculator from '@/components/STPCalculator'
 import FundRankings from '@/components/FundRankings'
 import AMCAnalysis from '@/components/AMCAnalysis'
 import PortfolioAlerts from '@/components/PortfolioAlerts'
@@ -41,7 +39,6 @@ import CaptureRatio from '@/components/CaptureRatio'
 import CategoryPerformance from '@/components/CategoryPerformance'
 import FundSimilarity from '@/components/FundSimilarity'
 import MonteCarloSim from '@/components/MonteCarloSim'
-import SIPStepUp from '@/components/SIPStepUp'
 import CAGRCalculator from '@/components/CAGRCalculator'
 import FDvsMF from '@/components/FDvsMF'
 import InflationCalculator from '@/components/InflationCalculator'
@@ -95,9 +92,6 @@ export default function Home() {
             {/* Plan */}
             {activeTab === 'savings' && <SavingsCalculator />}
             {activeTab === 'sip' && <SIPPlanner />}
-            {activeTab === 'sipstepup' && <SIPStepUp />}
-            {activeTab === 'swp' && <SWPCalculator />}
-            {activeTab === 'stp' && <STPCalculator />}
             {activeTab === 'goals' && <GoalPlanner />}
             {activeTab === 'risk' && <RiskProfiler />}
             {activeTab === 'cagr' && <CAGRCalculator />}
