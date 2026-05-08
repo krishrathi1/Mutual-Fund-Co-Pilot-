@@ -39,7 +39,6 @@ import CaptureRatio from '@/components/CaptureRatio'
 import CategoryPerformance from '@/components/CategoryPerformance'
 import FundSimilarity from '@/components/FundSimilarity'
 import MonteCarloSim from '@/components/MonteCarloSim'
-import CAGRCalculator from '@/components/CAGRCalculator'
 import FDvsMF from '@/components/FDvsMF'
 import InflationCalculator from '@/components/InflationCalculator'
 import CommissionDisclosure from '@/components/CommissionDisclosure'
@@ -93,7 +92,6 @@ export default function Home() {
             {activeTab === 'sip' && <SIPPlanner />}
             {activeTab === 'goals' && <GoalPlanner />}
             {activeTab === 'risk' && <RiskProfiler />}
-            {activeTab === 'cagr' && <CAGRCalculator />}
             {activeTab === 'fdvsmf' && <FDvsMF />}
             {activeTab === 'inflation' && <InflationCalculator />}
             {/* Optimize */}
