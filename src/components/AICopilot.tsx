@@ -103,6 +103,16 @@ I'm ready to dive into your specific holdings—just ask!`
     setInput('')
     setIsLoading(true)
 
+    // Create a temporary assistant message
+    const assistantId = `assistant-${Date.now()}`
+    const assistantMsg: ChatMessage = {
+      id: assistantId,
+      role: 'assistant',
+      content: '',
+      timestamp: new Date(),
+    }
+    setMessages((prev) => [...prev, assistantMsg])
+
     try {
       const res = await fetch('/api/ai/chat', {
         method: 'POST',
@@ -114,19 +124,40 @@ I'm ready to dive into your specific holdings—just ask!`
         }),
       })
 
-      const data = await res.json()
-      if (res.ok) {
-        const assistantMsg: ChatMessage = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: data.response || 'I apologize, but I couldn\'t generate a response.',
-          timestamp: new Date(),
+      if (!res.ok) throw new Error('AI service error')
+      
+      const reader = res.body?.getReader()
+      if (!reader) throw new Error('No stream available')
+
+      const decoder = new TextDecoder()
+      let accumulatedContent = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n').filter(Boolean)
+
+        for (const line of lines) {
+          try {
+            const data = JSON.parse(line)
+            if (data.content) {
+              accumulatedContent += data.content
+              setMessages((prev) => 
+                prev.map(m => m.id === assistantId ? { ...m, content: accumulatedContent } : m)
+              )
+            }
+          } catch (e) {
+            console.error('Chunk parse error:', e)
+          }
         }
-        setMessages((prev) => [...prev, assistantMsg])
-      } else {
-        toast.error('AI service temporarily unavailable')
       }
-    } catch {
+    } catch (err) {
+      console.error('Streaming error:', err)
+      setMessages((prev) => 
+        prev.map(m => m.id === assistantId ? { ...m, content: 'Bhai, network mein issue hai. Please try again?' } : m)
+      )
       toast.error('Connection error. Please try again.')
     } finally {
       setIsLoading(false)

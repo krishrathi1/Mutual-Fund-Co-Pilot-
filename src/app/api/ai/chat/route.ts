@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import ZAI from 'z-ai-web-dev-sdk'
 import { db } from '@/lib/db'
+import { semanticSearchFunds, syncFundsToVectorDB } from '@/lib/vector-db'
 
-// AI Co-pilot Chat - Multi-turn, Portfolio-Aware RAG Advisor
+// AI Co-pilot Chat - High-Speed Streaming & Semantic RAG
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system'
@@ -27,25 +28,25 @@ function cleanupOldConversations() {
   }
 }
 
-const SYSTEM_PROMPT_BASE = `You are "The FundVista Guru"—a sharp, no-nonsense Indian financial mentor. You don't just answer questions; you lead the user to wealth.
+const SYSTEM_PROMPT_BASE = `You are "The FundVista Guru"—a sharp, no-nonsense Indian financial mentor. You lead the user to wealth.
 
 PERSONA:
-- **Tone**: Authoritative, casual (use Hinglish), and deeply helpful. Think of yourself as a wise "Bade Bhaiya" who knows exactly where the user is losing money.
-- **Inquisitive**: NEVER end a conversation. Always ask a probing follow-up question that makes the user think about their money.
-- **Aggressive on Leakage**: If you see Regular plans, treat it like an emergency. "Bhai, you are literally giving away your retirement to brokers."
+- **Tone**: Authoritative, casual (Hinglish), and deeply helpful. Think of yourself as a "Bade Bhaiya".
+- **Inquisitive**: NEVER end a response without a probing follow-up question.
+- **Aggressive on Leakage**: Call out Regular plans as a financial emergency.
 
 CORE RULES:
-1. **Never End with a Period**: Always end with a sharp, relevant question.
-2. **Portfolio-Aware**: Use the [USER PORTFOLIO CONTEXT] to call out specific funds.
-3. **Budget 2024 Expert**: Use the new 20%/12.5% tax rates.
-4. **No Hallucinations**: If data is missing, admit it and ask the user for it.
+1. Always end with a sharp follow-up question.
+2. Use the [USER PORTFOLIO CONTEXT] for personalized auditing.
+3. Use [FUND CONTEXT] for precise data-backed comparisons.
+4. Budget 2024 Tax: 20% STCG, 12.5% LTCG.
 
-Example style: "Tera HDFC Midcap Regular plan mein hai, matlab tu har saal 1% extra brokerage de raha hai. Do you realize that over 20 years, this will cost you more than a luxury car? Chal, should we calculate your exact loss right now?"`
+Example: "Tera HDFC Midcap Regular mein hai... brokerage phoonk raha hai. Should we check your exact loss right now?"`
 
-async function getRetrievedContext(message: string, sessionId: string) {
-  const lowerMsg = message.toLowerCase()
+async function getAugmentedContext(message: string, sessionId: string) {
   let context = ''
 
+  // 1. Portfolio Context (Real-time from SQLite)
   try {
     const holdings = await db.holding.findMany({
       where: { sessionId },
@@ -62,74 +63,27 @@ async function getRetrievedContext(message: string, sessionId: string) {
       context += `\n\n[USER PORTFOLIO CONTEXT]\n${portfolioSummary}\n[/USER PORTFOLIO CONTEXT]`
     }
   } catch (err) {
-    console.error('Portfolio fetch error:', err)
+    console.error('Portfolio context error:', err)
   }
 
-  const stopWords = new Set(['what', 'how', 'tell', 'about', 'fund', 'mutual', 'mein', 'batao', 'kaise', 'should', 'best', 'good', 'compare', 'switch'])
-  const keywords = lowerMsg.split(/[\s,]+/).filter(w => w.length > 2 && !stopWords.has(w))
-  
-  if (keywords.length > 0) {
-    try {
-      const funds = await db.fund.findMany({
-        where: {
-          OR: keywords.slice(0, 3).map(k => ({
-            OR: [
-              { schemeName: { contains: k } },
-              { fundHouse: { contains: k } },
-              { category: { contains: k } },
-              { subCategory: { contains: k } }
-            ]
-          }))
-        },
-        take: 4
-      })
-
-      if (funds.length > 0) {
-        const fundData = funds.map(f => `
+  // 2. Semantic Search (LanceDB - High Speed Vector RAG)
+  try {
+    const semanticResults = await semanticSearchFunds(message, 4)
+    if (semanticResults.length > 0) {
+      const fundData = semanticResults.map(f => `
 Fund: ${f.schemeName}
-Type: ${f.category} | AUM: ₹${f.aumCrore} Cr | Risk: ${f.riskometer}
-Expense: Direct ${f.directExpenseRatio}% vs Regular ${f.regularExpenseRatio}%
-Returns: 1Y: ${f.directReturn1y}%, 3Y: ${f.directReturn3y}%, 5Y: ${f.directReturn5y}%
+Type: ${f.category} | AUM: ₹${f.aum} Cr | Risk: ${f.risk}
+Expense: Direct ${f.directExpense}% vs Regular ${f.regularExpense}%
+Returns: 1Y: ${f.return1y}%, 3Y: ${f.return3y}%, 5Y: ${f.return5y}%
 `).join('\n---\n')
-        
-        context += `\n\n[FUND SEARCH CONTEXT]\n${fundData}\n[/FUND SEARCH CONTEXT]`
-      }
-    } catch (err) {
-      console.error('Fund RAG error:', err)
+      
+      context += `\n\n[FUND CONTEXT (LanceDB Semantic Search)]\n${fundData}\n[/FUND CONTEXT]`
     }
+  } catch (err) {
+    console.error('LanceDB RAG error:', err)
   }
 
   return context
-}
-
-async function callLocalLlama(messages: ChatMessage[]) {
-  try {
-    const response = await fetch('http://localhost:11434/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'llama3.2:latest',
-        messages: messages,
-        stream: false,
-      }),
-    })
-    
-    if (!response.ok) return null
-    const data = await response.json()
-    return data.message?.content || null
-  } catch (err) {
-    return null
-  }
-}
-
-function generateFallbackResponse(message: string): string {
-  const lowerMsg = message.toLowerCase()
-
-  if (lowerMsg.includes('direct') || lowerMsg.includes('regular') || lowerMsg.includes('commission')) {
-    return `Regular plans are basically you paying a "brokerage tax" for no reason. Direct plans save you ~1% every year. Think about it, bhai... 1% over 20 years is massive. Shall we check which of your funds are stealing your wealth right now?`
-  }
-
-  return `I'm here to help you stop losing money to hidden commissions. I see your portfolio—want to see the breakdown of how much you're losing every month in Regular plans?`
 }
 
 export async function POST(request: NextRequest) {
@@ -147,7 +101,8 @@ export async function POST(request: NextRequest) {
 
     cleanupOldConversations()
 
-    const augmentedContext = await getRetrievedContext(message, sessionId)
+    // 1. Semantic RAG
+    const augmentedContext = await getAugmentedContext(message, sessionId)
     const dynamicSystemPrompt = SYSTEM_PROMPT_BASE + augmentedContext
 
     let conversation = conversationStore.get(sessionId)
@@ -171,35 +126,65 @@ export async function POST(request: NextRequest) {
     conversation.messages.push({ role: 'user', content: message })
     conversation.lastActivity = Date.now()
 
-    let response: string | null = null
+    // 2. Streaming Response Logic
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          // Attempt Local Ollama Streaming
+          const ollamaRes = await fetch('http://localhost:11434/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'llama3.2:latest',
+              messages: conversation.messages,
+              stream: true,
+            }),
+          })
 
-    // 1. Try Local Llama 3.2 first
-    response = await callLocalLlama(conversation.messages)
-
-    // 2. Fallback to ZAI SDK
-    if (!response) {
-      try {
-        const zai = await ZAI.create()
-        const llmResponse = await zai.chat.completions.create({
-          messages: conversation.messages,
-          stream: false,
-        })
-        response = llmResponse?.choices?.[0]?.message?.content?.trim() || null
-      } catch (llmError) {
-        console.error('AI SDK Error:', llmError)
+          if (ollamaRes.ok && ollamaRes.body) {
+            const reader = ollamaRes.body.getReader()
+            let fullContent = ''
+            while (true) {
+              const { done, value } = await reader.read()
+              if (done) break
+              
+              const chunk = new TextDecoder().decode(value)
+              const jsonChunks = chunk.split('\n').filter(Boolean)
+              
+              for (const j of jsonChunks) {
+                const parsed = JSON.parse(j)
+                if (parsed.message?.content) {
+                  const text = parsed.message.content
+                  fullContent += text
+                  controller.enqueue(encoder.encode(JSON.stringify({ content: text })))
+                }
+              }
+            }
+            conversation.messages.push({ role: 'assistant', content: fullContent })
+          } else {
+            // Fallback to ZAI (Non-streaming implementation for simplicity or if ZAI doesn't support easy node stream)
+            const zai = await ZAI.create()
+            const llmResponse = await zai.chat.completions.create({
+              messages: conversation.messages,
+              stream: false,
+            })
+            const text = llmResponse?.choices?.[0]?.message?.content || 'I apologize, bhai, but something went wrong. Ask me again?'
+            controller.enqueue(encoder.encode(JSON.stringify({ content: text })))
+            conversation.messages.push({ role: 'assistant', content: text })
+          }
+        } catch (err) {
+          console.error('Streaming Error:', err)
+          controller.enqueue(encoder.encode(JSON.stringify({ content: 'Bhai, lagta hai system slow ho gaya hai. Try again?' })))
+        } finally {
+          controller.close()
+        }
       }
-    }
+    })
 
-    // 3. Final Fallback
-    if (!response) {
-      response = generateFallbackResponse(message)
-    }
-
-    conversation.messages.push({ role: 'assistant', content: response })
-    conversation.lastActivity = Date.now()
-
-    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`
-    return NextResponse.json({ response, messageId })
+    return new Response(stream, {
+      headers: { 'Content-Type': 'application/json; charset=utf-8' }
+    })
   } catch (error) {
     console.error('Fatal Chat Error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
