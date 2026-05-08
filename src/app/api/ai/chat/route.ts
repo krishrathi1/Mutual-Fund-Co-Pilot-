@@ -68,8 +68,13 @@ async function getAugmentedContext(message: string, sessionId: string) {
 
   // 2. Semantic Search (LanceDB - High Speed Vector RAG)
   try {
-    const semanticResults = await semanticSearchFunds(message, 4)
-    if (semanticResults.length > 0) {
+    console.log('Chat API: Performing semantic search (with 5s timeout)...')
+    const semanticResults = await Promise.race([
+      semanticSearchFunds(message, 4),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('RAG Timeout')), 5000))
+    ]) as any[]
+
+    if (semanticResults && semanticResults.length > 0) {
       const fundData = semanticResults.map(f => `
 Fund: ${f.schemeName}
 Type: ${f.category} | AUM: ₹${f.aum} Cr | Risk: ${f.risk}
@@ -80,13 +85,32 @@ Returns: 1Y: ${f.return1y}%, 3Y: ${f.return3y}%, 5Y: ${f.return5y}%
       context += `\n\n[FUND CONTEXT (LanceDB Semantic Search)]\n${fundData}\n[/FUND CONTEXT]`
     }
   } catch (err) {
-    console.error('LanceDB RAG error:', err)
+    console.warn('LanceDB RAG skipped (Timeout or Error):', err)
+    
+    // Fallback: Simple Keyword RAG
+    try {
+      const keywords = message.split(' ').filter(k => k.length > 3).slice(0, 3)
+      if (keywords.length > 0) {
+        const fallbackFunds = await db.fund.findMany({
+          where: {
+            OR: keywords.map(k => ({ schemeName: { contains: k } }))
+          },
+          take: 2
+        })
+        if (fallbackFunds.length > 0) {
+          context += `\n\n[FUND CONTEXT (Keyword Fallback)]\n` + fallbackFunds.map(f => `- ${f.schemeName}`).join('\n')
+        }
+      }
+    } catch (fallbackErr) {
+      console.error('Keyword fallback failed:', fallbackErr)
+    }
   }
 
   return context
 }
 
 export async function POST(request: NextRequest) {
+  console.log('Chat API: Received request')
   try {
     const body = await request.json()
     const { sessionId, message, history } = body as {
@@ -102,7 +126,9 @@ export async function POST(request: NextRequest) {
     cleanupOldConversations()
 
     // 1. Semantic RAG
+    console.log('Chat API: Augmenting context...')
     const augmentedContext = await getAugmentedContext(message, sessionId)
+    console.log('Chat API: Context augmented')
     const dynamicSystemPrompt = SYSTEM_PROMPT_BASE + augmentedContext
 
     let conversation = conversationStore.get(sessionId)
@@ -157,25 +183,25 @@ export async function POST(request: NextRequest) {
                 if (parsed.message?.content) {
                   const text = parsed.message.content
                   fullContent += text
-                  controller.enqueue(encoder.encode(JSON.stringify({ content: text })))
+                  controller.enqueue(encoder.encode(JSON.stringify({ content: text }) + '\n'))
                 }
               }
             }
             conversation.messages.push({ role: 'assistant', content: fullContent })
           } else {
-            // Fallback to ZAI (Non-streaming implementation for simplicity or if ZAI doesn't support easy node stream)
+            // Fallback to ZAI
             const zai = await ZAI.create()
             const llmResponse = await zai.chat.completions.create({
               messages: conversation.messages,
               stream: false,
             })
             const text = llmResponse?.choices?.[0]?.message?.content || 'I apologize, bhai, but something went wrong. Ask me again?'
-            controller.enqueue(encoder.encode(JSON.stringify({ content: text })))
+            controller.enqueue(encoder.encode(JSON.stringify({ content: text }) + '\n'))
             conversation.messages.push({ role: 'assistant', content: text })
           }
         } catch (err) {
           console.error('Streaming Error:', err)
-          controller.enqueue(encoder.encode(JSON.stringify({ content: 'Bhai, lagta hai system slow ho gaya hai. Try again?' })))
+          controller.enqueue(encoder.encode(JSON.stringify({ content: 'Bhai, lagta hai system slow ho gaya hai. Try again?' }) + '\n'))
         } finally {
           controller.close()
         }

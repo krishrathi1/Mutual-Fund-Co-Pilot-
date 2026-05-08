@@ -13,14 +13,18 @@ const TABLE_NAME = 'fund_vectors';
 
 export async function getEmbedder() {
   if (!embedder) {
+    console.log('VectorDB: Loading embedding model (all-MiniLM-L6-v2)...')
     embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
+    console.log('VectorDB: Embedding model loaded')
   }
   return embedder;
 }
 
 export async function getVectorDB() {
   if (!dbInstance) {
+    console.log('VectorDB: Connecting to LanceDB at', DB_PATH)
     dbInstance = await lancedb.connect(DB_PATH);
+    console.log('VectorDB: Connected to LanceDB')
   }
   return dbInstance;
 }

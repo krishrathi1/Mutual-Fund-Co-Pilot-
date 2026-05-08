@@ -137,11 +137,15 @@ I'm ready to dive into your specific holdings—just ask!`
         if (done) break
 
         const chunk = decoder.decode(value, { stream: true })
-        const lines = chunk.split('\n').filter(Boolean)
+        // Split by newline to handle multiple JSON objects in one chunk
+        const lines = chunk.split('\n')
 
         for (const line of lines) {
+          const trimmed = line.trim()
+          if (!trimmed) continue
+          
           try {
-            const data = JSON.parse(line)
+            const data = JSON.parse(trimmed)
             if (data.content) {
               accumulatedContent += data.content
               setMessages((prev) => 
@@ -149,7 +153,7 @@ I'm ready to dive into your specific holdings—just ask!`
               )
             }
           } catch (e) {
-            console.error('Chunk parse error:', e)
+            console.warn('JSON chunk parse error (retrying):', e, trimmed)
           }
         }
       }
@@ -290,7 +294,7 @@ I'm ready to dive into your specific holdings—just ask!`
                   </div>
                 ))
               )}
-              {isLoading && (
+              {isLoading && (messages.length === 0 || messages[messages.length - 1]?.role !== 'assistant' || !messages[messages.length - 1]?.content) && (
                 <div className="flex gap-3">
                   <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center animate-pulse">
                     <Bot className="h-5 w-5 text-white" />
