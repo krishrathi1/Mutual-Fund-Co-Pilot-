@@ -354,6 +354,9 @@ export const useFundStore = create<FundStore>((set, get) => ({
       params.set('limit', '50')
       
       const res = await fetch(`/api/funds?${params}`)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch funds: ${res.status} ${res.statusText}`)
+      }
       const data = await res.json()
       set({ 
         funds: data.funds || [], 
@@ -389,6 +392,9 @@ export const useFundStore = create<FundStore>((set, get) => ({
     try {
       const { sessionId } = get()
       const res = await fetch(`/api/holdings?sessionId=${sessionId}`)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch holdings: ${res.status} ${res.statusText}`)
+      }
       const data = await res.json()
       set({ holdings: data.holdings || [], holdingsLoading: false })
     } catch (error) {
@@ -416,6 +422,9 @@ export const useFundStore = create<FundStore>((set, get) => ({
     try {
       const ids = selectedFundIds.join(',')
       const res = await fetch(`/api/funds/compare?ids=${ids}`)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch comparisons: ${res.status} ${res.statusText}`)
+      }
       const data = await res.json()
       set({ comparisons: Array.isArray(data) ? data : [], comparisonsLoading: false })
     } catch (error) {
@@ -436,6 +445,9 @@ export const useFundStore = create<FundStore>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),
       })
+      if (!res.ok) {
+        throw new Error(`Failed to fetch analysis: ${res.status} ${res.statusText}`)
+      }
       const data = await res.json()
       set({ analysis: data, analysisLoading: false })
     } catch {
@@ -458,6 +470,9 @@ export const useFundStore = create<FundStore>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       })
+      if (!res.ok) {
+        throw new Error(`Failed to calculate savings: ${res.status} ${res.statusText}`)
+      }
       const data = await res.json()
       set({ savingsResult: data, savingsLoading: false })
     } catch {
@@ -479,6 +494,9 @@ export const useFundStore = create<FundStore>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fundId, ...fundData }),
       })
+      if (!res.ok) {
+        throw new Error(`Failed to fetch AI insights: ${res.status} ${res.statusText}`)
+      }
       const data = await res.json()
       const current = get().aiInsights
       set({ 
@@ -503,6 +521,9 @@ export const useFundStore = create<FundStore>((set, get) => ({
     try {
       const { sessionId } = get()
       const res = await fetch(`/api/watchlist?sessionId=${sessionId}`)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch watchlist: ${res.status} ${res.statusText}`)
+      }
       const data = await res.json()
       set({ watchlist: data.watchlist || data.items || [], watchlistLoading: false })
     } catch {
@@ -559,6 +580,9 @@ export const useFundStore = create<FundStore>((set, get) => ({
     try {
       const { sessionId } = get()
       const res = await fetch(`/api/goals?sessionId=${sessionId}`)
+      if (!res.ok) {
+        throw new Error(`Failed to fetch goals: ${res.status} ${res.statusText}`)
+      }
       const data = await res.json()
       // Map API response to GoalData format
       const mappedGoals: GoalData[] = (data.goals || []).map((g: Record<string, unknown>) => {
