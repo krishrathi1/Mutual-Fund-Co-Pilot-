@@ -42,7 +42,6 @@ export const TABS: TabConfig[] = [
   { id: 'goals', label: 'Goals', icon: Crosshair, group: 'Plan' },
   { id: 'risk', label: 'Risk', icon: Gauge, group: 'Plan' },
   { id: 'cagr', label: 'CAGR', icon: Calculator, group: 'Plan' },
-  { id: 'lumpsum', label: 'Lumpsum', icon: IndianRupee, group: 'Plan' },
   { id: 'fdvsmf', label: 'FD vs MF', icon: GitCompare, group: 'Plan' },
   { id: 'inflation', label: 'Inflation', icon: TrendingDown, group: 'Plan' },
   // Optimize

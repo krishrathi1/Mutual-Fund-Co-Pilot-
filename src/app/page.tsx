@@ -42,7 +42,6 @@ import MonteCarloSim from '@/components/MonteCarloSim'
 import CAGRCalculator from '@/components/CAGRCalculator'
 import FDvsMF from '@/components/FDvsMF'
 import InflationCalculator from '@/components/InflationCalculator'
-import LumpsumCalculator from '@/components/LumpsumCalculator'
 import CommissionDisclosure from '@/components/CommissionDisclosure'
 import FundSwitchGuide from '@/components/FundSwitchGuide'
 import ELSSTaxSaver from '@/components/ELSSTaxSaver'
@@ -95,7 +94,6 @@ export default function Home() {
             {activeTab === 'goals' && <GoalPlanner />}
             {activeTab === 'risk' && <RiskProfiler />}
             {activeTab === 'cagr' && <CAGRCalculator />}
-            {activeTab === 'lumpsum' && <LumpsumCalculator />}
             {activeTab === 'fdvsmf' && <FDvsMF />}
             {activeTab === 'inflation' && <InflationCalculator />}
             {/* Optimize */}
