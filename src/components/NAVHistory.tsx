@@ -184,7 +184,6 @@ export default function NAVHistory() {
   const [dataSource, setDataSource] = useState<'amfi' | 'simulated'>('simulated')
   const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const [investmentAmount, setInvestmentAmount] = useState<number>(100000)
-  const [viewMode, setViewMode] = useState<'nav' | 'value'>('nav')
   const fetchedRef = useRef(false)
 
   useEffect(() => {
@@ -283,23 +282,15 @@ export default function NAVHistory() {
   }, [selectedFundId, months, fetchFunds, fetchNavHistory])
 
   const chartData = useMemo(() => {
-    if (navData.length === 0) return []
-    
-    const startDirect = navData[0].directNav
-    const startRegular = navData[0].regularNav
-
     return navData.map(p => {
-      const directValue = viewMode === 'value' ? (investmentAmount / startDirect) * p.directNav : p.directNav
-      const regularValue = viewMode === 'value' ? (investmentAmount / startRegular) * p.regularNav : p.regularNav
-      
       return {
         ...p,
-        displayDirect: Math.round(directValue * 100) / 100,
-        displayRegular: Math.round(regularValue * 100) / 100,
+        displayDirect: p.directNav,
+        displayRegular: p.regularNav,
         dateLabel: new Date(p.date).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
       }
     })
-  }, [navData, viewMode, investmentAmount])
+  }, [navData])
 
   const metrics = useMemo(() => {
     if (navData.length === 0 || !selectedFund) return null
@@ -409,24 +400,7 @@ export default function NAVHistory() {
               </div>
             </div>
 
-            {/* View Mode */}
-            <div className="w-full sm:w-auto">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase mb-1 block">View Mode</label>
-              <div className="flex p-1 bg-muted rounded-md h-10">
-                <button
-                  onClick={() => setViewMode('nav')}
-                  className={`flex-1 px-3 text-xs rounded transition-all ${viewMode === 'nav' ? 'bg-background shadow-sm font-bold text-emerald-600' : 'text-muted-foreground'}`}
-                >
-                  NAV
-                </button>
-                <button
-                  onClick={() => setViewMode('value')}
-                  className={`flex-1 px-3 text-xs rounded transition-all ${viewMode === 'value' ? 'bg-background shadow-sm font-bold text-emerald-600' : 'text-muted-foreground'}`}
-                >
-                  Value
-                </button>
-              </div>
-            </div>
+            {/* View Mode removed as requested */}
 
             {/* Time range selector */}
             <div className="w-full sm:w-auto">
@@ -516,7 +490,7 @@ export default function NAVHistory() {
                             stroke="#f97316"
                             strokeWidth={2}
                             fill="url(#regularGradient)"
-                            name={viewMode === 'value' ? 'Regular Value' : 'Regular NAV'}
+                            name="Regular NAV"
                           />
                           <Area
                             type="monotone"
@@ -524,7 +498,7 @@ export default function NAVHistory() {
                             stroke="#10b981"
                             strokeWidth={2}
                             fill="url(#directGradient)"
-                            name={viewMode === 'value' ? 'Direct Value' : 'Direct NAV'}
+                            name="Direct NAV"
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -534,11 +508,11 @@ export default function NAVHistory() {
                     <div className="flex items-center justify-center gap-6 text-xs">
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                        <span className="text-muted-foreground">{viewMode === 'value' ? 'Direct Value' : 'Direct NAV'}</span>
+                        <span className="text-muted-foreground">Direct NAV</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                        <span className="text-muted-foreground">{viewMode === 'value' ? 'Regular Value' : 'Regular NAV'}</span>
+                        <span className="text-muted-foreground">Regular NAV</span>
                       </div>
                       {dataSource === 'amfi' && (
                         <div className="flex items-center gap-1.5">
