@@ -192,7 +192,7 @@ export default function ExploreFunds() {
                   </div>
 
                   {/* Direct vs Regular mini comparison */}
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="rounded-lg bg-emerald-100/50 p-2 dark:bg-emerald-950/20">
                       <p className="text-[10px] font-medium text-emerald-700 dark:text-emerald-400">DIRECT</p>
                       <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400">{fund.directExpenseRatio}%</p>

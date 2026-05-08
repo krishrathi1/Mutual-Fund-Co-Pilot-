@@ -89,14 +89,14 @@ export default function HeroSection() {
 
             <div className="space-y-4">
               <motion.h1
-                className="text-5xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl"
+                className="text-4xl font-extrabold tracking-tight sm:text-6xl lg:text-7xl"
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.1 }}
               >
                 <span className="text-gradient">Stop Losing</span>
                 <br />
-                <span className="text-gradient-emerald">Wealth to Fees</span>
+                <span className="text-gradient-emerald leading-tight">Wealth to Fees</span>
               </motion.h1>
 
               <motion.p
