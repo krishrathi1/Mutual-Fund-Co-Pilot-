@@ -24,10 +24,7 @@ import SIPPlanner from '@/components/SIPPlanner'
 import RebalancingView from '@/components/RebalancingView'
 import MarketDashboard from '@/components/MarketDashboard'
 import FundScreener from '@/components/FundScreener'
-import SWPCalculator from '@/components/SWPCalculator'
 import STPCalculator from '@/components/STPCalculator'
-import BenchmarkCompare from '@/components/BenchmarkCompare'
-import VolatilityAnalysis from '@/components/VolatilityAnalysis'
 import FundRankings from '@/components/FundRankings'
 import AMCAnalysis from '@/components/AMCAnalysis'
 import PortfolioAlerts from '@/components/PortfolioAlerts'
@@ -42,7 +39,6 @@ import RollingReturns from '@/components/RollingReturns'
 import CaptureRatio from '@/components/CaptureRatio'
 import CategoryPerformance from '@/components/CategoryPerformance'
 import FundSimilarity from '@/components/FundSimilarity'
-import AlphaBeta from '@/components/AlphaBeta'
 import CorrelationMatrix from '@/components/CorrelationMatrix'
 import MonteCarloSim from '@/components/MonteCarloSim'
 import AssetAllocation from '@/components/AssetAllocation'
@@ -96,9 +92,6 @@ export default function Home() {
             {activeTab === 'overlap' && <FundOverlap />}
             {activeTab === 'sector' && <SectorExposure />}
             {activeTab === 'diversification' && <DiversificationScore />}
-            {activeTab === 'benchmark' && <BenchmarkCompare />}
-            {activeTab === 'volatility' && <VolatilityAnalysis />}
-            {activeTab === 'alphabeta' && <AlphaBeta />}
             {activeTab === 'correlation' && <CorrelationMatrix />}
             {activeTab === 'montecarlo' && <MonteCarloSim />}
             {activeTab === 'allocation' && <AssetAllocation />}
