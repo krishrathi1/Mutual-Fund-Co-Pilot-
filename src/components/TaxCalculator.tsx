@@ -62,6 +62,8 @@ export default function TaxCalculator() {
   const [calculated, setCalculated] = useState(false)
   const [loading, setLoading] = useState(false)
   const [customMode, setCustomMode] = useState(false)
+  const [taxSlab, setTaxSlab] = useState('30')
+  const [alreadyRealizedLTCG, setAlreadyRealizedLTCG] = useState('0')
 
   // Custom holding form
   const [customName, setCustomName] = useState('')
@@ -90,8 +92,9 @@ export default function TaxCalculator() {
   }, [holdings])
 
   function mapCategory(cat: string): 'equity' | 'debt' | 'hybrid' {
-    if (cat === 'Debt') return 'debt'
-    if (cat === 'Hybrid') return 'hybrid'
+    const c = cat.toLowerCase()
+    if (c.includes('debt') || c.includes('liquid')) return 'debt'
+    if (c.includes('hybrid') || c.includes('balanced')) return 'hybrid'
     return 'equity'
   }
 
@@ -106,7 +109,11 @@ export default function TaxCalculator() {
       const res = await fetch('/api/tax/calculate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ holdings: taxHoldings }),
+        body: JSON.stringify({ 
+          holdings: taxHoldings,
+          slabRate: parseFloat(taxSlab) / 100,
+          realizedLTCG: parseFloat(alreadyRealizedLTCG) || 0
+        }),
       })
       if (res.ok) {
         const data = await res.json()
@@ -130,9 +137,13 @@ export default function TaxCalculator() {
 
   function calculateTaxClientSide(items: TaxHolding[]): TaxResult[] {
     const now = new Date()
-    let equityLtcgExemptionUsed = 0
+    let remainingExemption = Math.max(0, 125000 - (parseFloat(alreadyRealizedLTCG) || 0))
+    const slabRate = parseFloat(taxSlab) / 100
 
-    return items.map((item) => {
+    // Sort to apply exemption to largest gains first
+    const sortedItems = [...items].sort((a, b) => (b.currentValue - b.investedAmount) - (a.currentValue - a.investedAmount))
+
+    return sortedItems.map((item) => {
       const purchaseDate = new Date(item.purchaseDate)
       const holdingDays = Math.floor((now.getTime() - purchaseDate.getTime()) / (1000 * 60 * 60 * 24))
       const gain = item.currentValue - item.investedAmount
@@ -143,26 +154,19 @@ export default function TaxCalculator() {
       let taxAmount: number
 
       if (item.category === 'debt') {
-        // Debt funds: no indexation benefit from FY 2023-24 onwards, taxed at slab
-        if (holdingDays < rules.stThreshold) {
-          gainType = 'STCG'
-          taxRate = 0.30 // Assuming highest slab
-          taxAmount = Math.max(0, gain * taxRate)
-        } else {
-          gainType = 'LTCG'
-          taxRate = 0.20 // Post-2023 debt LTCG at slab (using 20% as estimate)
-          taxAmount = Math.max(0, gain * taxRate)
-        }
+        gainType = holdingDays < rules.stThreshold ? 'STCG' : 'LTCG'
+        taxRate = slabRate
+        taxAmount = Math.max(0, gain * taxRate)
       } else {
         // Equity / Hybrid
         const isLongTerm = holdingDays >= rules.stThreshold
         if (isLongTerm) {
           gainType = 'LTCG'
           taxRate = rules.ltcgRate
-          const remainingExemption = Math.max(0, rules.ltcgExemption - equityLtcgExemptionUsed)
-          const taxableGain = Math.max(0, gain - remainingExemption)
-          equityLtcgExemptionUsed += Math.min(gain, remainingExemption)
-          taxAmount = Math.max(0, taxableGain * taxRate)
+          const usedExemption = Math.min(Math.max(0, gain), remainingExemption)
+          remainingExemption -= usedExemption
+          const taxableGain = Math.max(0, gain - usedExemption)
+          taxAmount = taxableGain * taxRate
         } else {
           gainType = 'STCG'
           taxRate = rules.stcgRate
@@ -273,20 +277,47 @@ export default function TaxCalculator() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-3">
-            <Label className="text-sm">Category:</Label>
-            <div className="flex gap-1">
-              {(['all', 'equity', 'debt', 'hybrid'] as const).map((cat) => (
-                <Button
-                  key={cat}
-                  size="sm"
-                  variant={categoryFilter === cat ? 'default' : 'outline'}
-                  onClick={() => setCategoryFilter(cat)}
-                  className={`text-xs ${categoryFilter === cat ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
-                >
-                  {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                </Button>
-              ))}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2">
+              <Label className="text-sm">Category Filter:</Label>
+              <div className="flex gap-1">
+                {(['all', 'equity', 'debt', 'hybrid'] as const).map((cat) => (
+                  <Button
+                    key={cat}
+                    size="sm"
+                    variant={categoryFilter === cat ? 'default' : 'outline'}
+                    onClick={() => setCategoryFilter(cat)}
+                    className={`text-xs ${categoryFilter === cat ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : ''}`}
+                  >
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm">Your Tax Slab (%):</Label>
+              <Select value={taxSlab} onValueChange={setTaxSlab}>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">0% (Nil)</SelectItem>
+                  <SelectItem value="5">5%</SelectItem>
+                  <SelectItem value="10">10%</SelectItem>
+                  <SelectItem value="15">15%</SelectItem>
+                  <SelectItem value="20">20%</SelectItem>
+                  <SelectItem value="30">30%</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm">Already Booked LTCG (₹):</Label>
+              <Input
+                type="number"
+                value={alreadyRealizedLTCG}
+                onChange={(e) => setAlreadyRealizedLTCG(e.target.value)}
+                placeholder="0"
+                className="h-9 text-xs"
+              />
+              <p className="text-[10px] text-muted-foreground leading-tight">Gains already realized in this FY (to calculate exemption)</p>
             </div>
           </div>
 
@@ -361,10 +392,10 @@ export default function TaxCalculator() {
 
           {/* Tax rules reference */}
           <div className="rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground space-y-1">
-            <p className="font-medium text-foreground">FY 2024-25 Tax Rules:</p>
-            <p>• Equity STCG: 20% · Equity LTCG (&gt;1yr): 12.5% with ₹1.25L exemption</p>
-            <p>• Debt/Hybrid: Taxed at slab rate (30% shown as estimate)</p>
-            <p>• Equity holding period: 12+ months for LTCG · Debt: 36+ months</p>
+            <p className="font-medium text-foreground">FY 2024-25 Tax Rules (Budget July 2024):</p>
+            <p>• Equity/Equity-Oriented: STCG @ 20% · LTCG (&gt;1yr) @ 12.5% (above ₹1.25L limit)</p>
+            <p>• Debt/Debt-Oriented: All gains taxed at your income tax slab ({taxSlab}%)</p>
+            <p>• LTCG Limit: Combined ₹1.25L exemption per financial year across all equity assets</p>
           </div>
         </CardContent>
       </Card>

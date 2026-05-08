@@ -14,15 +14,15 @@ interface TaxHoldingInput {
 
 interface TaxHoldingResult {
   name: string
-  invested: number
-  current: number
+  category: 'equity' | 'debt' | 'hybrid'
+  investedAmount: number
+  currentValue: number
   gain: number
-  holdingPeriod: string
-  taxType: string
+  holdingPeriodDays: number
+  gainType: 'STCG' | 'LTCG'
   taxRate: number
   taxAmount: number
   netGain: number
-  category: string
 }
 
 // Default slab rate for debt funds (assuming 30% bracket as common for investors)
@@ -32,30 +32,22 @@ const DEFAULT_SLAB_RATE = 0.30
 const LTCG_EXEMPTION_LIMIT = 125000
 
 function getEquityDebtSplit(category: string): { equityPct: number; debtPct: number } {
-  switch (category) {
-    case 'Equity':
-    case 'ELSS':
-      return { equityPct: 100, debtPct: 0 }
-    case 'Index':
-    case 'Index Fund':
-      return { equityPct: 100, debtPct: 0 }
-    case 'Debt':
-    case 'Liquid':
-      return { equityPct: 0, debtPct: 100 }
-    case 'Hybrid':
-    case 'Aggressive Hybrid':
-    case 'Balanced Advantage':
-      return { equityPct: 65, debtPct: 35 }
-    case 'Conservative Hybrid':
-      return { equityPct: 25, debtPct: 75 }
-    default:
-      return { equityPct: 50, debtPct: 50 }
+  const cat = category.toLowerCase()
+  if (cat.includes('equity') || cat.includes('elss') || cat.includes('index') || cat.includes('small cap') || cat.includes('mid cap') || cat.includes('large cap') || cat.includes('flexi cap')) {
+    return { equityPct: 100, debtPct: 0 }
   }
+  if (cat.includes('debt') || cat.includes('liquid') || cat.includes('overnight') || cat.includes('money market')) {
+    return { equityPct: 0, debtPct: 100 }
+  }
+  if (cat.includes('hybrid') || cat.includes('balanced') || cat.includes('dynamic asset')) {
+    return { equityPct: 65, debtPct: 35 }
+  }
+  return { equityPct: 50, debtPct: 50 }
 }
 
 function isEquityOriented(category: string): boolean {
   const { equityPct } = getEquityDebtSplit(category)
-  // Funds with >65% equity are treated as equity for tax purposes
+  // Funds with >=65% equity are treated as equity for tax purposes
   return equityPct >= 65
 }
 
@@ -69,7 +61,11 @@ function getHoldingPeriodDays(purchaseDate: string): number {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { holdings }: { holdings: TaxHoldingInput[] } = body
+    const { holdings, slabRate = DEFAULT_SLAB_RATE, realizedLTCG = 0 }: { 
+      holdings: TaxHoldingInput[], 
+      slabRate?: number, 
+      realizedLTCG?: number 
+    } = body
 
     if (!holdings || !Array.isArray(holdings) || holdings.length === 0) {
       return NextResponse.json(
@@ -78,17 +74,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Track total LTCG across all equity holdings for exemption calculation
-    let totalEquityLTCG = 0
     const intermediateResults: Array<{
+      id: string
       name: string
       invested: number
       current: number
       gain: number
-      holdingPeriod: string
-      taxType: string
+      holdingDays: number
+      gainType: 'STCG' | 'LTCG'
       taxRate: number
-      category: string
+      category: 'equity' | 'debt' | 'hybrid'
       equityPct: number
       debtPct: number
       isLongTerm: boolean
@@ -98,48 +93,43 @@ export async function POST(request: NextRequest) {
 
     for (const holding of holdings) {
       const invested = parseFloat(String(holding.investedAmount))
-      const current = parseFloat(String(holding.currentAmount))
+      const current = parseFloat(String(holding.currentAmount || holding.currentValue))
       const gain = current - invested
-      const category = holding.category || 'Equity'
-      const { equityPct, debtPct } = getEquityDebtSplit(category)
+      const inputCat = holding.category || 'Equity'
+      const { equityPct, debtPct } = getEquityDebtSplit(inputCat)
       const holdingDays = getHoldingPeriodDays(holding.purchaseDate)
 
-      const isLongTerm = isEquityOriented(category)
+      const isLongTerm = isEquityOriented(inputCat)
         ? holdingDays > 365  // Equity: > 1 year = LTCG
-        : holdingDays > 1095 // Debt: > 3 years = LTCG (but post Apr 2023, no indexation)
+        : holdingDays > 1095 // Debt: > 3 years = LTCG
 
-      const holdingPeriod = isLongTerm ? 'Long Term' : 'Short Term'
-      const taxType = isEquityOriented(category) ? 'Equity' : 'Debt'
+      const gainType = isLongTerm ? 'LTCG' : 'STCG'
+      
+      const mappedCat: 'equity' | 'debt' | 'hybrid' = 
+        inputCat.toLowerCase().includes('debt') ? 'debt' : 
+        (inputCat.toLowerCase().includes('hybrid') || inputCat.toLowerCase().includes('balanced') ? 'hybrid' : 'equity')
 
       // Split gains proportionally
       const equityGain = gain * (equityPct / 100)
       const debtGain = gain * (debtPct / 100)
 
-      if (isLongTerm && isEquityOriented(category) && equityGain > 0) {
-        totalEquityLTCG += equityGain
-      }
-
       let taxRate = 0
-      if (isEquityOriented(category)) {
-        if (isLongTerm) {
-          taxRate = 0.125 // 12.5% LTCG (Budget 2024)
-        } else {
-          taxRate = 0.20 // 20% STCG (Budget 2024)
-        }
+      if (isEquityOriented(inputCat)) {
+        taxRate = isLongTerm ? 0.125 : 0.20
       } else {
-        // Debt funds: taxed at slab rate regardless of holding period (post Apr 2023)
-        taxRate = DEFAULT_SLAB_RATE
+        taxRate = slabRate
       }
 
       intermediateResults.push({
+        id: (holding as any).id || Math.random().toString(),
         name: holding.name || 'Unknown Fund',
         invested,
         current,
         gain,
-        holdingPeriod,
-        taxType,
+        holdingDays,
+        gainType,
         taxRate,
-        category,
+        category: mappedCat,
         equityPct,
         debtPct,
         isLongTerm,
@@ -148,44 +138,46 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Calculate exemption allocation across holdings (proportional)
-    const exemptionPerHolding = totalEquityLTCG > 0
-      ? LTCG_EXEMPTION_LIMIT / intermediateResults.filter(r => r.isLongTerm && isEquityOriented(r.category) && r.equityGain > 0).length
-      : 0
+    // Calculate exemption allocation across holdings (greedy)
+    let remainingExemption = Math.max(0, LTCG_EXEMPTION_LIMIT - realizedLTCG)
 
     const results: TaxHoldingResult[] = []
     let totalTax = 0
     let totalNetGain = 0
 
-    for (const r of intermediateResults) {
+    // Sort to apply exemption to largest gains first (most efficient)
+    const sortedResults = [...intermediateResults].sort((a, b) => b.equityGain - a.equityGain)
+
+    for (const r of sortedResults) {
       let taxAmount = 0
 
-      if (isEquityOriented(r.category)) {
-        if (r.isLongTerm) {
-          // LTCG: 12.5% on gains above ₹1.25L exemption
-          const taxableGain = Math.max(0, r.equityGain - exemptionPerHolding)
-          taxAmount = taxableGain * r.taxRate
+      if (r.category === 'equity' || (r.category === 'hybrid' && isEquityOriented(r.name))) {
+        if (r.isLongTerm && r.equityGain > 0) {
+          const usedExemption = Math.min(r.equityGain, remainingExemption)
+          remainingExemption -= usedExemption
+          taxAmount = Math.max(0, r.equityGain - usedExemption) * r.taxRate
         } else {
-          // STCG: 20% on equity gains
           taxAmount = Math.max(0, r.equityGain) * r.taxRate
         }
       } else {
-        // Debt: slab rate on all gains (no indexation benefit post Apr 2023)
-        taxAmount = r.gain * r.taxRate
+        // Debt or non-equity hybrid
         if (r.debtPct > 0 && r.equityPct > 0) {
-          // Hybrid: equity portion taxed as equity, debt portion at slab
-          const equityTax = r.isLongTerm
-            ? Math.max(0, r.equityGain - (r.isLongTerm ? exemptionPerHolding : 0)) * 0.125
-            : Math.max(0, r.equityGain) * 0.20
-          const debtTax = r.debtGain * DEFAULT_SLAB_RATE
+          let equityTax = 0
+          if (r.isLongTerm && r.equityGain > 0) {
+            const usedExemption = Math.min(r.equityGain, remainingExemption)
+            remainingExemption -= usedExemption
+            equityTax = Math.max(0, r.equityGain - usedExemption) * 0.125
+          } else {
+            equityTax = Math.max(0, r.equityGain) * 0.20
+          }
+          const debtTax = Math.max(0, r.debtGain) * slabRate
           taxAmount = equityTax + debtTax
+        } else {
+          taxAmount = Math.max(0, r.gain) * r.taxRate
         }
       }
 
-      // If there's a loss, no tax
-      if (r.gain <= 0) {
-        taxAmount = 0
-      }
+      if (r.gain <= 0) taxAmount = 0
 
       const netGain = r.gain - taxAmount
       totalTax += taxAmount
@@ -193,27 +185,30 @@ export async function POST(request: NextRequest) {
 
       results.push({
         name: r.name,
-        invested: Math.round(r.invested),
-        current: Math.round(r.current),
+        category: r.category,
+        investedAmount: Math.round(r.invested),
+        currentValue: Math.round(r.current),
         gain: Math.round(r.gain),
-        holdingPeriod: r.holdingPeriod,
-        taxType: r.taxType,
-        taxRate: Math.round(r.taxRate * 10000) / 100, // Convert to percentage
+        holdingPeriodDays: r.holdingDays,
+        gainType: r.gainType,
+        taxRate: r.taxRate,
         taxAmount: Math.round(taxAmount),
         netGain: Math.round(netGain),
-        category: r.category,
       })
     }
 
     const totalGain = results.reduce((sum, r) => sum + r.gain, 0)
-    const effectiveTaxRate = totalGain > 0 ? (totalTax / totalGain) * 100 : 0
+    const totalTaxVal = results.reduce((sum, r) => sum + r.taxAmount, 0)
+    const totalNetGainVal = results.reduce((sum, r) => sum + r.netGain, 0)
+    const effectiveTaxRate = totalGain > 0 ? (totalTaxVal / totalGain) * 100 : 0
+    const ltcgExemptionUsed = LTCG_EXEMPTION_LIMIT - remainingExemption
 
     return NextResponse.json({
       holdings: results,
-      totalTax: Math.round(totalTax),
-      totalNetGain: Math.round(totalNetGain),
+      totalTax: Math.round(totalTaxVal),
+      totalNetGain: Math.round(totalNetGainVal),
       effectiveTaxRate: Math.round(effectiveTaxRate * 100) / 100,
-      ltcgExemptionUsed: Math.min(totalEquityLTCG, LTCG_EXEMPTION_LIMIT),
+      ltcgExemptionUsed,
       ltcgExemptionLimit: LTCG_EXEMPTION_LIMIT,
       assumptions: [
         'Equity/ELSS/Index funds: STCG (< 1yr) @ 20%, LTCG (> 1yr) @ 12.5% above ₹1.25L exemption (Budget 2024 rules)',
