@@ -198,8 +198,7 @@ function generateSimulatedNavHistory(
   const rng = seededRandom(hashString(fund.id))
 
   const navHistory: { date: string; directNav: number; regularNav: number }[] = []
-  let currentDirectNav = fund.directNav
-
+  
   const now = new Date()
   const dates: Date[] = []
   for (let i = 0; i < months; i++) {
@@ -207,31 +206,36 @@ function generateSimulatedNavHistory(
     dates.unshift(d)
   }
 
-  const backwardsNavs: number[] = [currentDirectNav]
-  for (let i = 1; i <= months; i++) {
-    const randomShock = (rng() - 0.5) * 2
-    const monthlyChange = 1 + monthlyReturn + monthlyVol * randomShock
-    const prevNav = backwardsNavs[i - 1] / Math.max(0.5, monthlyChange)
-    backwardsNavs.unshift(prevNav)
-  }
+  // Monthly expense difference in decimal
+  const monthlyExpenseDiff = (fund.regularExpenseRatio - fund.directExpenseRatio) / 100 / 12
 
-  // BUG FIX: expense ratios are stored as percentages (e.g. 0.72 = 0.72%), NOT basis points
-  const expenseDiff = (fund.regularExpenseRatio - fund.directExpenseRatio) / 100 // Convert percentage to decimal
+  let currentDirect = fund.directNav
+  let currentRegular = fund.regularNav
+
+  const backwardsNavs: { direct: number; regular: number }[] = [{ direct: currentDirect, regular: currentRegular }]
+
+  for (let i = 1; i < months; i++) {
+    const randomShock = (rng() - 0.5) * 2
+    const r = monthlyReturn + monthlyVol * randomShock
+    
+    // Backwards growth factors
+    // Forward: NAV_new = NAV_old * (1 + r)
+    // Backward: NAV_old = NAV_new / (1 + r)
+    const gDirect = 1 + r
+    const gRegular = 1 + r - monthlyExpenseDiff
+    
+    currentDirect = currentDirect / Math.max(0.5, gDirect)
+    currentRegular = currentRegular / Math.max(0.5, gRegular)
+    
+    backwardsNavs.unshift({ direct: currentDirect, regular: currentRegular })
+  }
 
   for (let i = 0; i < months; i++) {
-    const directNav = Math.round(backwardsNavs[i] * 100) / 100
-    const regularNav = Math.round((directNav * (1 + expenseDiff * (months - i) / 12)) * 100) / 100
-
     navHistory.push({
       date: dates[i].toISOString().slice(0, 10),
-      directNav,
-      regularNav,
+      directNav: Math.round(backwardsNavs[i].direct * 100) / 100,
+      regularNav: Math.round(backwardsNavs[i].regular * 100) / 100,
     })
-  }
-
-  if (navHistory.length > 0) {
-    navHistory[navHistory.length - 1].directNav = fund.directNav
-    navHistory[navHistory.length - 1].regularNav = fund.regularNav
   }
 
   return {
@@ -303,7 +307,6 @@ export async function GET(request: Request) {
           const isoDate = parseMfApiDate(entry.date)
           const nav = parseFloat(entry.nav)
           if (isoDate && !isNaN(nav)) {
-            // Only keep the first entry per date (MFAPI may have duplicates)
             if (!directNavMap.has(isoDate)) {
               directNavMap.set(isoDate, nav)
             }
@@ -323,7 +326,6 @@ export async function GET(request: Request) {
         }
 
         // Build combined NAV history
-        // Get all dates from both maps, sort them, filter to the requested months
         const allDates = new Set<string>([
           ...directNavMap.keys(),
           ...regularNavMap.keys(),
@@ -339,16 +341,27 @@ export async function GET(request: Request) {
           .filter(d => d >= cutoffStr)
           .sort()
 
-        for (const date of sortedDates) {
-          const directNav = directNavMap.get(date)
-          const regularNav = regularNavMap.get(date)
+        // Expense ratio diff to estimate missing data
+        const annualDiff = (fund.regularExpenseRatio - fund.directExpenseRatio) / 100
 
-          // Only include dates where we have at least one NAV value
-          if (directNav !== undefined || regularNav !== undefined) {
+        for (const date of sortedDates) {
+          let directNav = directNavMap.get(date)
+          let regularNav = regularNavMap.get(date)
+
+          // If one is missing, estimate it from the other
+          if (directNav !== undefined && regularNav === undefined) {
+            // Estimate regularNav from directNav
+            regularNav = directNav * (fund.regularNav / fund.directNav)
+          } else if (directNav === undefined && regularNav !== undefined) {
+            // Estimate directNav from regularNav
+            directNav = regularNav * (fund.directNav / fund.regularNav)
+          }
+
+          if (directNav !== undefined && regularNav !== undefined) {
             navHistory.push({
               date,
-              directNav: directNav ?? 0,
-              regularNav: regularNav ?? 0,
+              directNav: Math.round(directNav * 100) / 100,
+              regularNav: Math.round(regularNav * 100) / 100,
             })
           }
         }
