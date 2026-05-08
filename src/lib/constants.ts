@@ -29,7 +29,6 @@ export const TABS: TabConfig[] = [
   { id: 'captureratio', label: 'Capture Ratio', icon: Target, group: 'Discover' },
   { id: 'categoryperf', label: 'Category Perf', icon: PieChart, group: 'Discover' },
   { id: 'similarity', label: 'Similar Funds', icon: Fingerprint, group: 'Discover' },
-  { id: 'riskscatter', label: 'Risk-Return', icon: Activity, group: 'Discover' },
   // Analyze
   { id: 'portfolio', label: 'Portfolio', icon: Landmark, group: 'Analyze' },
   { id: 'compare', label: 'Compare', icon: Scale, group: 'Analyze' },

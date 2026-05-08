@@ -42,7 +42,6 @@ import RollingReturns from '@/components/RollingReturns'
 import CaptureRatio from '@/components/CaptureRatio'
 import CategoryPerformance from '@/components/CategoryPerformance'
 import FundSimilarity from '@/components/FundSimilarity'
-import RiskReturnScatter from '@/components/RiskReturnScatter'
 import AlphaBeta from '@/components/AlphaBeta'
 import CorrelationMatrix from '@/components/CorrelationMatrix'
 import MonteCarloSim from '@/components/MonteCarloSim'
@@ -91,7 +90,6 @@ export default function Home() {
             {activeTab === 'captureratio' && <CaptureRatio />}
             {activeTab === 'categoryperf' && <CategoryPerformance />}
             {activeTab === 'similarity' && <FundSimilarity />}
-            {activeTab === 'riskscatter' && <RiskReturnScatter />}
             {/* Analyze */}
             {activeTab === 'portfolio' && <PortfolioBuilder />}
             {activeTab === 'compare' && <CompareView />}

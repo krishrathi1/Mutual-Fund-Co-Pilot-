@@ -75,46 +75,103 @@ export default function CaptureRatio() {
       </Card>
 
       {result && !loading && (
-        <>
+        <div className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-3">
-            <Card className="bg-emerald-50/50 dark:bg-emerald-950/20">
-              <CardContent className="pt-6 text-center">
-                <TrendingUp className="mx-auto h-8 w-8 text-emerald-600" />
-                <p className="text-sm text-muted-foreground mt-2">Upside Capture (1Y)</p>
-                <p className="text-3xl font-bold text-emerald-600">{result.captureRatios.upsideCapture1y || '—'}%</p>
-                <p className="text-xs text-muted-foreground mt-1">{result.interpretation.upside}</p>
+            {/* Bull Market Score */}
+            <Card className="relative overflow-hidden border-emerald-500/20 bg-emerald-50/30 dark:bg-emerald-950/10">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Bull Market Score</p>
+                  <TrendingUp className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-black text-emerald-600">{result.captureRatios.upsideCapture1y || '—'}%</p>
+                  <span className="text-[10px] font-bold text-muted-foreground">vs 100% Market</span>
+                </div>
+                <div className="mt-4 h-1.5 w-full rounded-full bg-emerald-200/50 dark:bg-emerald-900/30 overflow-hidden">
+                  <div 
+                    className="h-full rounded-full bg-emerald-500" 
+                    style={{ width: `${Math.min((result.captureRatios.upsideCapture1y || 0), 100)}%` }} 
+                  />
+                </div>
+                <p className="text-[11px] font-medium text-emerald-800/80 dark:text-emerald-400/80 mt-3 leading-relaxed">
+                  {result.captureRatios.upsideCapture1y && result.captureRatios.upsideCapture1y > 100 
+                    ? `Great! It captured more gains than the market.`
+                    : `It captured fewer gains than the market.`}
+                </p>
               </CardContent>
             </Card>
-            <Card className="bg-red-50/50 dark:bg-red-950/20">
-              <CardContent className="pt-6 text-center">
-                <TrendingDown className="mx-auto h-8 w-8 text-red-600" />
-                <p className="text-sm text-muted-foreground mt-2">Downside Capture (1Y)</p>
-                <p className="text-3xl font-bold text-red-600">{result.captureRatios.downsideCapture1y || '—'}%</p>
-                <p className="text-xs text-muted-foreground mt-1">{result.interpretation.downside}</p>
+
+            {/* Crash Protection */}
+            <Card className="relative overflow-hidden border-orange-500/20 bg-orange-50/30 dark:bg-orange-950/10">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold text-orange-700 dark:text-orange-400 uppercase tracking-widest">Crash Protection</p>
+                  <TrendingDown className="h-4 w-4 text-orange-600" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-black text-orange-600">{result.captureRatios.downsideCapture1y || '—'}%</p>
+                  <span className="text-[10px] font-bold text-muted-foreground">vs 100% Market</span>
+                </div>
+                <div className="mt-4 h-1.5 w-full rounded-full bg-orange-200/50 dark:bg-orange-900/30 overflow-hidden">
+                  <div 
+                    className="h-full rounded-full bg-orange-500" 
+                    style={{ width: `${Math.min((result.captureRatios.downsideCapture1y || 0), 100)}%` }} 
+                  />
+                </div>
+                <p className="text-[11px] font-medium text-orange-800/80 dark:text-orange-400/80 mt-3 leading-relaxed">
+                  {result.captureRatios.downsideCapture1y && result.captureRatios.downsideCapture1y < 100
+                    ? `Excellent. It fell less than the market during crashes.`
+                    : `Careful. It fell more than the market during crashes.`}
+                </p>
               </CardContent>
             </Card>
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <Target className="mx-auto h-8 w-8 text-violet-600" />
-                <p className="text-sm text-muted-foreground mt-2">Alpha (1Y)</p>
-                <p className="text-3xl font-bold text-violet-600">{formatPercent(result.alpha.alpha1y)}</p>
-                <Badge variant={result.alpha.alpha1y > 0 ? 'default' : 'destructive'} className="mt-2">
-                  {result.alpha.alpha1y > 0 ? 'Outperforming' : 'Underperforming'}
-                </Badge>
+
+            {/* Manager Skill */}
+            <Card className="relative overflow-hidden border-violet-500/20 bg-violet-50/30 dark:bg-violet-950/10">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-[10px] font-bold text-violet-700 dark:text-violet-400 uppercase tracking-widest">Manager Skill (Alpha)</p>
+                  <Target className="h-4 w-4 text-violet-600" />
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-4xl font-black text-violet-600">{formatPercent(result.alpha.alpha1y)}</p>
+                  <span className="text-[10px] font-bold text-muted-foreground">Extra Return</span>
+                </div>
+                <div className="mt-4">
+                   <Badge variant={result.alpha.alpha1y > 0 ? 'default' : 'destructive'} className="font-bold text-[10px] px-2 h-5">
+                    {result.alpha.alpha1y > 0 ? 'Adding Value' : 'Below Market'}
+                  </Badge>
+                </div>
+                <p className="text-[11px] font-medium text-violet-800/80 dark:text-violet-400/80 mt-3 leading-relaxed">
+                  {result.alpha.alpha1y > 0 
+                    ? `The manager added extra profit through smart stock selection.`
+                    : `The manager failed to beat a simple index fund.`}
+                </p>
               </CardContent>
             </Card>
           </div>
 
-          <Card>
-            <CardHeader><CardTitle className="text-sm">Overall Assessment</CardTitle></CardHeader>
+          <Card className="border-indigo-500/20 bg-indigo-50/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-indigo-600">Expert Verdict</CardTitle>
+            </CardHeader>
             <CardContent>
-              <div className="rounded-lg bg-muted/50 p-4">
-                <p className="font-medium">{result.interpretation.overall}</p>
-                <p className="text-sm text-muted-foreground mt-1">Benchmark: {result.fund.benchmark}</p>
+              <div className="rounded-xl bg-white/50 dark:bg-black/20 p-4 border shadow-sm">
+                <div className="flex items-start gap-3">
+                  <div className="mt-1 h-2 w-2 rounded-full bg-indigo-500 animate-pulse shrink-0" />
+                  <div>
+                    <p className="text-sm font-bold text-foreground leading-tight">{result.interpretation.overall}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                      This fund is measured against the <span className="font-bold text-foreground">{result.fund.benchmark}</span>. 
+                      An assessment of "{result.interpretation.overall}" means it is {result.interpretation.overall.toLowerCase().includes('aggressive') ? 'designed for maximum growth but has higher risks' : 'designed for stability and protects your money well during market drops'}.
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
-        </>
+        </div>
       )}
 
       <Card>
