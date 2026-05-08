@@ -15,6 +15,7 @@ interface ChatMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
+  suggestions?: string[]
   timestamp: Date
 }
 
@@ -149,11 +150,22 @@ I'm ready to dive into your specific holdings—just ask!`
           if (!trimmed) continue
           
           try {
-            const data = JSON.parse(trimmed)
+              const data = JSON.parse(trimmed)
             if (data.content) {
               accumulatedContent += data.content
+              
+              // Parse suggestions if present
+              let cleanContent = accumulatedContent
+              let suggestions: string[] = []
+              
+              const suggestionMatch = accumulatedContent.match(/\[SUGGESTIONS\]([\s\S]*?)\[\/SUGGESTIONS\]/)
+              if (suggestionMatch) {
+                cleanContent = accumulatedContent.replace(/\[SUGGESTIONS\][\s\S]*?\[\/SUGGESTIONS\]/, '').trim()
+                suggestions = suggestionMatch[1].split('\n').map(s => s.trim()).filter(s => s && !s.startsWith('- '))
+              }
+
               setMessages((prev) => 
-                prev.map(m => m.id === assistantId ? { ...m, content: accumulatedContent } : m)
+                prev.map(m => m.id === assistantId ? { ...m, content: cleanContent, suggestions } : m)
               )
             }
           } catch (e) {
@@ -306,6 +318,29 @@ I'm ready to dive into your specific holdings—just ask!`
                   </div>
                 ))
               )}
+              
+              {/* Follow-up Suggestions */}
+              {!isLoading && messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex flex-wrap gap-2 pt-2 px-1"
+                >
+                  <p className="w-full text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1 ml-1">Follow-up Questions</p>
+                  {(messages[messages.length - 1].suggestions?.length ? messages[messages.length - 1].suggestions : dynamicSuggestions).map((q, i) => (
+                    <Button
+                      key={i}
+                      variant="outline"
+                      size="sm"
+                      className="text-[11px] h-8 px-3 rounded-full border-emerald-500/10 hover:border-emerald-500/30 hover:bg-emerald-500/5 text-muted-foreground hover:text-emerald-700 transition-all"
+                      onClick={() => sendMessage(q as string)}
+                    >
+                      {q}
+                    </Button>
+                  ))}
+                </motion.div>
+              )}
+
               {isLoading && (messages.length === 0 || messages[messages.length - 1]?.role !== 'assistant') && (
                 <div className="flex gap-3">
                   <div className="h-8 w-8 rounded-lg bg-emerald-600 flex items-center justify-center animate-pulse">
