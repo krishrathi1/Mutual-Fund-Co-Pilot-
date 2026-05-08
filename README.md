@@ -1,906 +1,276 @@
-# FundVista: The Mutual Fund Co-Pilot 🚀
+# FundVista: Mutual Fund Co-Pilot
 
-> **Submission for Hack to the Future Hackathon (May 2026)**
-> *Transforming how 40 million Indian investors optimize their mutual fund wealth.*
+FundVista is an AI-powered mutual fund dashboard for Indian retail investors. It helps users understand whether they are losing money through Regular mutual fund plans, compare them with Direct plans, analyze portfolio risk, calculate tax and exit-load tradeoffs, and ask a portfolio-aware AI assistant for explanations.
 
----
-
-## 📝 Founder's Report (The "Technical Bet")
-
-### 01. The Problem
-The Indian mutual fund industry has seen explosive growth (40M+ SIP accounts), yet a massive "performance leakage" persists. Millions of retail investors are unknowingly stuck in **Regular Plans**, paying 0.5%–1.5% annually in hidden distributor commissions. Over 20 years, this translates to a loss of ₹20L–₹50L for a typical middle-class portfolio. Existing platforms either ignore this (to protect commissions) or provide "dumb" migration tools that don't account for exit loads, STCG/LTCG taxes, or the psychological friction of switching.
-
-### 02. The Solution
-**FundVista** is an AI-first co-pilot designed to plug this leakage. It doesn't just list funds; it audits your entire portfolio to identify "switch opportunities" where the long-term compounding benefits of Direct plans outweigh the immediate tax/exit load costs. The core flow is: **Portfolio Audit ➜ Optimization Roadmap ➜ AI Advisory**. By quantifying "Lifetime Savings" (up to retirement), we turn a dry financial decision into a high-stakes wealth-building milestone.
-
-### 03. The Approach (Our Technical Bet)
-We bet on **"Augmented Analysis"** rather than just raw LLM chat. Our engine combines a precision financial calculator (built on Budget 2024 tax rules) with a **RAG-powered AI Advisor**. While the calculator handles the "hard" math of CAGR and XIRR, the AI uses a retrieval system to fetch real-time fund data (expense ratios, AUM, riskometers) from our local SQLite/Prisma database to provide context-aware advice. This hybrid approach ensures 100% mathematical accuracy while maintaining the conversational ease of a human advisor.
-
-### 04. Next Steps
-Given another month, we would implement **"Zero-Friction Migration"**: a one-click execution engine using the Account Aggregator (AA) framework to fetch CAS (Consolidated Account Statements) and initiate switches via BSE Star MF/NSE NMF II APIs. We would also expand the AI Co-pilot into an "Agentic Auditor" that proactively alerts users when a fund's manager changes or when a category's benchmark outperformance drops below a threshold for three consecutive quarters.
+The project is built for a hackathon/demo setting, but the product idea is practical: make hidden mutual fund costs visible and help investors make better, calmer decisions.
 
 ---
 
-## 🏗️ System Architecture
+## 1. Problem
 
-FundVista is built as a high-performance, local-first web application.
+### Non-Technical Explanation
 
-- **Frontend**: Next.js 15 (App Router) with Tailwind CSS and Framer Motion for a premium, "fintech-pro" aesthetic.
-- **Backend**: Next.js API Routes (Serverless) handling complex financial logic (Tax, Exit Load, Savings).
-- **Database**: SQLite with Prisma ORM for lightning-fast local data retrieval and persistence.
-- **AI Engine**: Z-AI SDK with a custom RAG (Retrieval-Augmented Generation) layer that fetches fund-specific context before generating advice.
-- **State Management**: Zustand for cross-component synchronization of portfolio and analysis state.
+Many mutual fund investors in India do not know the difference between **Direct** and **Regular** plans.
+
+Both plans usually invest in the same portfolio and are managed by the same fund manager. The difference is cost:
+
+- **Direct plan**: lower expense ratio because there is no distributor commission.
+- **Regular plan**: higher expense ratio because commission is paid to an agent/distributor.
+
+This extra cost may look small, like 0.5% to 1.5% per year, but over 10, 20, or 30 years it compounds into lakhs of rupees.
+
+The harder part is that switching is not always obvious. A user must also consider:
+
+- Capital gains tax
+- Exit load
+- Lock-in period
+- Portfolio overlap
+- Risk level
+- Whether the fund is actually worth holding
+
+Most investors either ignore these details or use multiple scattered tools. FundVista brings them into one decision-making dashboard.
+
+### Technical Explanation
+
+The problem is a mix of financial calculation, data modeling, and user experience:
+
+- Store mutual fund data with Direct and Regular variants.
+- Track user holdings by session.
+- Calculate expense-ratio leakage and future value difference.
+- Estimate switching cost using tax and exit-load rules.
+- Analyze portfolio health using category, sector, overlap, benchmark, and risk metrics.
+- Use AI only after grounding it with portfolio and fund context.
 
 ---
 
-## 🌟 Core Features
+## 2. Solution
 
-### 1. Portfolio Optimizer (The "Switch" Engine)
-Identifies Regular plans and calculates the exact "Break-even Month" for switching to Direct plans, accounting for:
-- **Budget 2024 Tax Rules**: STCG (20%) and LTCG (12.5% above ₹1.25L).
-- **Exit Load Logic**: Dynamic calculation based on purchase date and fund-specific load structures.
-- **Compounding Delta**: Visualization of the 20-30 year wealth gap between plans.
+### Non-Technical Explanation
 
-### 2. RAG AI Co-pilot
-A persistent sidebar assistant that knows your portfolio. It can:
-- **Retrieve Fund Data**: "Tell me about my ICICI Bluechip holding."
-- **Explain Strategies**: "Why is a Mid-Cap fund riskier than a Large-Cap?"
-- **Tax Advisory**: "How much LTCG will I pay if I sell today?"
-- **Fallback Resilience**: Operates in "Rule-based mode" if LLM services are unreachable, ensuring the demo never breaks.
+FundVista acts like a mutual fund co-pilot.
 
-### 3. Advanced Analytics Suite
-- **Fund Heatmap**: Visualizing category-wise performance.
-- **Portfolio Overlap**: Detecting over-diversification (holding the same stocks across multiple funds).
-- **Stress Testing**: Simulating 2008-style or 2020-style crashes on the current portfolio.
-- **XIRR & CAGR**: Precise performance tracking beyond simple absolute returns.
+Instead of only showing fund returns, it answers questions like:
 
-## Table of Contents
+- Am I holding Regular plans?
+- How much money can I save by switching to Direct?
+- Will tax or exit load make switching a bad idea right now?
+- Is my portfolio actually diversified?
+- Which funds overlap with each other?
+- What should I understand before taking action?
 
-- [Project Purpose](#project-purpose)
-- [Key Features](#key-features)
-- [Screenshots](#screenshots)
-- [System Architecture](#system-architecture)
-- [User Journey Flow](#user-journey-flow)
-- [Feature Flow Diagrams](#feature-flow-diagrams)
-- [Database Design](#database-design)
-- [API Architecture](#api-architecture)
-- [Frontend Architecture](#frontend-architecture)
-- [Calculation Logic](#calculation-logic)
-- [AI Co-Pilot Flow](#ai-co-pilot-flow)
-- [Folder Structure](#folder-structure)
-- [Setup and Run](#setup-and-run)
-- [Scripts](#scripts)
-- [Environment Variables](#environment-variables)
-- [Project Strengths](#project-strengths)
-- [Limitations](#limitations)
-- [Future Scope](#future-scope)
+The dashboard gives visual answers through charts, calculators, alerts, and an AI assistant.
 
-## Project Purpose
+### Technical Explanation
 
-FundVista was built to solve common problems faced by mutual fund investors:
+FundVista is a Next.js application with:
 
-- Investors do not clearly see the long-term cost of Regular plans.
-- Expense ratio differences look small as percentages.
-- Users often buy many funds but still remain concentrated in the same stocks, sectors, or fund houses.
-- Fund performance is often judged without checking benchmark performance.
-- Switching from Regular to Direct can save money, but may involve tax, exit load, or lock-in tradeoffs.
-- Financial planning tools are usually scattered across many platforms.
+- **Next.js App Router** for frontend and backend routes.
+- **React + TypeScript** for interactive UI components.
+- **Tailwind CSS + shadcn/ui** for a polished dashboard interface.
+- **Zustand** for client-side state management.
+- **Prisma ORM + SQLite** for local structured fund and portfolio data.
+- **LanceDB vector search** for semantic fund retrieval.
+- **AI chat API** that combines conversation history, portfolio context, and retrieved fund context.
+- **Financial calculators** for SIP, SWP, STP, XIRR, tax, exit load, savings, rebalancing, and stress testing.
 
-FundVista combines discovery, comparison, portfolio tracking, risk analysis, goal planning, tax checks, and AI explanations into one connected dashboard.
+---
 
-## Key Features
+## 3. Approach
 
-### Discover
+### Product Approach
 
-| Feature | What It Does | Why It Matters |
-|---|---|---|
-| Explore Funds | Search, filter, sort, and inspect funds | Helps users quickly find useful funds |
-| Direct vs Regular Cards | Shows both plans side by side | Makes hidden commission cost visible |
-| Fund Detail Drawer | Shows overview, portfolio, benchmark, savings, and switch guidance | Gives deep fund understanding without leaving Explore |
-| Fund Screener | Filters by category, risk, AUM, return, and expense ratio | Helps users shortlist funds using rules |
-| AMC Analysis | Compares fund houses by AUM, fund count, cost, and returns | Helps users understand institution-level concentration |
-| Market Dashboard | Shows high-level market view | Gives context before fund selection |
-| Heatmap | Visual fund performance/risk view | Makes large datasets easier to scan |
-| NAV History | Shows historical NAV movement | Helps understand fund behavior over time |
-| Rankings | Ranks funds by useful metrics | Helps users find strong candidates quickly |
+FundVista is designed around one core flow:
 
-### Analyze
+```text
+Discover funds -> Add holdings -> Analyze portfolio -> Compare Direct vs Regular -> Get switch guidance -> Ask AI for explanation
+```
 
-| Feature | What It Does | Why It Matters |
-|---|---|---|
-| Portfolio Builder | Adds and tracks user holdings | Creates personalized analysis |
-| Portfolio Analysis | Calculates value, gain, cost, risk, and savings | Shows portfolio health in one place |
-| Compare View | Compares selected funds and Direct vs Regular plans | Helps users choose better options |
-| Overlap Analyzer | Finds repeated exposure across funds | Prevents false diversification |
-| Sector Exposure | Shows sector-level portfolio allocation | Finds hidden sector concentration |
-| Diversification Score | Grades portfolio balance | Gives simple health score and suggestions |
-| Benchmark Compare | Checks alpha vs benchmark | Shows whether active fees are justified |
-| Volatility Analysis | Measures drawdown, Sharpe, Sortino, and Calmar | Explains risk beyond returns |
+The goal is not to tell users blindly what to buy. The goal is to make the hidden tradeoffs visible so the user can make an informed decision.
 
-### Plan
+### Technical Approach
 
-| Feature | What It Does | Why It Matters |
-|---|---|---|
-| Savings Calculator | Calculates Direct vs Regular future value | Shows long-term cost difference |
-| SIP Planner | Projects monthly investment growth | Supports disciplined investing |
-| SWP Calculator | Plans systematic withdrawals | Useful for retirement income |
-| STP Calculator | Plans systematic transfer | Reduces market timing risk |
-| Goal Planner | Calculates SIP needed for a goal | Converts goals into monthly action |
-| Risk Profiler | Maps user risk comfort to allocation | Helps avoid unsuitable funds |
+The app uses a hybrid architecture:
 
-### Optimize
+1. **Deterministic calculations for finance**
 
-| Feature | What It Does | Why It Matters |
-|---|---|---|
-| Tax Calculator | Estimates STCG/LTCG impact | Avoids surprise tax cost |
-| Exit Load Calculator | Estimates redemption penalty | Helps time switching decisions |
-| Rebalancing View | Compares current vs target allocation | Keeps portfolio aligned with risk profile |
-| Stress Test | Simulates downside scenarios | Prepares user for market corrections |
-| Portfolio Alerts | Highlights portfolio issues | Acts like an automatic checklist |
+   Important numbers such as savings, tax, exit load, SIP future value, XIRR, and portfolio allocation are calculated using code, not guessed by AI.
 
-### Tools
+2. **AI for explanation**
 
-| Feature | What It Does | Why It Matters |
-|---|---|---|
-| XIRR Calculator | Calculates true annualized return for irregular investments | Better than simple absolute return for SIPs |
-| Watchlist | Saves funds for tracking | Supports research before investment |
-| Portfolio Export | Exports portfolio data | Useful for records or advisor review |
-| AI Co-Pilot | Answers mutual fund questions | Makes the dashboard easier to understand |
+   The AI Co-Pilot explains the result in simple language. It receives the user's portfolio context and relevant fund data before answering.
 
-## Screenshots
+3. **RAG-style fund context**
 
-The project includes screenshots in the `screenshots/` folder.
+   The chat route uses semantic search through LanceDB to find relevant fund data, then attaches it to the prompt. This makes answers more specific than a generic chatbot.
 
-| Screen | File |
-|---|---|
-| Hero and Explore | `screenshots/01-hero-explore.png` |
-| Full Page | `screenshots/02-full-page.png` |
-| Portfolio | `screenshots/03-portfolio.png` |
-| Compare | `screenshots/04-compare.png` |
-| Recommendations | `screenshots/05-recommendations.png` |
-| Savings Calculator | `screenshots/06-savings-calc.png` |
-| Savings Charts | `screenshots/07-savings-charts.png` |
-| Mobile Explore | `screenshots/08-mobile-explore.png` |
-| Mobile Funds | `screenshots/09-mobile-funds.png` |
-| Mobile Portfolio | `screenshots/10-mobile-portfolio.png` |
-| Mobile Savings | `screenshots/11-mobile-savings.png` |
-| Desktop Hero | `screenshots/12-desktop-hero.png` |
-| Desktop Explore | `screenshots/13-desktop-explore.png` |
+4. **Session-based portfolio**
 
-Example:
+   Users can try the product without login. Holdings are linked to a session ID and stored locally through the backend database.
 
-![FundVista Explore](screenshots/01-hero-explore.png)
+5. **Modular dashboard**
 
-## System Architecture
+   Features are split into sections:
 
-FundVista uses a Next.js app with React client components, API routes, Prisma ORM, and SQLite storage.
+   - Discover: explore, screener, rankings, heatmap, AMC analysis
+   - Analyze: portfolio, comparison, overlap, sector exposure, benchmark, volatility
+   - Plan: SIP, SWP, STP, goals, risk profile
+   - Optimize: tax, exit load, rebalancing, stress test, alerts
+   - Tools: XIRR, watchlist, export, AI Co-Pilot
+
+### High-Level Architecture
 
 ```mermaid
 flowchart TB
-    User[User Browser]
+    User[User]
     UI[Next.js React UI]
-    Store[Zustand Global Store]
+    Store[Zustand Store]
     API[Next.js API Routes]
     Prisma[Prisma ORM]
     DB[(SQLite Database)]
-    AI[AI SDK / Fallback Engine]
-    Charts[Recharts Visual Layer]
+    Vector[LanceDB Vector Search]
+    AI[AI Chat / Local Ollama / ZAI fallback]
 
     User --> UI
     UI --> Store
-    UI --> Charts
     Store --> API
     UI --> API
     API --> Prisma
     Prisma --> DB
+    API --> Vector
+    Vector --> API
     API --> AI
     AI --> API
-    API --> Store
-    Store --> UI
+    API --> UI
 ```
 
-### Layer Responsibilities
+---
 
-| Layer | Responsibility |
-|---|---|
-| UI Components | Render tabs, cards, forms, charts, drawers, and calculators |
-| Zustand Store | Keeps active tab, funds, holdings, watchlist, goals, comparison selection, and calculation results |
-| API Routes | Perform backend calculations, CRUD operations, and AI chat calls |
-| Prisma ORM | Type-safe database access |
-| SQLite | Stores funds, holdings, goals, and watchlist data |
-| AI Layer | Explains mutual fund concepts and answers user questions |
-
-## User Journey Flow
-
-```mermaid
-flowchart LR
-    Start[Open FundVista] --> Explore[Explore Funds]
-    Explore --> Filter[Search / Filter / Sort]
-    Filter --> Detail[Open Fund Detail]
-    Filter --> CompareQueue[Add to Compare]
-    Filter --> AddPortfolio[Add to Portfolio]
-    Detail --> Savings[Check Direct vs Regular Savings]
-    Detail --> Switch[Check Switch Guidance]
-    CompareQueue --> Compare[Compare View]
-    AddPortfolio --> Portfolio[Portfolio Builder]
-    Portfolio --> Analyze[Portfolio Analysis]
-    Analyze --> Overlap[Overlap Check]
-    Analyze --> Sector[Sector Exposure]
-    Analyze --> Diversify[Diversification Score]
-    Analyze --> Tax[Tax / Exit Load]
-    Analyze --> Rebalance[Rebalancing]
-    Portfolio --> Goals[Goal Planner]
-    Goals --> SIP[SIP Needed]
-    SIP --> Decision[Better Investment Decision]
-    AI[AI Co-Pilot] --> Explore
-    AI --> Portfolio
-    AI --> Goals
-```
-
-## Feature Flow Diagrams
-
-### Explore Funds Flow
-
-```mermaid
-flowchart TD
-    A[User enters Explore tab] --> B["Fetch fund list from /api/funds"]
-    B --> C[Render fund cards]
-    C --> D{User action}
-    D --> E[Search text]
-    D --> F[Filter category/sub-category]
-    D --> G[Sort by AUM/returns/expense]
-    D --> H[Open Details]
-    D --> I[Add to Compare]
-    D --> J[Add to Portfolio]
-    E --> B
-    F --> B
-    G --> B
-    H --> K[Fund Detail Drawer]
-    I --> L[Selected funds in Zustand]
-    J --> M["POST /api/holdings"]
-```
-
-### Fund Detail Drawer Flow
-
-```mermaid
-flowchart TD
-    A[Fund Card Details Button] --> B[Open FundDetail Drawer]
-    B --> C[Overview Tab]
-    B --> D[Portfolio Tab]
-    B --> E[Benchmark Tab]
-    B --> F[Savings Tab]
-    B --> G[Switch Tab]
-    C --> C1[Expense, return, NAV, AUM, manager]
-    D --> D1[Asset allocation and top holdings]
-    E --> E1[Alpha vs benchmark]
-    F --> F1[Direct vs Regular compounding]
-    G --> G1[Switch recommendation plus tax/exit load warnings]
-```
-
-### Portfolio Analysis Flow
-
-```mermaid
-flowchart TD
-    A[User adds holdings] --> B[Holdings saved with sessionId]
-    B --> C["POST /api/portfolio/analyze"]
-    C --> D[Fetch holdings with fund data]
-    D --> E[Calculate total invested/current value]
-    E --> F[Calculate weighted expense ratio]
-    F --> G[Find Regular plan holdings]
-    G --> H[Estimate Direct savings]
-    H --> I[Build recommendations]
-    I --> J[Calculate risk profile]
-    J --> K[Return portfolio report]
-    K --> L[Render dashboard, charts, warnings]
-```
-
-### Direct vs Regular Savings Flow
-
-```mermaid
-flowchart TD
-    A[Input investment amount and years] --> B{Fund selected?}
-    B -->|Yes| C[Use fund expense ratios]
-    B -->|No| D[Use manually entered expense ratios]
-    C --> E[Get expected return by category]
-    D --> F[Use entered/default expected return]
-    E --> G[Direct net return = expected return - direct expense]
-    F --> G
-    G --> H[Regular net return = expected return - regular expense]
-    H --> I{Mode}
-    I -->|Lump sum| J[Future value by CAGR]
-    I -->|SIP| K[Future value of annuity]
-    J --> L[Savings = Direct FV - Regular FV]
-    K --> L
-    L --> M[Year-wise breakdown chart]
-```
-
-### Goal Planner Flow
-
-```mermaid
-flowchart TD
-    A[User creates goal] --> B[Enter target amount]
-    B --> C[Enter current savings]
-    C --> D[Enter years to goal]
-    D --> E[Select risk profile]
-    E --> F[Pick expected return by risk]
-    F --> G[Pick suggested allocation]
-    G --> H[Calculate future value of current savings]
-    H --> I[Calculate remaining target]
-    I --> J[Calculate monthly SIP needed]
-    J --> K[Save goal to database]
-    K --> L[Show goal card and allocation]
-```
-
-### Tax and Switch Decision Flow
-
-```mermaid
-flowchart TD
-    A[User holds Regular plan] --> B[Calculate Direct savings]
-    B --> C[Check holding category]
-    C --> D[Check holding period]
-    D --> E[Estimate STCG/LTCG]
-    E --> F[Check exit load]
-    F --> G{ELSS lock-in?}
-    G -->|Yes| H[Warn switch may not be allowed]
-    G -->|No| I[Show switch priority]
-    H --> J[User reviews tradeoffs]
-    I --> J
-    J --> K[User makes informed decision]
-```
-
-### AI Co-Pilot Flow
-
-```mermaid
-sequenceDiagram
-    participant U as User
-    participant UI as AICopilot Component
-    participant API as AI Chat API
-    participant AI as AI SDK
-    participant FB as Fallback Responses
-
-    U->>UI: Ask mutual fund question
-    UI->>API: Send sessionId, message, history
-    API->>API: Add system prompt and conversation history
-    API->>AI: Try chat completion
-    alt AI succeeds
-        AI-->>API: Assistant response
-    else AI fails
-        API->>FB: Generate rule-based answer
-        FB-->>API: Fallback response
-    end
-    API-->>UI: Return response
-    UI-->>U: Show answer in chat
-```
-
-## Database Design
-
-The Prisma schema is located at `prisma/schema.prisma`.
-
-```mermaid
-erDiagram
-    Fund ||--o{ Holding : has
-    Fund ||--o{ WatchlistItem : saved_as
-
-    Fund {
-        string id PK
-        string schemeName
-        string fundHouse
-        string category
-        string subCategory
-        string riskometer
-        string benchmark
-        string fundManager
-        string directIsin
-        float directNav
-        float directExpenseRatio
-        float directReturn1y
-        float directReturn3y
-        float directReturn5y
-        string regularIsin
-        float regularNav
-        float regularExpenseRatio
-        float regularReturn1y
-        float regularReturn3y
-        float regularReturn5y
-        float aumCrore
-        string exitLoad
-        int minInvestment
-        string topHoldings
-    }
-
-    Holding {
-        string id PK
-        string sessionId
-        string fundId FK
-        string planType
-        float units
-        float investedAmount
-        float currentAmount
-        string purchaseDate
-        float sipAmount
-    }
-
-    WatchlistItem {
-        string id PK
-        string sessionId
-        string fundId FK
-        string notes
-        float targetPrice
-    }
-
-    Goal {
-        string id PK
-        string sessionId
-        string name
-        float targetAmount
-        float currentAmount
-        int yearsToGoal
-        string riskProfile
-        string suggestedAllocation
-        float monthlySipNeeded
-    }
-```
-
-### Model Purpose
-
-| Model | Purpose |
-|---|---|
-| Fund | Master mutual fund data with Direct and Regular plan fields |
-| Holding | User portfolio holdings stored by browser session |
-| WatchlistItem | Funds saved for tracking and research |
-| Goal | User financial goals and calculated SIP requirement |
-
-## API Architecture
-
-The backend is implemented using Next.js API routes inside `src/app/api`.
-
-```mermaid
-flowchart TB
-    API["src/app/api"]
-    Funds[Funds APIs]
-    Portfolio[Portfolio APIs]
-    Planning[Planning APIs]
-    Optimize[Optimize APIs]
-    AI[AI APIs]
-    Watchlist[Watchlist APIs]
-    Goals[Goals APIs]
-
-    API --> Funds
-    API --> Portfolio
-    API --> Planning
-    API --> Optimize
-    API --> AI
-    API --> Watchlist
-    API --> Goals
-
-    Funds --> F1["/api/funds"]
-    Funds --> F2["/api/funds/compare"]
-    Funds --> F3["/api/funds/screener"]
-    Funds --> F4["/api/funds/nav-history"]
-    Funds --> F5["/api/funds/amc"]
-
-    Portfolio --> P1["/api/holdings"]
-    Portfolio --> P2["/api/portfolio/analyze"]
-    Portfolio --> P3["/api/portfolio/overlap"]
-    Portfolio --> P4["/api/portfolio/sector-exposure"]
-    Portfolio --> P5["/api/portfolio/diversification"]
-    Portfolio --> P6["/api/portfolio/rebalancing"]
-    Portfolio --> P7["/api/portfolio/stress-test"]
-    Portfolio --> P8["/api/portfolio/xirr"]
-
-    Planning --> PL1["/api/savings/calculate"]
-    Planning --> PL2["/api/sip/planner"]
-    Planning --> PL3["/api/swp/calculator"]
-    Planning --> PL4["/api/stp/calculator"]
-
-    Optimize --> O1["/api/tax/calculate"]
-    AI --> A1["/api/ai/chat"]
-    AI --> A2["/api/ai/insights"]
-    Watchlist --> W1["/api/watchlist"]
-    Goals --> G1["/api/goals"]
-```
-
-### Main API List
-
-| Route | Purpose |
-|---|---|
-| `/api/funds` | Fetch funds with search, filters, sorting, and pagination |
-| `/api/funds/[id]` | Fetch one fund in detail |
-| `/api/funds/compare` | Compare selected funds |
-| `/api/funds/amc` | AMC-level aggregation |
-| `/api/funds/heatmap` | Fund heatmap data |
-| `/api/funds/nav` | NAV lookup |
-| `/api/funds/nav-history` | Historical NAV data |
-| `/api/funds/rankings` | Fund ranking data |
-| `/api/funds/screener` | Advanced screening |
-| `/api/funds/volatility` | Risk and volatility metrics |
-| `/api/holdings` | Create/fetch holdings |
-| `/api/holdings/[id]` | Update/delete holding |
-| `/api/portfolio/analyze` | Portfolio summary, cost, risk, and savings |
-| `/api/portfolio/alerts` | Portfolio warnings |
-| `/api/portfolio/diversification` | Diversification scoring |
-| `/api/portfolio/export` | Export portfolio |
-| `/api/portfolio/overlap` | Overlap analysis |
-| `/api/portfolio/rebalancing` | Rebalancing suggestions |
-| `/api/portfolio/sector-exposure` | Sector exposure |
-| `/api/portfolio/stress-test` | Stress testing |
-| `/api/portfolio/xirr` | XIRR calculation |
-| `/api/goals` | Goal CRUD and SIP calculation |
-| `/api/risk/profile` | Risk profile calculation |
-| `/api/savings/calculate` | Direct vs Regular savings |
-| `/api/sip/planner` | SIP planner |
-| `/api/stp/calculator` | STP calculator |
-| `/api/swp/calculator` | SWP calculator |
-| `/api/tax/calculate` | Tax calculation |
-| `/api/watchlist` | Watchlist CRUD |
-| `/api/ai/chat` | AI chat |
-| `/api/ai/insights` | AI fund insights |
-
-## Frontend Architecture
-
-The main frontend entry is `src/app/page.tsx`.
-
-```mermaid
-flowchart TB
-    Page[src/app/page.tsx]
-    Header[Sticky Header / Navigation]
-    Main[Active Tab Renderer]
-    Footer[Footer]
-    Chat[AICopilot Floating Chat]
-    Store[useFundStore]
-
-    Page --> Header
-    Page --> Main
-    Page --> Footer
-    Page --> Chat
-    Header --> Store
-    Main --> Store
-    Chat --> Store
-
-    Main --> Discover[Discover Components]
-    Main --> Analyze[Analyze Components]
-    Main --> Plan[Plan Components]
-    Main --> Optimize[Optimize Components]
-    Main --> Tools[Tools Components]
-```
-
-### Navigation Groups
-
-```mermaid
-mindmap
-  root((FundVista))
-    Discover
-      Explore
-      Market
-      Heatmap
-      NAV Chart
-      Screener
-      Rankings
-      AMC Hub
-    Analyze
-      Portfolio
-      Compare
-      Overlap
-      Sectors
-      Diversity
-      Benchmark
-      Volatility
-    Plan
-      Savings
-      SIP
-      SWP
-      STP
-      Goals
-      Risk
-    Optimize
-      Tax
-      Exit Load
-      Rebalance
-      Stress
-      Alerts
-    Tools
-      XIRR
-      Watchlist
-      Export
-```
-
-### State Store
-
-Global app state is defined in `src/lib/store.ts`.
-
-It stores:
-
-- Active tab
-- Fund search filters
-- Fund list
-- Session ID
-- Holdings
-- Selected comparison funds
-- Portfolio analysis
-- Savings calculator result
-- AI insights
-- Watchlist
-- Goals
-
-```mermaid
-flowchart LR
-    Components[React Components] --> Store[Zustand Store]
-    Store --> Fetch[Fetch API Routes]
-    Fetch --> API[Next.js APIs]
-    API --> DB[(SQLite)]
-    API --> Store
-    Store --> Components
-```
-
-## Calculation Logic
-
-### Direct vs Regular Compounding
-
-Expense ratios are stored as percentages.
-
-```text
-Direct net return = Expected return - Direct expense ratio
-Regular net return = Expected return - Regular expense ratio
-Savings = Direct future value - Regular future value
-```
-
-Example:
-
-```text
-Expected return = 12%
-Direct expense ratio = 0.50%
-Regular expense ratio = 1.25%
-
-Direct net return = 11.50%
-Regular net return = 10.75%
-```
-
-The Direct plan compounds at a higher net rate, so the gap grows with time.
-
-### Lump Sum Future Value
-
-```text
-Future Value = Investment Amount * (1 + Net Return Rate) ^ Years
-```
-
-### SIP Future Value
-
-```text
-FV = P * [((1 + r)^n - 1) / r] * (1 + r)
-```
-
-Where:
-
-- `P` = monthly SIP amount
-- `r` = monthly net return rate
-- `n` = number of months
-
-### Portfolio Weighted Expense Ratio
-
-```text
-Weighted Expense Ratio = Sum(Holding Weight * Holding Expense Ratio)
-```
-
-Where:
-
-```text
-Holding Weight = Holding Current Value / Total Portfolio Current Value
-```
-
-### Alpha
-
-```text
-Alpha = Fund Return - Benchmark Return
-```
-
-Positive alpha means the fund beat the benchmark. Negative alpha means the fund underperformed.
-
-### XIRR
-
-XIRR is used for portfolios with irregular cash flows. It is better than absolute return for SIPs because each investment happens on a different date.
-
-### Goal SIP Calculation
-
-The Goal Planner estimates monthly SIP required to reach a target corpus.
-
-```text
-Future value of current savings = Current Savings * (1 + monthly return) ^ months
-Remaining target = Target Amount - Future value of current savings
-Monthly SIP = Remaining target / SIP annuity factor
-```
-
-## AI Co-Pilot Flow
-
-The AI Co-Pilot is always available as a floating assistant.
-
-It can explain:
-
-- Direct vs Regular plans
-- Expense ratio
-- SIP vs lump sum
-- STCG and LTCG
-- ELSS
-- Riskometer
-- Diversification
-- Portfolio construction
-
-The chat API keeps a short conversation history by `sessionId`. If the AI call fails, the route returns a fallback educational answer.
-
-```mermaid
-flowchart TD
-    A[User asks question] --> B["Send message to /api/ai/chat"]
-    B --> C[Attach Indian mutual fund advisor system prompt]
-    C --> D{AI SDK available?}
-    D -->|Yes| E[Generate AI answer]
-    D -->|No| F[Use fallback response rules]
-    E --> G[Return answer]
-    F --> G
-    G --> H[Show in floating chat]
-```
-
-## Folder Structure
-
-```text
-.
-|-- FundVista_Project_Documentation.md
-|-- README.md
-|-- package.json
-|-- next.config.ts
-|-- tailwind.config.ts
-|-- prisma
-|   |-- schema.prisma
-|   |-- seed.ts
-|   |-- fundSeed.ts
-|   |-- seed-holdings.ts
-|-- db
-|   |-- custom.db
-|-- public
-|   |-- logo.svg
-|   |-- robots.txt
-|-- screenshots
-|   |-- 01-hero-explore.png
-|   |-- 02-full-page.png
-|   |-- ...
-|-- src
-|   |-- app
-|   |   |-- page.tsx
-|   |   |-- layout.tsx
-|   |   |-- globals.css
-|   |   |-- api
-|   |-- components
-|   |   |-- ExploreFunds.tsx
-|   |   |-- PortfolioBuilder.tsx
-|   |   |-- CompareView.tsx
-|   |   |-- AICopilot.tsx
-|   |   |-- ui
-|   |-- hooks
-|   |-- lib
-|       |-- db.ts
-|       |-- store.ts
-|       |-- helpers.ts
-|       |-- utils.ts
-```
-
-## Setup and Run
+## 4. How To Run
 
 ### Prerequisites
 
+Install these first:
+
 - Node.js
 - npm
-- SQLite database file included in the project
+- Git
 
-### 1. Install dependencies
+The project already includes a local SQLite database setup.
+
+### Step 1: Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Configure environment
+### Step 2: Configure Environment
 
-Create or update `.env`:
+Create a `.env` file in the project root:
 
 ```env
 DATABASE_URL="file:./db/custom.db"
 ```
 
-### 3. Generate Prisma client
+### Step 3: Generate Prisma Client
 
 ```bash
 npm run db:generate
 ```
 
-### 4. Push database schema if needed
+### Step 4: Sync Database Schema
 
 ```bash
 npm run db:push
 ```
 
-### 5. Run development server
+### Step 5: Start The App
 
 ```bash
 npm run dev
 ```
 
-Open:
+Open the app:
 
 ```text
 http://localhost:3000
 ```
 
-### 6. Build production version
+### Optional: Run Production Build
 
 ```bash
 npm run build
-```
-
-### 7. Start production server
-
-```bash
 npm run start
 ```
 
-## Scripts
+### Useful Scripts
 
-| Script | Purpose |
+| Command | Purpose |
 |---|---|
-| `npm run dev` | Start Next.js development server on port 3000 |
-| `npm run build` | Build standalone production app |
+| `npm run dev` | Start development server on port 3000 |
+| `npm run build` | Create production build |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
-| `npm run db:push` | Push Prisma schema to database |
 | `npm run db:generate` | Generate Prisma client |
-| `npm run db:migrate` | Run Prisma migration in development |
-| `npm run db:reset` | Reset Prisma migrations/database |
+| `npm run db:push` | Push Prisma schema to SQLite |
+| `npm run db:migrate` | Run Prisma migration |
+| `npm run db:reset` | Reset database migrations |
 
-## Environment Variables
+---
 
-| Variable | Example | Purpose |
-|---|---|---|
-| `DATABASE_URL` | `file:./db/custom.db` | SQLite database path used by Prisma |
+## 5. What's Next
 
-In production, `src/lib/db.ts` points Prisma to:
+### Product Roadmap
 
-```text
-file:<project-root>/db/custom.db
-```
+- **CAS upload/import**: Let users upload Consolidated Account Statements and auto-build their portfolio.
+- **Live AMFI NAV sync**: Keep NAV and fund data updated automatically.
+- **Broker/platform integrations**: Connect with execution platforms for smoother switching.
+- **PDF portfolio report**: Generate a clean advisor-style report.
+- **Alerts**: Notify users about high expense ratio, overlap, manager change, underperformance, or rebalancing need.
+- **Tax harvesting assistant**: Help users plan redemptions more intelligently.
 
-## Project Strengths
+### Technical Roadmap
 
-- Clear Direct vs Regular cost education
-- Rich portfolio analysis tools
-- Simple session-based onboarding with no login requirement
-- Many calculators in one platform
-- Strong visual explanation using charts
-- AI assistant with fallback responses
-- Prisma schema keeps data structured
-- Modular component architecture
-- Responsive dashboard with desktop and mobile navigation
+- Add authentication so portfolios persist across devices.
+- Replace sample/seeded data with production-grade data pipelines.
+- Add stronger test coverage for tax, exit load, and compounding calculations.
+- Improve RAG evaluation so AI answers can be measured for correctness.
+- Add background jobs for NAV refresh and portfolio alerts.
+- Add deployment-ready environment handling for production databases.
 
-## Limitations
+---
 
-- Session-based storage means data is tied to browser session unless extended with authentication.
-- Some calculations depend on seeded or sample fund data.
-- Real production use would need reliable live mutual fund data feeds.
-- AI answers are educational and should not replace a certified financial advisor.
-- Tax calculations should be verified for the user's exact situation.
+## What Judges Should Notice
 
-## Future Scope
+FundVista is not just a chatbot and not just a calculator. It combines both:
 
-- User authentication
-- CAS statement upload/import
-- Live AMFI NAV sync
-- More complete historical return dataset
-- PDF portfolio report generation
-- Email or WhatsApp alerts
-- Broker/platform integrations
-- Advanced tax harvesting workflow
-- More detailed rolling returns analysis
-- Advisor dashboard mode
+- Calculators handle exact financial math.
+- Database and APIs provide structured fund/portfolio data.
+- Vector search retrieves relevant fund context.
+- AI explains the result in simple investor-friendly language.
+- The interface turns complex decisions into readable dashboards.
 
-## Final Summary
+In short:
 
-FundVista is a Mutual Fund Co-Pilot that helps Indian investors discover funds, compare Direct and Regular plans, analyze portfolio health, plan financial goals, and optimize decisions using simple explanations and visual tools.
+> FundVista helps Indian mutual fund investors discover hidden costs, understand risk, and make smarter Direct vs Regular plan decisions with data-backed AI guidance.
 
-The project is built around one practical mission:
+---
 
-> Help users keep more of their own money by making fees, risk, overlap, tax, and long-term compounding easy to understand.
+## Tech Stack
+
+| Area | Technology |
+|---|---|
+| Frontend | Next.js, React, TypeScript |
+| Styling | Tailwind CSS, shadcn/ui, Framer Motion |
+| State | Zustand |
+| Backend | Next.js API Routes |
+| Database | SQLite |
+| ORM | Prisma |
+| AI | AI chat route, Ollama/local fallback, ZAI SDK |
+| Retrieval | LanceDB semantic search |
+| Charts | Recharts |
+
+---
+
+## Disclaimer
+
+FundVista is an educational and decision-support tool. It does not provide certified financial advice. Users should verify tax and investment decisions with a qualified financial advisor before taking action.
