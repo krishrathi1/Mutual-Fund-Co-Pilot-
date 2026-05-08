@@ -1,4 +1,5 @@
 import * as lancedb from '@lancedb/lancedb';
+import * as arrow from 'apache-arrow';
 import { pipeline } from '@xenova/transformers';
 import { db } from './db';
 import path from 'path';
