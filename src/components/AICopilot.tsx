@@ -224,7 +224,7 @@ I'm ready to dive into your specific holdings—just ask!`
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 w-[calc(100vw-2rem)] sm:w-[440px] h-[calc(100vh-8rem)] sm:h-[680px] max-h-[calc(100vh-4rem)] flex flex-col rounded-[1.5rem] sm:rounded-[2rem] bg-background border border-border/50 shadow-3xl overflow-hidden shadow-emerald-500/10"
+            className="fixed bottom-8 right-8 z-50 w-[440px] max-w-[calc(100vw-2rem)] h-[680px] max-h-[calc(100vh-4rem)] flex flex-col rounded-[2rem] bg-background border border-border/50 shadow-3xl overflow-hidden shadow-emerald-500/10"
           >
             {/* Header */}
             <div className="bg-gradient-to-br from-emerald-600 to-teal-700 p-6 flex items-center justify-between">

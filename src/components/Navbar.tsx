@@ -47,8 +47,8 @@ export default function Navbar() {
               <div className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full bg-emerald-400 ring-2 ring-white dark:ring-slate-900 animate-pulse" />
             </div>
             <div className="flex flex-col">
-              <h1 className="text-base sm:text-lg font-bold tracking-tight text-foreground leading-none">FundVista</h1>
-              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600 mt-1">Co-Pilot</span>
+              <h1 className="text-lg font-bold tracking-tight text-foreground leading-none">FundVista</h1>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600 mt-1">Co-Pilot</span>
             </div>
           </div>
 
@@ -141,29 +141,23 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Navigation */}
-        <div className="mt-4 flex lg:hidden items-center gap-2 overflow-x-auto pb-4 -mx-2 px-2 scrollbar-none snap-x">
-          {tabs.filter(t => ['explore', 'market', 'portfolio', 'compare', 'goals', 'risk'].includes(t.id)).map((tab) => {
-            const id = tab.id
+        <div className="mt-4 flex lg:hidden items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {['explore', 'market', 'portfolio', 'compare', 'goals'].map((id) => {
+            const tab = tabs.find(t => t.id === id)!
             const isActive = activeTab === id
             const Icon = tab.icon
-            const badge = getBadge(id)
             return (
               <button
                 key={id}
                 onClick={() => setActiveTab(id as any)}
-                className={`flex items-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest transition-all snap-start ${
+                className={`flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-all ${
                   isActive 
-                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' 
+                    ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20' 
                     : 'bg-white/80 dark:bg-slate-900/80 text-slate-500 border border-slate-200 dark:border-slate-800'
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
                 {tab.label}
-                {badge > 0 && (
-                  <span className={`flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[8px] ${isActive ? 'bg-white text-emerald-600' : 'bg-emerald-600 text-white'}`}>
-                    {badge}
-                  </span>
-                )}
               </button>
             )
           })}
