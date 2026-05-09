@@ -22,7 +22,17 @@ import {
 const CATEGORY_RETURNS: Record<string, number> = { Equity: 12, ELSS: 12, Index: 11, Hybrid: 9, Debt: 7 }
 
 export default function SavingsCalculator() {
-  const { funds, fetchFunds, savingsResult, savingsLoading, calculateSavings } = useFundStore()
+  const { 
+    funds, 
+    fetchFunds, 
+    savingsResult, 
+    savingsLoading, 
+    calculateSavings,
+    savingsMode,
+    setSavingsMode,
+    monthlySip,
+    setMonthlySip
+  } = useFundStore()
 
   const [selectedFundId, setSelectedFundId] = useState('')
   const [investedAmount, setInvestedAmount] = useState('500000')
@@ -74,6 +84,8 @@ export default function SavingsCalculator() {
     const params: Record<string, unknown> = {
       investedAmount: parseFloat(investedAmount) || 500000,
       years: parseInt(years) || 20,
+      mode: savingsMode,
+      monthlySip: parseFloat(investedAmount) || 10000, // Use the same input field for simplicity
     }
     if (effectiveFundId && effectiveFundId !== 'custom') params.fundId = effectiveFundId
     if (customDirect) params.directExpenseRatio = parseFloat(customDirect)
@@ -91,12 +103,14 @@ export default function SavingsCalculator() {
       const params: Record<string, unknown> = {
         investedAmount: parseFloat(investedAmount) || 500000,
         years: parseInt(years) || 20,
+        mode: savingsMode,
+        monthlySip: parseFloat(investedAmount) || 10000,
       }
       if (effectiveFundId) params.fundId = effectiveFundId
       if (effectiveExpectedReturn != null) params.expectedReturn = effectiveExpectedReturn
       calculateSavings(params as Parameters<typeof calculateSavings>[0])
     }
-  }, [effectiveFundId, calculateSavings, investedAmount, years, savingsResult, effectiveExpectedReturn])
+  }, [effectiveFundId, calculateSavings, investedAmount, years, savingsResult, effectiveExpectedReturn, savingsMode])
 
   const chartData = useMemo(() => {
     if (!savingsResult) return []
@@ -122,22 +136,30 @@ export default function SavingsCalculator() {
     <div className="space-y-6">
       {/* Calculator Inputs */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <CardTitle className="flex items-center gap-2 text-card-foreground">
               <Calculator className="h-5 w-5 text-emerald-600" />
               Lifetime Savings Calculator
             </CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefreshNav}
-              disabled={refreshing}
-              className="gap-1.5 text-xs"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-              Refresh NAV
-            </Button>
+            <div className="flex items-center gap-2">
+              <Tabs value={savingsMode} onValueChange={(v) => setSavingsMode(v as 'lumpsum' | 'sip')} className="w-[180px]">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="lumpsum">Lumpsum</TabsTrigger>
+                  <TabsTrigger value="sip">SIP</TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefreshNav}
+                disabled={refreshing}
+                className="gap-1.5 text-xs"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                Refresh NAV
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -160,7 +182,7 @@ export default function SavingsCalculator() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>{savingsMode === 'lumpsum' ? 'Investment Amount (₹)' : 'Lumpsum Amount (₹)'}</Label>
+              <Label>{savingsMode === 'lumpsum' ? 'Investment Amount (₹)' : 'Monthly SIP Amount (₹)'}</Label>
               <Input
                 type="number"
                 value={investedAmount}

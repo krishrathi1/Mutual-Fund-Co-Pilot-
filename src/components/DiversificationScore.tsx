@@ -127,7 +127,11 @@ function computeDiversification(holdings: any[]): DiversificationResult {
   else if (sectorCount >= 5) sectorScore = 18
   else if (sectorCount >= 3) sectorScore = 12
   else if (sectorCount >= 1) sectorScore = 6
-  else sectorScore = 10
+  else {
+    // If no sector data, estimate based on category diversity
+    sectorScore = Math.min(15, categoryCount * 5)
+  }
+  
   if (sectorCount > 1) {
     sectorScore = Math.round(sectorScore * (0.6 + 0.4 * Math.min(1, (1 - sectorHHI) * 2.5)))
   }
@@ -448,50 +452,70 @@ export default function DiversificationScore() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <Card>
-          <CardContent className="p-6 sm:p-8 flex flex-col items-center">
-            <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-2">
+        <Card className="relative overflow-hidden border-none bg-gradient-to-br from-white/80 to-white/40 dark:from-white/5 dark:to-white/[0.02] backdrop-blur-xl shadow-2xl ring-1 ring-black/5 dark:ring-white/10">
+          {/* Background Decorative Blurs */}
+          <div className="absolute -top-24 -right-24 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-24 -left-24 h-64 w-64 rounded-full bg-orange-500/10 blur-3xl pointer-events-none" />
+          
+          <CardContent className="p-8 sm:p-10 flex flex-col items-center relative z-10">
+            <div className="flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
               <ShieldCheck className="h-4 w-4 text-emerald-600" />
-              Portfolio Diversification Score
-            </p>
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
+                Diversification Analysis
+              </span>
+            </div>
 
             {/* Large Gauge */}
-            <div className="relative">
-              <LargeScoreGauge score={divData.overallScore} size={240} />
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent opacity-20 group-hover:opacity-30 transition-opacity" />
+              <LargeScoreGauge score={divData.overallScore} size={280} />
+              
               {/* Center score display */}
-              <div className="absolute inset-0 flex flex-col items-center justify-end pb-4">
-                <p className="text-5xl font-bold text-foreground">
-                  <AnimatedCounter value={divData.overallScore} duration={1.5} />
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-8">
+                <motion.div 
+                  className="text-6xl font-black tracking-tight text-foreground"
+                  initial={{ scale: 0.9 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring' }}
+                >
+                  <AnimatedCounter value={divData.overallScore} duration={2} />
+                </motion.div>
+                <p className="text-sm font-medium text-muted-foreground uppercase tracking-widest opacity-60">
+                  Portfolio Score
                 </p>
-                <p className="text-xs text-muted-foreground">out of 100</p>
               </div>
             </div>
 
             {/* Grade Badge */}
-            <div className="mt-4">
-              <Badge className={`text-lg font-bold px-4 py-1.5 ring-1 ${gradeStyle.bg} ${gradeStyle.text} ${gradeStyle.ring}`}>
+            <motion.div 
+              className="mt-8"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5, type: 'spring' }}
+            >
+              <div className={`text-2xl font-black px-8 py-2.5 rounded-2xl shadow-lg ring-1 transition-all ${gradeStyle.bg} ${gradeStyle.text} ${gradeStyle.ring} hover:scale-105 duration-300`}>
                 Grade: {divData.grade}
-              </Badge>
-            </div>
+              </div>
+            </motion.div>
 
             {/* Quick summary */}
-            <p className="text-sm text-muted-foreground mt-3 text-center max-w-md">
+            <p className="text-base text-muted-foreground mt-6 text-center max-w-lg leading-relaxed">
               {divData.overallScore >= 80
-                ? 'Excellent diversification! Your portfolio is well-spread across asset classes, fund houses, sectors, and market caps.'
+                ? 'Your portfolio is a masterclass in diversification. You have successfully minimized concentration risk across all major dimensions.'
                 : divData.overallScore >= 65
-                  ? 'Good diversification overall, but there\'s room for improvement in some areas.'
+                  ? 'Strong foundation! A few strategic adjustments to your sector or market cap exposure could move you into the top tier.'
                 : divData.overallScore >= 50
-                  ? 'Moderate diversification. Consider the suggestions below to improve your portfolio balance.'
-                : 'Your portfolio needs diversification improvement. Follow the suggestions below to reduce concentration risk.'}
+                  ? 'Moderate balance. You are well-diversified in some areas, but exposed to risk in others. See our AI suggestions below.'
+                : 'High concentration risk detected. Your capital is heavily dependent on a few sectors or fund houses. Immediate rebalancing advised.'}
             </p>
           </CardContent>
         </Card>
       </motion.div>
 
       {/* Four Metric Breakdown Cards */}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-6 sm:grid-cols-2">
         {divData.breakdown.map((item, i) => {
           const Icon = METRIC_ICONS[item.metric as keyof typeof METRIC_ICONS] || BarChart3
           const color = METRIC_COLORS[item.metric as keyof typeof METRIC_COLORS] || '#10b981'
@@ -502,38 +526,45 @@ export default function DiversificationScore() {
               key={item.metric}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 + i * 0.1, duration: 0.4 }}
+              transition={{ delay: 0.2 + i * 0.1, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             >
-              <Card className="h-full">
-                <CardContent className="p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="rounded-lg p-1.5" style={{ backgroundColor: `${color}15` }}>
-                        <Icon className="h-4 w-4" style={{ color }} />
+              <Card className="h-full border-none bg-white/60 dark:bg-white/[0.03] backdrop-blur-md shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: color }} />
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="rounded-xl p-2.5 transition-colors group-hover:bg-opacity-25" style={{ backgroundColor: `${color}15` }}>
+                        <Icon className="h-5 w-5" style={{ color }} />
                       </div>
-                      <span className="text-sm font-medium text-foreground">{item.metric}</span>
+                      <span className="font-bold text-foreground group-hover:translate-x-1 transition-transform duration-300">{item.metric}</span>
                     </div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-xl font-bold" style={{ color }}>
-                        <AnimatedCounter value={item.score} duration={1.2 + i * 0.2} />
+                    <div className="flex items-baseline gap-1 bg-muted/30 px-3 py-1 rounded-full">
+                      <span className="text-xl font-black" style={{ color }}>
+                        <AnimatedCounter value={item.score} duration={1.5 + i * 0.2} />
                       </span>
-                      <span className="text-xs text-muted-foreground">/{item.maxScore}</span>
+                      <span className="text-xs font-medium text-muted-foreground opacity-60">/{item.maxScore}</span>
                     </div>
                   </div>
 
-                  {/* Progress bar */}
-                  <div className="relative h-2 w-full rounded-full bg-muted overflow-hidden mb-3">
+                  {/* Progress bar with Glow */}
+                  <div className="relative h-3 w-full rounded-full bg-muted/40 overflow-hidden mb-4 p-[1px]">
                     <motion.div
-                      className="absolute left-0 top-0 h-full rounded-full"
-                      style={{ backgroundColor: color }}
+                      className="absolute left-0 top-0 h-full rounded-full shadow-[0_0_12px_rgba(0,0,0,0.1)]"
+                      style={{ 
+                        backgroundColor: color,
+                        boxShadow: `0 0 10px ${color}40`
+                      }}
                       initial={{ width: 0 }}
                       animate={{ width: `${pct}%` }}
-                      transition={{ duration: 1, ease: 'easeOut', delay: 0.2 + i * 0.1 }}
+                      transition={{ duration: 1.5, ease: [0.34, 1.56, 0.64, 1], delay: 0.4 + i * 0.1 }}
                     />
                   </div>
 
                   {/* Description */}
-                  <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+                  <div className="flex items-start gap-2">
+                    <div className="mt-1 h-1 w-1 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                    <p className="text-xs font-medium text-muted-foreground leading-relaxed">{item.description}</p>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -544,31 +575,34 @@ export default function DiversificationScore() {
       {/* Suggestions Section */}
       {divData.suggestions.length > 0 && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.7, duration: 0.5 }}
         >
-          <Card className="border-amber-200 bg-amber-50/30 dark:border-amber-900 dark:bg-amber-950/10">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2 text-amber-800 dark:text-amber-300">
-                <Lightbulb className="h-4 w-4" />
-                Suggestions to Improve Diversification
+          <Card className="border-none bg-gradient-to-br from-amber-500/5 to-orange-500/5 dark:from-amber-500/10 dark:to-orange-500/5 backdrop-blur-md shadow-2xl overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500" />
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg font-black flex items-center gap-3 text-amber-800 dark:text-amber-400">
+                <div className="p-2 bg-amber-500/20 rounded-xl">
+                  <Lightbulb className="h-5 w-5" />
+                </div>
+                AI Diversification Recommendations
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="grid gap-4 sm:grid-cols-2">
                 {divData.suggestions.map((suggestion, i) => (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + i * 0.08 }}
-                    className="flex items-start gap-2.5"
+                    transition={{ delay: 0.8 + i * 0.1 }}
+                    className="flex items-start gap-4 p-3 rounded-2xl bg-white/40 dark:bg-white/[0.02] border border-amber-500/10 hover:border-amber-500/30 transition-colors"
                   >
-                    <div className="mt-1 h-5 w-5 rounded-full bg-amber-100 dark:bg-amber-900 flex items-center justify-center shrink-0">
-                      <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300">{i + 1}</span>
+                    <div className="h-7 w-7 rounded-lg bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center shrink-0 border border-amber-500/20">
+                      <span className="text-xs font-black text-amber-700 dark:text-amber-400">{i + 1}</span>
                     </div>
-                    <p className="text-sm text-amber-900 dark:text-amber-200 leading-relaxed">{suggestion}</p>
+                    <p className="text-sm font-medium text-amber-900/80 dark:text-amber-200/80 leading-snug">{suggestion}</p>
                   </motion.div>
                 ))}
               </div>
@@ -579,12 +613,14 @@ export default function DiversificationScore() {
 
       {/* Error state */}
       {error && (
-        <Card className="border-red-200 dark:border-red-900">
-          <CardContent className="flex items-center gap-3 p-4">
-            <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
-            <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-          </CardContent>
-        </Card>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card className="border-red-500/20 bg-red-500/5 backdrop-blur-md">
+            <CardContent className="flex items-center gap-3 p-4">
+              <AlertTriangle className="h-5 w-5 text-red-500 shrink-0" />
+              <p className="text-sm font-medium text-red-700 dark:text-red-400">{error}</p>
+            </CardContent>
+          </Card>
+        </motion.div>
       )}
     </div>
   )
