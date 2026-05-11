@@ -1,4 +1,4 @@
-# FundVista: Mutual Fund Co-Pilot
+  # FundVista: Mutual Fund Co-Pilot
 
 FundVista is an AI-powered mutual fund dashboard for Indian retail investors. It helps users understand whether they are losing money through Regular mutual fund plans, compare them with Direct plans, analyze portfolio risk, calculate tax and exit-load tradeoffs, and ask a portfolio-aware AI assistant for explanations.
 
