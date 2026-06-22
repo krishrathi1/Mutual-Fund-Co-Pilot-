@@ -1,12 +1,19 @@
-import * as lancedb from '@lancedb/lancedb';
-import * as arrow from 'apache-arrow';
-import { pipeline } from '@xenova/transformers';
 import { db } from './db';
 import path from 'path';
 
-// Local Vector Database logic for high-speed semantic search
+// Local Vector Database logic for high-speed semantic search.
+//
+// The heavy native packages (@lancedb/lancedb, @xenova/transformers, and their
+// transitive onnxruntime-node) are imported LAZILY, inside the functions that use them,
+// rather than at module top-level. This keeps them out of the static module graph so:
+//   1. Vercel can exclude them from the serverless function trace (see
+//      `outputFileTracingExcludes` in next.config.ts) to stay under the 250 MB limit; and
+//   2. routes that import this module still load on Vercel, degrading gracefully
+//      (returning no results) when the packages or the writable filesystem they need
+//      (LanceDB data dir / model cache) are unavailable.
+// On self-hosted/standalone builds the packages remain present and behaviour is unchanged.
 let embedder: any = null;
-let dbInstance: lancedb.Connection | null = null;
+let dbInstance: any = null;
 
 const DB_PATH = path.join(process.cwd(), 'data', 'lancedb');
 const TABLE_NAME = 'fund_vectors';
@@ -14,6 +21,7 @@ const TABLE_NAME = 'fund_vectors';
 export async function getEmbedder() {
   if (!embedder) {
     console.log('VectorDB: Loading embedding model (all-MiniLM-L6-v2)...')
+    const { pipeline } = await import('@xenova/transformers');
     embedder = await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2');
     console.log('VectorDB: Embedding model loaded')
   }
@@ -23,6 +31,7 @@ export async function getEmbedder() {
 export async function getVectorDB() {
   if (!dbInstance) {
     console.log('VectorDB: Connecting to LanceDB at', DB_PATH)
+    const lancedb = await import('@lancedb/lancedb');
     dbInstance = await lancedb.connect(DB_PATH);
     console.log('VectorDB: Connected to LanceDB')
   }
